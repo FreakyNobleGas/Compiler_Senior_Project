@@ -21,7 +21,7 @@ class num(expr):
 	def interp(self):
 		return self._num;
 	def pretty_print(self):
-		return self._num;
+		return str(self._num);
 
 # -- Inherited Class for Negating Numbers --
 class neg(expr):
@@ -44,11 +44,17 @@ class add(expr):
 
 # -- Inherited Class for Adding Numbers --
 class read(expr):
-	def interp(self):
-		num = input("Please enter a numerical value: ")
-		self._num = int(num)
-		return self._num;
-	def pretty_print(self):
+	def __init__(self, num = 0, debug_mode = False):
+		if debug_mode:
+			self._num = int(num)
+		else:
+			num = input("Please enter a numerical value: ")
+			self._num = int(num)
+
+	def interp(self, num = 0, debug_mode = False):
+			return self._num;
+
+	def pretty_print(self, num = 0, debug_mode = False):
 		return "Read(" + str(self._num) + ")";
 
 # -- Inherited Class for the Program "Container" --

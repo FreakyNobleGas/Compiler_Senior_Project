@@ -1,8 +1,9 @@
 #
 #	Nick Quinn - Compiler Construction
 #
+#	This file defines all of the language data types.
 
-# R0:
+# Language R0:
 # e ::= number | (read) | (-e) | (+ee)
 # p ::= (program any e)
 

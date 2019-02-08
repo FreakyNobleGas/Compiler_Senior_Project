@@ -1,7 +1,11 @@
 #
 #	Nick Quinn - Compiler Construction
 #
+#	This file is the testing suite, and is primarily used to make
+#	sure there are no bugs in the compiler and everything is
+#	functioning as expected.
 
+# Imports all the data type definitions
 from language_definitions import expr, num, neg, add, read, prog
 
 def testing():

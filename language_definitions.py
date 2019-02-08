@@ -10,9 +10,12 @@
 # Class Definitions
 # -- Base Class for Expressions --
 class expr:
+	_num_of_reads = 0
 	def interp(self):
 		return 0;
 	def pretty_print(self):
+		return 0;
+	def opt(self):
 		return 0;
 
 # -- Inherited Class for Number Values --
@@ -23,15 +26,19 @@ class num(expr):
 		return self._num;
 	def pretty_print(self):
 		return str(self._num);
+	def opt(self):
+		return self._num;
 
 # -- Inherited Class for Negating Numbers --
 class neg(expr):
 	def __init__(self, num):
 		self._num = num
 	def interp(self):
-		return -1 * self._num.interp()
+		return -1 * self._num.interp();
 	def pretty_print(self):
 		return "-" + str(self._num.pretty_print());
+	def opt(self):
+		return -1 * self._num.opt();
 
 # -- Inherited Class for Adding Numbers --
 class add(expr):
@@ -42,6 +49,8 @@ class add(expr):
 		return self._lhs.interp() + self._rhs.interp();
 	def pretty_print(self):
 		return "(" + str(self._lhs.pretty_print()) + "+" + str(self._rhs.pretty_print()) + ")";
+	def opt(self):
+		return self._lhs.opt() + self._rhs.opt();
 
 # -- Inherited Class for Adding Numbers --
 class read(expr):
@@ -54,9 +63,11 @@ class read(expr):
 
 	def interp(self, num = 0, debug_mode = False):
 			return self._num;
-
 	def pretty_print(self, num = 0, debug_mode = False):
 		return "Read(" + str(self._num) + ")";
+	def opt(self, num = 0, debug_mode = False):
+		expr._num_of_reads += 1
+		return 0;
 
 # -- Inherited Class for the Program "Container" --
 class prog(expr):
@@ -67,7 +78,19 @@ class prog(expr):
 		result = self._e.interp()
 		result = int(result)
 		return print(self._e.pretty_print() + " = " + str(result));
-
 	def pretty_print(self):
 		return self._e.pretty_print();
+	def opt(self):
+		i = 0
+		generate = num(self._e.opt())
+		print(expr._num_of_reads)
+		while i < expr._num_of_reads:
+			i += 1
+			generate = add(read(), generate)
+		return prog(None, generate);
+
+
+
+
+
 

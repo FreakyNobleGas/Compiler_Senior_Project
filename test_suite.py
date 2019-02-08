@@ -8,6 +8,34 @@
 
 # Imports all the data type definitions
 from language_definitions import expr, num, neg, add, read, prog
+import random
+
+# Return a random number
+def rand_num():
+	return random.randint(0,10);
+
+# Returns a program of n depth
+def generate_large_program(n):
+	i = 1
+	if(n == 0):
+		generate = read(rand_num(), True)
+	else:
+		generate = add(num(rand_num()), num(rand_num()))
+		while i < n :
+			random = rand_num() % 4
+			i += 1
+			if (random == 0):
+				generate = neg(generate)
+			elif (random == 1):
+				generate = add(generate, num(rand_num()))
+			elif (random == 2):
+				generate = add(neg(generate), neg(generate))
+			elif (random == 3):
+				generate = add(generate, generate)
+			else:
+				print("Something very wrong happened")
+
+	return prog(None, generate);
 
 # Returns a program that calculates 2^n
 def generate_large_number(n):
@@ -86,4 +114,28 @@ def testing():
 
 	print("Test 15: Answer = 2^8 = 256")
 	test = generate_large_number(8)
+	test.interp()
+
+	print("Test 16: Large Depth 0 = Read() ")
+	test = generate_large_program(0)
+	test.interp()
+
+	print("Test 17: Large Depth 1 ")
+	test = generate_large_program(1)
+	test.interp()
+
+	print("Test 18: Large Depth 3 ")
+	test = generate_large_program(3)
+	test.interp()
+	
+	print("Test 19: Large Depth Random Number ")
+	test = generate_large_program(rand_num())
+	test.interp()
+
+	print("Test 20: Large Depth Random Number 0-15 ")
+	test = generate_large_program(random.randint(0,15))
+	test.interp()
+
+	print("Test 21: Large Depth Random Number 0-20")
+	test = generate_large_program(random.randint(0,20))
 	test.interp()

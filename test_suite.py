@@ -3,11 +3,29 @@
 #
 #	This file is the testing suite, and is primarily used to make
 #	sure there are no bugs in the compiler and everything is
-#	functioning as expected.
+#	functioning as expected. This file will also contain other function
+#	definitions such as generate
 
 # Imports all the data type definitions
 from language_definitions import expr, num, neg, add, read, prog
 
+# Returns a program that calculates 2^n
+def generate_large_number(n):
+	i = 2
+	# Base Case: 2^0 = 1
+	if(n == 0):
+		generate = num(1)
+	# Base Case: 2^1 = 2
+	elif( n == 1):
+		generate = num(2)
+	else:
+		generate = add(num(2), num(2))
+		while( i < n ):
+			i += 1
+			generate = add(generate, generate)
+	return prog(None, generate);
+
+# Test random programs
 def testing():
 	
 	print("Test 1: Answer = -64")
@@ -56,4 +74,16 @@ def testing():
 
 	print("Test 12: Answer =  24")
 	test = prog(None, add(read(12, True), read(12, True)));
+	test.interp()
+
+	print("Test 13: Answer = 2^0 = 1")
+	test = generate_large_number(0)
+	test.interp()
+
+	print("Test 14: Answer = 2^1 = 2")
+	test = generate_large_number(1)
+	test.interp()
+
+	print("Test 15: Answer = 2^8 = 256")
+	test = generate_large_number(8)
 	test.interp()

@@ -5,7 +5,7 @@
 #	all the neccessary files to build the compiler.
 
 from language_definitions import expr, num, neg, add, read, prog
-from test_suite import testing
+from test_suite import *
 
 
 def main():

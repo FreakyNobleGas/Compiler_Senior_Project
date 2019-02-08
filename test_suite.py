@@ -18,7 +18,11 @@ def rand_num():
 def generate_large_program(n):
 	i = 1
 	if(n == 0):
+		random = rand_num()
 		generate = read(rand_num(), True)
+		while i <= random:
+			i += 1
+			generate = add(read(rand_num(), True), generate)
 	else:
 		generate = add(num(rand_num()), num(rand_num()))
 		while i < n :

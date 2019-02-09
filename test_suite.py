@@ -14,15 +14,23 @@ import random
 def rand_num():
 	return random.randint(0,10);
 
+def generate_arry_of_ints(n):
+	i = 0
+	expr.random_arry_of_ints.clear()
+	while i < n:
+		i += 1
+		expr.random_arry_of_ints.append(rand_num())
+	return;
+
 # Returns a program of n depth
 def generate_large_program(n):
 	i = 1
 	if(n == 0):
 		random = rand_num()
-		generate = read(rand_num(), True)
+		generate = read()
 		while i <= random:
 			i += 1
-			generate = add(read(rand_num(), True), generate)
+			generate = add(read(), generate)
 	else:
 		generate = add(num(rand_num()), num(rand_num()))
 		while i < n :
@@ -60,97 +68,106 @@ def generate_large_number(n):
 # Test random programs
 def testing():
 	
-	print("------------- Testing Interp -------------")
+	print("\n\n------------- Testing Interp -------------\n\n")
 
 	print("Test 1: Answer = -64")
 	test = prog(None, neg( add( num(17), add(read(5, True), num(42)))))
 	test.interp()
+	print("\n")
 
 	print("Test 2: Answer =  -3")
 	test = prog(None, add( num(5), neg( num(8))))
 	test.interp()
+	print("\n")
 
 	print("Test 3: Answer =  10")
 	test = prog(None, add( neg(num(-5)), neg(num(-5))))
 	test.interp()
+	print("\n")
 
 	print("Test 4: Answer = -5")
 	test = prog(None, neg(neg(num(-5))))
 	test.interp()
+	print("\n")
 
 	print("Test 5: Answer =  10,000")
 	test = prog(None, add(read(5000, True), num(5000)))
 	test.interp()
+	print("\n")
 
 	print("Test 6: Answer =  12")
 	test = prog(None, num(12))
 	test.interp()
+	print("\n")
 
 	print("Test 7: Answer =  -15")
 	test = prog(None, neg( add( num(5), num(10))))
 	test.interp()
+	print("\n")
 
 	print("Test 8: Answer = 1200")
 	test = prog(None, read(1200, True))
 	test.interp()
+	print("\n")
 
 	print("Test 9: Answer =  95")
 	test = prog(None, add( num(45), num(50)))
 	test.interp()
+	print("\n")
 
 	print("Test 10: Answer =  -150")
 	test = prog(None, neg( add(read(50, True), read(100, True))))
 	test.interp()
+	print("\n")
 
 	print("Test 11: Answer =  500000000")
 	test = prog(None, num(500000000))
 	test.interp()
+	print("\n")
 
 	print("Test 12: Answer =  24")
 	test = prog(None, add(read(12, True), read(12, True)))
 	test.interp()
 
-	print("------------- Testing Generate Large Number -------------")
+	print("\n\n------------- Testing Generate Large Number -------------\n\n")
 
 	print("Test 13: Answer = 2^0 = 1")
 	test = generate_large_number(0)
 	test.interp()
+	print("\n")
 
 	print("Test 14: Answer = 2^1 = 2")
 	test = generate_large_number(1)
 	test.interp()
+	print("\n")
 
 	print("Test 15: Answer = 2^8 = 256")
 	test = generate_large_number(8)
 	test.interp()
 
-	print("------------- Testing Generate Large Program -------------")
+	print("\n\n------------- Testing Generate Large Program -------------\n\n")
+	expr.opt_flag = 1
+	i = 16
+	while i <= 21:
+		generate_arry_of_ints(50)
+		random_depth = rand_num()
+		print("Test " + str(i) + ": Random Depth " + str(random_depth))
+		test = generate_large_program(random_depth)
+		test.interp()
+		print("\n")
+		i += 1
 
-	print("Test 16: Large Depth 0 = Read() ")
-	test = generate_large_program(0)
-	test.interp()
-
-	print("Test 17: Large Depth 1 ")
-	test = generate_large_program(1)
-	test.interp()
-
-	print("Test 18: Large Depth 3 ")
-	test = generate_large_program(3)
-	test.interp()
+	print("\n\n------------- Testing Optomizer -------------\n\n")
 	
-	print("Test 19: Large Depth Random Number ")
-	test = generate_large_program(rand_num())
-	test.interp()
-
-	print("Test 20: Large Depth Random Number 0-15 ")
-	test = generate_large_program(random.randint(0,15))
-	test.interp()
-
-	print("Test 21: Large Depth Random Number 0-20")
-	test = generate_large_program(random.randint(0,20))
-	test.interp()
-	
-	print("------------- Testing Optomizer -------------")
-
+	while i <= 30:
+		generate_arry_of_ints(50)
+		print("Test " + str(i) + ": Optomizer")
+		test = generate_large_program(rand_num())	
+		test.interp()	
+		opt_test = test.opt()
+		opt_test.interp()
+		print("\n")
+		i += 1
+	expr.opt_flag = 0
 	
 

@@ -11,7 +11,11 @@
 # -- Base Class for Expressions --
 class expr:
 	arry_of_reads = []
-	neg_flag = 1
+	random_arry_of_ints = []
+	#neg_flag = 1
+	neg_count = 0	
+	opt_flag = 0
+	opt_index = 0
 	def interp(self):
 		return 0;
 	def pretty_print(self):
@@ -28,7 +32,10 @@ class num(expr):
 	def pretty_print(self):
 		return str(self._num);
 	def opt(self):
-		return self._num * expr.neg_flag;
+		if expr.neg_count % 2 == 0:
+			return self._num;
+		else:
+			return self._num * -1;
 
 # -- Inherited Class for Negating Numbers --
 class neg(expr):
@@ -39,8 +46,10 @@ class neg(expr):
 	def pretty_print(self):
 		return "-" + str(self._num.pretty_print());
 	def opt(self):
-		expr.neg_flag *= -1
-		return self._num.opt();
+		expr.neg_count += 1
+		temp = self._num.opt()
+		expr.neg_count -= 1
+		return temp;
 
 # -- Inherited Class for Adding Numbers --
 class add(expr):
@@ -67,6 +76,11 @@ class read(expr):
 		if self._debug_mode:
 			return self._num
 
+		if expr.opt_flag:
+			self._num = expr.random_arry_of_ints[expr.opt_index]
+			expr.opt_index += 1
+			return self._num;
+
 		if debug_mode:
 			self._num = int(num)
 		else:
@@ -77,7 +91,10 @@ class read(expr):
 	def pretty_print(self, num = 0, debug_mode = False):
 		return "Read(" + str(self._num) + ")";
 	def opt(self, num = 0, debug_mode = False):
-		expr.arry_of_reads.insert(0, expr.neg_flag)
+		if expr.neg_count % 2 == 0:
+			expr.arry_of_reads.insert(0, 1)
+		else:
+			expr.arry_of_reads.insert(0, -1)
 		return 0;
 
 # -- Inherited Class for the Program "Container" --
@@ -86,6 +103,7 @@ class prog(expr):
 		self._info = info
 		self._e = e
 	def interp(self):
+		expr.opt_index = 0
 		result = self._e.interp()
 		result = int(result)
 		return print(self._e.pretty_print() + " = " + str(result));
@@ -94,7 +112,7 @@ class prog(expr):
 	def opt(self):
 		expr.arry_of_reads.clear()
 		result = self._e.opt()
-		expr.neg_flag = 1
+		expr.neg_count = 0
 		generate = num(result)
 		for reads in expr.arry_of_reads:
 			if (reads == -1):			

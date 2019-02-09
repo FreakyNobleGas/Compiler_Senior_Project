@@ -39,7 +39,6 @@ class neg(expr):
 	def pretty_print(self):
 		return "-" + str(self._num.pretty_print());
 	def opt(self):
-		print("Hitting neg")
 		expr.neg_flag *= -1
 		return self._num.opt();
 
@@ -58,20 +57,27 @@ class add(expr):
 # -- Inherited Class for Adding Numbers --
 class read(expr):
 	def __init__(self, num = 0, debug_mode = False):
-		print("Hitting read init")
+		if debug_mode:
+			self._num = int(num)
+			self._debug_mode = True
+		else:
+			self._debug_mode = False
+
+	def interp(self, num = 0, debug_mode = False):
+		if self._debug_mode:
+			return self._num
+
 		if debug_mode:
 			self._num = int(num)
 		else:
 			num = input("Please enter a numerical value: ")
 			self._num = int(num)
 
-	def interp(self, num = 0, debug_mode = False):
-			return self._num;
+		return self._num;
 	def pretty_print(self, num = 0, debug_mode = False):
 		return "Read(" + str(self._num) + ")";
 	def opt(self, num = 0, debug_mode = False):
-		print("Hitting read")
-		expr.arry_of_reads.insert(0, 1 * expr.neg_flag)
+		expr.arry_of_reads.insert(0, expr.neg_flag)
 		return 0;
 
 # -- Inherited Class for the Program "Container" --
@@ -86,12 +92,12 @@ class prog(expr):
 	def pretty_print(self):
 		return self._e.pretty_print();
 	def opt(self):
-		generate = self._e.opt()
+		expr.arry_of_reads.clear()
+		result = self._e.opt()
 		expr.neg_flag = 1
-		generate = num(self._e.opt())
-		#print(expr._num_of_reads)
+		generate = num(result)
 		for reads in expr.arry_of_reads:
-			if (reads == -1):
+			if (reads == -1):			
 				generate = add(neg(read()), generate)
 			elif (reads == 1):
 				generate = add(read(), generate)

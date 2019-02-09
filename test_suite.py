@@ -60,6 +60,8 @@ def generate_large_number(n):
 # Test random programs
 def testing():
 	
+	print("------------- Testing Interp -------------")
+
 	print("Test 1: Answer = -64")
 	test = prog(None, neg( add( num(17), add(read(5, True), num(42)))))
 	test.interp()
@@ -108,6 +110,8 @@ def testing():
 	test = prog(None, add(read(12, True), read(12, True)))
 	test.interp()
 
+	print("------------- Testing Generate Large Number -------------")
+
 	print("Test 13: Answer = 2^0 = 1")
 	test = generate_large_number(0)
 	test.interp()
@@ -119,6 +123,8 @@ def testing():
 	print("Test 15: Answer = 2^8 = 256")
 	test = generate_large_number(8)
 	test.interp()
+
+	print("------------- Testing Generate Large Program -------------")
 
 	print("Test 16: Large Depth 0 = Read() ")
 	test = generate_large_program(0)
@@ -143,36 +149,8 @@ def testing():
 	print("Test 21: Large Depth Random Number 0-20")
 	test = generate_large_program(random.randint(0,20))
 	test.interp()
-
-	print("Test 22: Optomizer Answer = -64")
-	normal_test = prog(None, neg( add( num(17), add(read(), num(42)))))
-	normal_test.interp()
-	opt_test1 = prog(None, neg( add( num(17), add(read(), num(42)))))
-	opt_test1 = opt_test1.opt()
-	opt_test1.interp()
-
-	print("Test 23: Optomizer Answer = -64")
-	normal_test = prog(None, neg( add( num(17), add(num(5), num(42)))))
-	normal_test.interp()
-	opt_test2 = prog(None, neg( add( num(17), add(num(5), num(42)))))
-	opt_test2 = opt_test2.opt()
-	opt_test2.interp()
 	
-	print("Test 24: Optomizer ")
-	normal_test = prog(None, neg(add(read(), neg(add(read(), num(1))))))
-	normal_test.interp()
-	opt_test3 = prog(None, neg(add(read(), neg(add(read(), num(1))))))
-	opt_test3 = opt_test3.opt()
-	opt_test3.interp()
-	#i = 24
-	#while i <= 30:
-	#	print("Test " + str(i) + ": Optomizer Tests ")
-	#	normal_test = opt_test = generate_large_program(random.randint(0,15))
-	#	normal_test.interp()
-	#	opt_test = opt_test.opt()
-	#	opt_test.interp()
+	print("------------- Testing Optomizer -------------")
 
-
-
-
+	
 

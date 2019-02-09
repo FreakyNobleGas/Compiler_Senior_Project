@@ -10,7 +10,8 @@
 # Class Definitions
 # -- Base Class for Expressions --
 class expr:
-	_num_of_reads = 0
+	arry_of_reads = []
+	neg_flag = 1
 	def interp(self):
 		return 0;
 	def pretty_print(self):
@@ -27,7 +28,7 @@ class num(expr):
 	def pretty_print(self):
 		return str(self._num);
 	def opt(self):
-		return self._num;
+		return self._num * expr.neg_flag;
 
 # -- Inherited Class for Negating Numbers --
 class neg(expr):
@@ -38,7 +39,9 @@ class neg(expr):
 	def pretty_print(self):
 		return "-" + str(self._num.pretty_print());
 	def opt(self):
-		return -1 * self._num.opt();
+		print("Hitting neg")
+		expr.neg_flag *= -1
+		return self._num.opt();
 
 # -- Inherited Class for Adding Numbers --
 class add(expr):
@@ -66,7 +69,8 @@ class read(expr):
 	def pretty_print(self, num = 0, debug_mode = False):
 		return "Read(" + str(self._num) + ")";
 	def opt(self, num = 0, debug_mode = False):
-		expr._num_of_reads += 1
+		print("Hitting read")
+		expr.arry_of_reads.append(1 * expr.neg_flag)
 		return 0;
 
 # -- Inherited Class for the Program "Container" --
@@ -81,12 +85,18 @@ class prog(expr):
 	def pretty_print(self):
 		return self._e.pretty_print();
 	def opt(self):
-		i = 0
+		generate = self._e.opt()
+		expr.neg_flag = 1
 		generate = num(self._e.opt())
-		print(expr._num_of_reads)
-		while i < expr._num_of_reads:
-			i += 1
-			generate = add(read(), generate)
+		#print(expr._num_of_reads)
+		for reads in expr.arry_of_reads:
+			if (reads == -1):
+				generate = add(neg(read()), generate)
+			elif (reads == 1):
+				generate = add(read(), generate)
+			else:
+				print("Something went wrong. Neither 1 or -1")
+		expr.arry_of_reads = []
 		return prog(None, generate);
 
 

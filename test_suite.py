@@ -147,14 +147,32 @@ def testing():
 	print("Test 22: Optomizer Answer = -64")
 	normal_test = prog(None, neg( add( num(17), add(read(), num(42)))))
 	normal_test.interp()
-	opt_test = prog(None, neg( add( num(17), add(read(), num(42)))))
-	opt_test = opt_test.opt()
-	opt_test.interp()
+	opt_test1 = prog(None, neg( add( num(17), add(read(), num(42)))))
+	opt_test1 = opt_test1.opt()
+	opt_test1.interp()
 
 	print("Test 23: Optomizer Answer = -64")
 	normal_test = prog(None, neg( add( num(17), add(num(5), num(42)))))
 	normal_test.interp()
-	opt_test = prog(None, neg( add( num(17), add(num(5), num(42)))))
-	opt_test = opt_test.opt()
-	opt_test.interp()
+	opt_test2 = prog(None, neg( add( num(17), add(num(5), num(42)))))
+	opt_test2 = opt_test2.opt()
+	opt_test2.interp()
+	
+	print("Test 24: Optomizer ")
+	normal_test = prog(None, neg(add(read(), neg(add(read(), num(1))))))
+	normal_test.interp()
+	opt_test3 = prog(None, neg(add(read(), neg(add(read(), num(1))))))
+	opt_test3 = opt_test3.opt()
+	opt_test3.interp()
+	#i = 24
+	#while i <= 30:
+	#	print("Test " + str(i) + ": Optomizer Tests ")
+	#	normal_test = opt_test = generate_large_program(random.randint(0,15))
+	#	normal_test.interp()
+	#	opt_test = opt_test.opt()
+	#	opt_test.interp()
+
+
+
+
 

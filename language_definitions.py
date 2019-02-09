@@ -58,6 +58,7 @@ class add(expr):
 # -- Inherited Class for Adding Numbers --
 class read(expr):
 	def __init__(self, num = 0, debug_mode = False):
+		print("Hitting read init")
 		if debug_mode:
 			self._num = int(num)
 		else:
@@ -70,7 +71,7 @@ class read(expr):
 		return "Read(" + str(self._num) + ")";
 	def opt(self, num = 0, debug_mode = False):
 		print("Hitting read")
-		expr.arry_of_reads.append(1 * expr.neg_flag)
+		expr.arry_of_reads.insert(0, 1 * expr.neg_flag)
 		return 0;
 
 # -- Inherited Class for the Program "Container" --
@@ -96,7 +97,7 @@ class prog(expr):
 				generate = add(read(), generate)
 			else:
 				print("Something went wrong. Neither 1 or -1")
-		expr.arry_of_reads = []
+		expr.arry_of_reads.clear()
 		return prog(None, generate);
 
 

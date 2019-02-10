@@ -102,6 +102,32 @@ class read(expr):
 			expr.arry_of_reads.insert(0, -1)
 		return 0;
 
+# -- Inherited Class for the Let -- R0->R1
+
+class let(expr):
+	def __init__(self, x, xe, xb):
+		self._x = x
+		self._xe = xe
+		self._xb = xb
+
+# -- Creating Linked List Class for the Inherited Class env (enviroment) --
+
+class node():
+	def __init__(self, var, num):
+		self._var = var
+		self._num = num
+
+class env(expr):
+	def __init__(self):
+		self._head = None
+
+# -- Inherited Class for Var --
+
+class var(expr):
+	def __init__(self, var, x):
+		self._var = var
+		self._x = x
+
 # -- Inherited Class for the Program "Container" --
 class prog(expr):
 	def __init__(self, info, e):
@@ -128,14 +154,6 @@ class prog(expr):
 				print("Something went wrong. Neither 1 or -1")
 		expr.arry_of_reads.clear()
 		return prog(None, generate);
-
-# -- Inherited Class for the Let -- R0->R1
-
-class let(expr):
-	def __init__(self, x, xe, xb):
-		self._x = x
-		self._xe = xe
-		self._xb = xb
 
 
 

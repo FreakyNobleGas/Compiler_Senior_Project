@@ -182,7 +182,76 @@ def testing():
 	
 
 	print("\n\n------------- Testing R1 Programs -------------\n\n")
+	
 	y = "y"
-	test = prog(None, let(y, num(5), num(var(y))) )
+	print ("Test 36: Answer = 5")
+	test = prog(None, let(y, num(5), (var(y))))
 	test.interp()
+	print("\n")
+
+	print ("Test 37: Answer = 20")
+	test = prog(None, let(y, add(num(5), num(5)), add(var(y), var(y))))
+	test.interp()
+	print("\n")
+
+	print ("Test 38: Answer 80")
+	test = prog(None, let(y, neg(add(read(5, True), num(75))), neg(var(y))))
+	test.interp()
+	print("\n")
+
+	print ("Test 39: Answer = -105")
+	test = prog(None, let(y, read(105, True), neg(var(y))))
+	test.interp()
+	print("\n")
+
+	print ("Test 40: Answer = 60")
+	test = prog(None, let(y, add(num(5), add(num(10), num(15))), add(var(y), var(y))))
+	test.interp()
+	print("\n")
+
+	print ("Test 41: Answer = 0")
+	test = prog(None, let(y, add(neg(read(5, True)), num(5)), add(var(y), var(y))))
+	test.interp()
+	print("\n")
+
+	print ("Test 42: Answer = 40")
+	test = prog(None, let(y, neg(num(20)), neg(add(var(y), var(y)))))
+	test.interp()
+	print("\n")
+
+	print ("Test 43: Answer = 0")
+	test = prog(None, let(y, read(5, True), add(neg(var(y)), read(5, True))))
+	test.interp()
+	print("\n")
+
+	print ("Test 44: Answer = 90")
+	test = prog(None, let(y, add(neg(num(45)), neg(num(45))), neg(var(y))))
+	test.interp()
+	print("\n")
+
+	print ("Test 45: Answer = 18000")
+	test = prog(None, let(y, add(num(3000), num(3000)), add( var(y), add(var(y), var(y)))))
+	test.interp()
+	print("\n")
+
+	print ("Test 46: Answer = -18000")
+	test = prog(None, let(y, add(num(3000), num(3000)), neg(add( var(y), add(var(y), var(y))))))
+	test.interp()
+	print("\n")
+
+	print ("Test 47: Answer = -20")
+	test = prog(None, let(y, let(y, neg(read(5, True)), add(var(y), var(y))), add(var(y), var(y))))
+	test.interp()
+	print("\n")
+
+	print ("Test 37: Answer = 20")
+	test = prog(None, let(y, let(y, neg(read(5, True)), add(var(y), var(y))), neg(add(var(y), var(y)))))
+	test.interp()
+	print("\n")
+	
+	
+
+
+
+
 

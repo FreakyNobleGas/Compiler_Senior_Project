@@ -31,7 +31,10 @@ class num(expr):
 	def __init__(self, num):
 		self._num = num
 	def interp(self):
-		return self._num;
+		if isinstance(self._num, int):
+			return self._num;
+		else:
+			return self._num.interp();
 	def pretty_print(self):
 		return str(self._num);
 	def opt(self):
@@ -111,11 +114,11 @@ class let(expr):
 		self._xb = xb
 
 	def pretty_print(self):
-		#return "Let " + str(self._x) + " in " + str(map_env.find_var(self._x, self._xe.interp())) + " in " str(self._xb);
-		return "Let Pretty Print"
+		return "Let " + str(self._x) + " in " + str(self._xe.pretty_print()) + " in " + str(self._xb.pretty_print());
+		#return "Let Pretty Print"
 
 	def interp(self):
-		map_env.add_var(self._x, self._xe.interp())
+		prog.map_env.add_var(self._x, self._xe.interp())
 		return self._xb.interp()
 		
 
@@ -131,20 +134,22 @@ class env(expr):
 	def __init__(self):
 		self._head = None
 
-	def find_var(var):
+	def find_var(self, var):
 		temp = self._head
-		while temp.next != None:
+		while temp != None:
 			if (temp._var == var):
 				return temp._num;
+			temp = temp.next;
 		print (" No mapping found. ")
 		return None;
 
-	def add_var(var, x):
+	def add_var(self, var, x):
 		new_node = node(var, x)
 		if (self._head == None):
 			self._head = new_node
 		else:
-			new_node.next = self._head
+			temp = self._head
+			new_node.next = temp
 			self._head = new_node
 		return;
 
@@ -154,15 +159,18 @@ class var(expr):
 		self._var = var
 
 	def pretty_print(self):
-		return str(self._var) + " = " + str(map_env.find_var(self._var));
+		value = prog.map_env.find_var(self._var)
+		if (value == None):
+			value = self._var
+		return str(self._var) + "(" + str(prog.map_env.find_var(self._var)) + ")";
 
 	def interp(self):
-		return map_env.find_var(self._var);
+		return prog.map_env.find_var(self._var);
 
 # -- Inherited Class for the Program "Container" --
 class prog(expr):
+	map_env = env()
 	def __init__(self, info, e):
-		map_env = env()
 		self._info = info
 		self._e = e
 	def interp(self):

@@ -6,13 +6,16 @@
 # Language R0:
 # e ::= number | (read) | (-e) | (+ee)
 # p ::= (program any e)
+#
+# Language R1:
+# e ::= ... | var | let var:= e in e
+# var ::= variable-not-otherwise-mentioned
 
 # Class Definitions
 # -- Base Class for Expressions --
 class expr:
 	arry_of_reads = []
 	random_arry_of_ints = []
-	#neg_flag = 1
 	neg_count = 0	
 	opt_flag = 0
 	opt_index = 0
@@ -88,8 +91,10 @@ class read(expr):
 			self._num = int(num)
 
 		return self._num;
+
 	def pretty_print(self, num = 0, debug_mode = False):
 		return "Read(" + str(self._num) + ")";
+
 	def opt(self, num = 0, debug_mode = False):
 		if expr.neg_count % 2 == 0:
 			expr.arry_of_reads.insert(0, 1)
@@ -124,8 +129,13 @@ class prog(expr):
 		expr.arry_of_reads.clear()
 		return prog(None, generate);
 
+# -- Inherited Class for the Let -- R0->R1
 
-
+class let(expr):
+	def __init__(self, x, xe, xb):
+		self._x = x
+		self._xe = xe
+		self._xb = xb
 
 
 

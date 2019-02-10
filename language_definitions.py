@@ -110,27 +110,60 @@ class let(expr):
 		self._xe = xe
 		self._xb = xb
 
+	def pretty_print(self):
+		#return "Let " + str(self._x) + " in " + str(map_env.find_var(self._x, self._xe.interp())) + " in " str(self._xb);
+		return "Let Pretty Print"
+
+	def interp(self):
+		prog.map_env.add_var(self._x, self._xe.interp())
+		return self._xb.interp()
+		
+
 # -- Creating Linked List Class for the Inherited Class env (enviroment) --
 
 class node():
 	def __init__(self, var, num):
 		self._var = var
 		self._num = num
+		self.next = None
 
 class env(expr):
 	def __init__(self):
 		self._head = None
 
-# -- Inherited Class for Var --
+	def find_var(var, x):
+		temp = self._head
+		while temp.next != None:
+			if (temp._var == var):
+				return temp._num;
+		print (" No mapping found. ")
+		return None;
 
+	def add_var(var, x):
+		new_node = node(var, x)
+		if (self._head == None):
+			self._head = new_node
+		else:
+			new_node.next = self._head
+			self._head = new_node
+		return;
+
+# -- Inherited Class for Var --
 class var(expr):
 	def __init__(self, var, x):
 		self._var = var
 		self._x = x
 
+	def pretty_print(self):
+		return str(self._var) + " " + str(self._x) + " = " + str(map_env.find_var(self._x));
+
+	def interp(self):
+		return prog.map_env.find_var(self._var, self._x);
+
 # -- Inherited Class for the Program "Container" --
 class prog(expr):
 	def __init__(self, info, e):
+		map_env = env()
 		self._info = info
 		self._e = e
 	def interp(self):

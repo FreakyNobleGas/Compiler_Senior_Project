@@ -7,7 +7,7 @@
 #	definitions such as generate
 
 # Imports all the data type definitions
-from language_definitions import expr, num, neg, add, read, prog
+from language_definitions import *
 import random
 
 # Return a random number
@@ -180,4 +180,9 @@ def testing():
 		i += 1
 	expr.opt_flag = 0
 	
+
+	print("\n\n------------- Testing R1 Programs -------------\n\n")
+	y = "y"
+	test = prog(None, let(y, num(5), num(var(y)) ))
+	test.interp()
 

@@ -183,6 +183,6 @@ def testing():
 
 	print("\n\n------------- Testing R1 Programs -------------\n\n")
 	y = "y"
-	test = prog(None, let(y, num(5), num(var(y)) ))
+	test = prog(None, let(y, num(5), num(var(y))) )
 	test.interp()
 

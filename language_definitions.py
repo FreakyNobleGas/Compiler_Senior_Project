@@ -115,7 +115,7 @@ class let(expr):
 		return "Let Pretty Print"
 
 	def interp(self):
-		prog.map_env.add_var(self._x, self._xe.interp())
+		map_env.add_var(self._x, self._xe.interp())
 		return self._xb.interp()
 		
 
@@ -131,7 +131,7 @@ class env(expr):
 	def __init__(self):
 		self._head = None
 
-	def find_var(var, x):
+	def find_var(var):
 		temp = self._head
 		while temp.next != None:
 			if (temp._var == var):
@@ -150,15 +150,14 @@ class env(expr):
 
 # -- Inherited Class for Var --
 class var(expr):
-	def __init__(self, var, x):
+	def __init__(self, var):
 		self._var = var
-		self._x = x
 
 	def pretty_print(self):
-		return str(self._var) + " " + str(self._x) + " = " + str(map_env.find_var(self._x));
+		return str(self._var) + " = " + str(map_env.find_var(self._var));
 
 	def interp(self):
-		return prog.map_env.find_var(self._var, self._x);
+		return map_env.find_var(self._var);
 
 # -- Inherited Class for the Program "Container" --
 class prog(expr):

@@ -14,6 +14,7 @@
 # Class Definitions
 # -- Base Class for Expressions --
 class expr:
+	# Global Variables - I've placed these here because it's easier to find
 	arry_of_reads = []
 	random_arry_of_ints = []
 	neg_count = 0	
@@ -31,12 +32,16 @@ class num(expr):
 	def __init__(self, num):
 		self._num = num
 	def interp(self):
+		# Check if self._num is an integer just in case this is called
+		# like num(var(x)) in the R1 language
 		if isinstance(self._num, int):
 			return self._num;
 		else:
 			return self._num.interp();
 	def pretty_print(self):
 		return str(self._num);
+	# The neg count is a way of "checking parentheses" to tell if the value should
+	# be negative or not
 	def opt(self):
 		if expr.neg_count % 2 == 0:
 			return self._num;
@@ -52,6 +57,7 @@ class neg(expr):
 	def pretty_print(self):
 		return "-" + str(self._num.pretty_print());
 	def opt(self):
+		# Increase neg_count if 
 		expr.neg_count += 1
 		temp = self._num.opt()
 		expr.neg_count -= 1
@@ -99,13 +105,15 @@ class read(expr):
 		return "Read(" + str(self._num) + ")";
 
 	def opt(self, num = 0, debug_mode = False):
+		# Check whether neg has been called an even or odd amount of times. This
+		# is to prevent a triple negative from creating false positive values
 		if expr.neg_count % 2 == 0:
 			expr.arry_of_reads.insert(0, 1)
 		else:
 			expr.arry_of_reads.insert(0, -1)
 		return 0;
 
-# -- Inherited Class for the Let -- R0->R1
+# -- Inherited Class for the Let -- 
 
 class let(expr):
 	def __init__(self, x, xe, xb):
@@ -115,7 +123,6 @@ class let(expr):
 
 	def pretty_print(self):
 		return "Let " + str(self._x) + " in " + str(self._xe.pretty_print()) + " in " + str(self._xb.pretty_print());
-		#return "Let Pretty Print"
 
 	def interp(self):
 		prog.map_env.add_var(self._x, self._xe.interp())
@@ -169,22 +176,31 @@ class var(expr):
 
 # -- Inherited Class for the Program "Container" --
 class prog(expr):
+	# Global variable that holds the linked list that maps var->num
 	map_env = env()
+
 	def __init__(self, info, e):
 		self._info = info
 		self._e = e
+
 	def interp(self):
+		# Index is used for optomization tests so that the default test has the same
+		# random read values as the optomized test
 		expr.opt_index = 0
+		# Save the result first so that we can pretty print
 		result = self._e.interp()
 		result = int(result)
 		return print(self._e.pretty_print() + " = " + str(result));
+
 	def pretty_print(self):
 		return self._e.pretty_print();
+
 	def opt(self):
 		expr.arry_of_reads.clear()
 		result = self._e.opt()
 		expr.neg_count = 0
 		generate = num(result)
+		# Insert a read into the program based on if the read was intended to be negative or not
 		for reads in expr.arry_of_reads:
 			if (reads == -1):			
 				generate = add(neg(read()), generate)
@@ -192,7 +208,7 @@ class prog(expr):
 				generate = add(read(), generate)
 			else:
 				print("Something went wrong. Neither 1 or -1")
-		expr.arry_of_reads.clear()
+
 		return prog(None, generate);
 
 

@@ -14,6 +14,8 @@ import random
 def rand_num():
 	return random.randint(0,10);
 
+# Inserts n random numbers into random_arry_of_ints defined in the
+# expr class
 def generate_arry_of_ints(n):
 	i = 0
 	expr.random_arry_of_ints.clear()
@@ -23,29 +25,33 @@ def generate_arry_of_ints(n):
 	return;
 
 # Returns a program of n depth
-def generate_large_program(n):
+def generate_large_program(n, language = None):
 	i = 1
-	if(n == 0):
-		random = rand_num()
-		generate = read()
-		while i <= random:
-			i += 1
-			generate = add(read(), generate)
-	else:
-		generate = add(num(rand_num()), num(rand_num()))
-		while i < n :
-			random = rand_num() % 4
-			i += 1
-			if (random == 0):
-				generate = neg(generate)
-			elif (random == 1):
-				generate = add(generate, num(rand_num()))
-			elif (random == 2):
-				generate = add(neg(generate), neg(generate))
-			elif (random == 3):
-				generate = add(generate, generate)
-			else:
-				print("Something very wrong happened")
+	if(language == None):
+		# Generate a program with a random number of reads
+		if(n == 0):
+			random = rand_num()
+			generate = read()
+			while i <= random:
+				i += 1
+				generate = add(read(), generate)
+		else:
+			generate = add(num(rand_num()), num(rand_num()))
+			while i < n :
+				random = rand_num() % 4
+				i += 1
+				if (random == 0):
+					generate = neg(generate)
+				elif (random == 1):
+					generate = add(generate, num(rand_num()))
+				elif (random == 2):
+					generate = add(neg(generate), neg(generate))
+				elif (random == 3):
+					generate = add(generate, generate)
+				else:
+					print("Something very wrong happened")
+	elif(language == "R1"):
+		generate = let(
 
 	return prog(None, generate);
 

@@ -9,6 +9,7 @@
 # Imports all the data type definitions
 from language_definitions import *
 import random
+import sys
 
 # Return a random number
 def rand_num():
@@ -51,8 +52,20 @@ def generate_large_program(n, language = None):
 				else:
 					print("Something very wrong happened")
 	elif(language == "R1"):
-		generate = let(
-
+		input_array = ["b", "c", "d", "e", "f", "g", "h", "i", "j"]
+		output_array = ["a"]
+		generate = let(output_array[0], add(num(rand_num()), num(rand_num())), add(var(output_array[0]), var(output_array[0])))
+		
+		while (i < n) and (i < 10):
+			print( rand_num() % len(input_array))
+			quit()
+			random = rand_num() % len(input_array)
+			random_var = input_array[random]
+			random_used_var = output_array[(random % len(output_array))]
+			del input_array[(random % len(input_array))]
+			output_array.append(random_var)
+			generate = let(random_var, add(num(rand_num()), num(rand_num())), add(var(random_used_var), generate))
+				
 	return prog(None, generate);
 
 # Returns a program that calculates 2^n
@@ -255,9 +268,15 @@ def testing():
 	test.interp()
 	print("\n")
 	
+	print("\n\n------------- Testing R1 Generate Programs -------------\n\n")
 	
+	test = generate_large_program(1, language = "R1")
+	test.interp()
+	print("\n")
 
-
+	test = generate_large_program(3, language = "R1")
+	test.interp()
+	print("\n")	
 
 
 

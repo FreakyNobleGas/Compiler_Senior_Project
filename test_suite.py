@@ -52,19 +52,24 @@ def generate_large_program(n, language = None):
 				else:
 					print("Something very wrong happened")
 	elif(language == "R1"):
+		# Unused vars waiting to be used at random
 		input_array = ["b", "c", "d", "e", "f", "g", "h", "i", "j"]
+		# vars that have been used. "a" is used by default to initialize the first let
 		output_array = ["a"]
+		# Create the first let function
 		generate = let(output_array[0], add(num(rand_num()), num(rand_num())), add(var(output_array[0]), var(output_array[0])))
-		
+		# Insert lets up to n depth, or the maximum range of the rand_num() function
 		while (i < n) and (i < 10):
-			print( rand_num() % len(input_array))
-			quit()
-			random = rand_num() % len(input_array)
-			random_var = input_array[random]
-			random_used_var = output_array[(random % len(output_array))]
-			del input_array[(random % len(input_array))]
+			i += 1
+			# Get a used and unused var
+			random_var = input_array[rand_num() % len(input_array)]
+			random_used_var = output_array[rand_num() % len(output_array)]
+			# Delete the var waiting to be used from the list
+			del input_array[input_array.index(random_var)]
+			# Append used var to output array
 			output_array.append(random_var)
-			generate = let(random_var, add(num(rand_num()), num(rand_num())), add(var(random_used_var), generate))
+			# Create new let with unused var, and nest previous lets
+			generate = let(random_used_var, add(num(rand_num()), num(rand_num())), add(var(random_used_var), generate))
 				
 	return prog(None, generate);
 
@@ -263,20 +268,20 @@ def testing():
 	test.interp()
 	print("\n")
 
-	print ("Test 37: Answer = 20")
+	print ("Test 48: Answer = 20")
 	test = prog(None, let(y, let(y, neg(read(5, True)), add(var(y), var(y))), neg(add(var(y), var(y)))))
 	test.interp()
 	print("\n")
 	
 	print("\n\n------------- Testing R1 Generate Programs -------------\n\n")
 	
-	test = generate_large_program(1, language = "R1")
-	test.interp()
-	print("\n")
-
-	test = generate_large_program(3, language = "R1")
-	test.interp()
-	print("\n")	
+	i = 48
+	while i < 55:
+		i += 1
+		print("Test ", i ,": Random Generate Program")
+		test = generate_large_program(i, language = "R1")
+		test.interp()
+		print("\n")
 
 
 

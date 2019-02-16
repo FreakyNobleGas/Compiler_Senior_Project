@@ -57,7 +57,10 @@ def generate_large_program(n, language = None):
 		# vars that have been used. "a" is used by default to initialize the first let
 		output_array = ["a"]
 		# Create the first let function
-		generate = let(output_array[0], add(num(rand_num()), num(rand_num())), add(var(output_array[0]), var(output_array[0])))
+		if( n == 0 ):
+			generate = let(output_array[0], add(read(), read()), add(var(output_array[0]), var(output_array[0])))
+		else:
+			generate = let(output_array[0], add(num(rand_num()), num(rand_num())), add(var(output_array[0]), var(output_array[0])))
 		# Insert lets up to n depth, or the maximum range of the rand_num() function
 		while (i < n) and (i < 10):
 			i += 1
@@ -283,5 +286,29 @@ def testing():
 		test.interp()
 		print("\n")
 
+	print("\n\n------------- Testing R1 Optomization -------------\n\n")
 
+	expr.opt_flag = 1
 
+	while i <= 65:
+		generate_arry_of_ints(50)
+		print("Test " + str(i) + ": Optomizer")
+		test = generate_large_program(rand_num(), "R1")	
+		test.interp()	
+		#opt_test = test.opt()
+		#opt_test.interp()
+		print("\n")
+		i += 1
+
+	while i <= 70:
+		generate_arry_of_ints(50)
+		print("Test " + str(i) + ": Optomizer")
+		test = generate_large_program(0, "R1")	
+		test.interp()	
+		#opt_test = test.opt()
+		#opt_test.interp()
+		print("\n")
+		i += 1
+
+	expr.opt_flag = 0
+	

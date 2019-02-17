@@ -16,7 +16,10 @@
 class expr:
 	# Global Variables - I've placed these here because it's easier to find
 	arry_of_reads = []
+	arry_of_vars = []
 	random_arry_of_ints = []
+
+	num_of_vars = 0
 	neg_count = 0	
 	opt_flag = 0
 	opt_index = 0
@@ -125,9 +128,83 @@ class let(expr):
 		return "Let " + str(self._x) + " in " + str(self._xe.pretty_print()) + " in " + str(self._xb.pretty_print());
 
 	def interp(self):
+		print("var == ", self._x)
+		print("xe == ", self._xe)
 		prog.map_env.add_var(self._x, self._xe.interp())
 		return self._xb.interp()
+	
+	def opt(self):
 
+		# beginning of middle part
+		num_of_reads = len(expr.arry_of_reads)
+		print("num of reads before second part == ", num_of_reads)
+
+		xe_result = num(self._xe.opt())
+		
+		print("num of reads after second part == ", len(expr.arry_of_reads))
+		
+		diff_of_reads = (len(expr.arry_of_reads) - num_of_reads)
+		i = 0
+		while i < diff_of_reads:
+			if (expr.arry_of_reads[i] == -1):			
+				xe_result = add(neg(read()), xe_result)
+			elif (expr.arry_of_reads[i]):
+				xe_result = add(read(), xe_result)
+			else:
+				print("Something went wrong. Neither 1 or -1 in let opt")
+			i += 1
+		i = 0
+		while i < diff_of_reads:
+			del expr.arry_of_reads[0]
+			i += 1
+		
+		prog.map_env.add_var(self._x, xe_result)
+
+		# beginning of end part
+
+		num_of_reads = len(expr.arry_of_reads)
+		print("num of reads before third part == ", num_of_reads)
+		var_count = expr.num_of_vars
+		print("num of vars before third part == ", var_count)
+		
+		xb_result = num(self._xb.opt())
+
+		print("num of reads after third part == ", len(expr.arry_of_reads))
+		diff_of_reads = (len(expr.arry_of_reads) - num_of_reads)
+		i = 0
+		while i < diff_of_reads:
+			if (expr.arry_of_reads[i] == -1):			
+				xb_result = add(neg(read()), xb_result)
+			elif (expr.arry_of_reads[i]):
+				xb_result = add(read(), xb_result)
+			else:
+				print("Something went wrong. Neither 1 or -1 in let opt")
+			i += 1
+		i = 0
+		while i < diff_of_reads:
+			del expr.arry_of_reads[0]
+			i += 1
+
+		print("num of vars after third part == ", expr.num_of_vars)
+		diff_of_vars = expr.num_of_vars - var_count
+		i = 0
+		while i < diff_of_vars:
+			if (expr.arry_of_vars[i][0] == "+"):
+				xb_result = add(var(expr.arry_of_vars[i][1]), xb_result)
+			else:
+				xb_result = add(neg(var(expr.arry_of_vars[i][1])), xb_result)
+			i += 1
+		i = 0
+		while i < diff_of_vars:
+			del expr.arry_of_vars[0]
+			expr.num_of_vars -= 1
+			i += 1
+		print("num of vars at end == ", expr.num_of_vars)
+
+		if isinstance(xb_result, int):
+			return xb_result;
+		else:
+			return let(self._x, xe_result, xb_result);
 
 # -- Creating Linked List Class for the Inherited Class env (enviroment) --
 
@@ -173,6 +250,22 @@ class var(expr):
 
 	def interp(self):
 		return prog.map_env.find_var(self._var);
+
+	def opt(self):
+		value = prog.map_env.find_var(self._var)
+
+		if isinstance(value, int):
+			if expr.neg_count % 2 == 0:
+				return value;
+			else:
+				return value * -1;
+		else:
+			expr.num_of_vars += 1
+			if expr.neg_count % 2 == 0:
+				expr.arry_of_vars.insert(0, ("+", self._var))
+			else:
+				expr.arry_of_vars.insert(0, ("-", self._var)) #@ Might be a string
+			return 0; #@ Might need to put this in a num()
 
 # -- Inherited Class for the Program "Container" --
 class prog(expr):

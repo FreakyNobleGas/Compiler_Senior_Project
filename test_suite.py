@@ -288,27 +288,45 @@ def testing():
 
 	print("\n\n------------- Testing R1 Optomization -------------\n\n")
 
-	expr.opt_flag = 1
+	expr.opt_flag = 0
 
-	while i <= 65:
-		generate_arry_of_ints(50)
-		print("Test " + str(i) + ": Optomizer")
-		test = generate_large_program(rand_num(), "R1")	
-		test.interp()	
+	print("\n Testing ")
+	test = prog(None, let(y, add(num(5),num(5)), add(var(y), var(y))))
+	test = test.opt()
+	
+	test.interp()
+	
+	print("\n Testing ")
+	test = prog(None, let(y, add(num(4),num(5)), add(read(), var(y))))
+	test = test.opt()
+	print("\n Optomized ")
+	test.interp()
+
+	print("\n Testing ")
+	test = prog(None, let(y, add(read(),num(5)), add(var(y), var(y))))
+	test = test.opt()
+	print("\n Optomized ")
+	test.interp()
+
+	#while i <= 65:
+	#	generate_arry_of_ints(50)
+	#	print("Test " + str(i) + ": Optomizer")
+	#	test = generate_large_program(rand_num(), "R1")	
+	#	test.interp()	
 		#opt_test = test.opt()
 		#opt_test.interp()
-		print("\n")
-		i += 1
+	#	print("\n")
+	#	i += 1
 
-	while i <= 70:
-		generate_arry_of_ints(50)
-		print("Test " + str(i) + ": Optomizer")
-		test = generate_large_program(0, "R1")	
-		test.interp()	
+	#while i <= 70:
+	#	generate_arry_of_ints(50)
+	#	print("Test " + str(i) + ": Optomizer")
+	#	test = generate_large_program(0, "R1")	
+	#	test.interp()	
 		#opt_test = test.opt()
 		#opt_test.interp()
-		print("\n")
-		i += 1
+	#	print("\n")
+	#	i += 1
 
 	expr.opt_flag = 0
 	

@@ -98,6 +98,16 @@ class add(expr):
 	def pretty_print(self):
 		return "(" + str(self._lhs.pretty_print()) + "+" + str(self._rhs.pretty_print()) + ")";
 	def opt(self):
+		# Check if either side is a let
+		#if (type(self._rhs) is let) and (type(self._lhs) is let):
+		#	return add(self._rhs, self._lhs);
+		# Check if right side is let
+		#if type(self._rhs) is let:
+		#	return add(self._rhs, self._lhs.opt());
+		# Check if left side is let
+		#if type(self._lhs) is let:
+		#	return add(self._lhs, self._rhs.opt());
+
 		return self._lhs.opt() + self._rhs.opt();
 
 ########################## Read #########################################################
@@ -153,22 +163,26 @@ class let(expr):
 		return "Let " + str(self._x) + " in " + str(self._xe.pretty_print()) + " in " + str(self._xb.pretty_print());
 
 	def interp(self):
-		print("var == ", self._x)
-		print("xe == ", self._xe)
+		print("interp: var == ", self._x)
+		print("interp: xe == ", self._xe)
 		prog.map_env.add_var(self._x, self._xe.interp())
 		return self._xb.interp()
 	
 	def opt(self):
 
-		# beginning of middle part
+		# Begin working on xe
 		num_of_reads = len(expr.arry_of_reads)
-		print("num of reads before second part == ", num_of_reads)
+		print("opt: reads before xe == ", num_of_reads)
 
+		# This will always be an integer since read returns 0
 		xe_result = num(self._xe.opt())
 		
-		print("num of reads after second part == ", len(expr.arry_of_reads))
+		print("opt: reads after xe == ", len(expr.arry_of_reads))
 		
+		# Number of Reads counted after optomizing xe
 		diff_of_reads = (len(expr.arry_of_reads) - num_of_reads)
+
+		# For each read, insert a read() into xe_result
 		i = 0
 		while i < diff_of_reads:
 			if (expr.arry_of_reads[i] == -1):			
@@ -178,23 +192,28 @@ class let(expr):
 			else:
 				print("Something went wrong. Neither 1 or -1 in let opt")
 			i += 1
+
+		# Delete reads from array since we do not know if they are positive or negative
 		i = 0
 		while i < diff_of_reads:
 			del expr.arry_of_reads[0]
 			i += 1
 		
+		# Add the xe_result to the linked list (enviroment)
 		prog.map_env.add_var(self._x, xe_result)
 
-		# beginning of end part
-
+		# Being working on xb
 		num_of_reads = len(expr.arry_of_reads)
-		print("num of reads before third part == ", num_of_reads)
+		print("opt: reads before xb == ", num_of_reads)
 		var_count = expr.num_of_vars
-		print("num of vars before third part == ", var_count)
+		print("opt: vars before xb  == ", var_count)
 		
+		# This will always be an int since var returns 0 if the mapping is not an int
+		# and read will return 0
 		xb_result = num(self._xb.opt())
 
-		print("num of reads after third part == ", len(expr.arry_of_reads))
+		# For each read, insert reads into xb_result
+		print("opt: reads after xb == ", len(expr.arry_of_reads))
 		diff_of_reads = (len(expr.arry_of_reads) - num_of_reads)
 		i = 0
 		while i < diff_of_reads:
@@ -205,12 +224,15 @@ class let(expr):
 			else:
 				print("Something went wrong. Neither 1 or -1 in let opt")
 			i += 1
+		
+		# Delete reads from array since we do not know if they are positive or negative
 		i = 0
 		while i < diff_of_reads:
 			del expr.arry_of_reads[0]
 			i += 1
 
-		print("num of vars after third part == ", expr.num_of_vars)
+		# For each var, insert vars into xb_result. Var can either be a number or an expression with reads
+		print("opt: vars after xb == ", expr.num_of_vars)
 		diff_of_vars = expr.num_of_vars - var_count
 		i = 0
 		while i < diff_of_vars:
@@ -219,12 +241,15 @@ class let(expr):
 			else:
 				xb_result = add(neg(var(expr.arry_of_vars[i][1])), xb_result)
 			i += 1
+
+		# Delete reads from array since we do not know if they are positive or negative
 		i = 0
 		while i < diff_of_vars:
 			del expr.arry_of_vars[0]
 			expr.num_of_vars -= 1
 			i += 1
-		print("num of vars at end == ", expr.num_of_vars)
+
+		print("opt: vars after xb == ", expr.num_of_vars)
 
 		if isinstance(xb_result, int):
 			return xb_result;
@@ -286,7 +311,7 @@ class var(expr):
 			if expr.neg_count % 2 == 0:
 				expr.arry_of_vars.insert(0, ("+", self._var))
 			else:
-				expr.arry_of_vars.insert(0, ("-", self._var)) #@ Might be a string
+				expr.arry_of_vars.insert(0, ("-", self._var))
 			return 0; #@ Might need to put this in a num()
 
 ########################## Prog #########################################################

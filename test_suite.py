@@ -11,12 +11,15 @@ from language_definitions import *
 import random
 import sys
 
-# Return a random number
+########################## Random Number ################################################
+# -- Return a random number --
+
 def rand_num():
 	return random.randint(0,10);
 
-# Inserts n random numbers into random_arry_of_ints defined in the
-# expr class
+########################## Generate Array of Ints #######################################
+# -- Inserts n random numbers into random_arry_of_ints defined in the expr class --
+
 def generate_arry_of_ints(n):
 	i = 0
 	expr.random_arry_of_ints.clear()
@@ -25,7 +28,9 @@ def generate_arry_of_ints(n):
 		expr.random_arry_of_ints.append(rand_num())
 	return;
 
-# Returns a program of n depth
+########################## Generate Large Program #######################################
+# -- Returns a program of n depth --
+
 def generate_large_program(n, language = None):
 	i = 1
 	if(language == None):
@@ -76,7 +81,9 @@ def generate_large_program(n, language = None):
 				
 	return prog(None, generate);
 
-# Returns a program that calculates 2^n
+########################## Generate Large Number ########################################
+# -- Returns a program that calculates 2^n --
+
 def generate_large_number(n):
 	i = 2
 	# Base Case: 2^0 = 1
@@ -92,7 +99,9 @@ def generate_large_number(n):
 			generate = add(generate, generate)
 	return prog(None, generate);
 
-# Test random programs
+########################## Testing ######################################################
+# -- Test random programs --
+
 def testing():
 	
 	print("\n\n------------- Testing Interp -------------\n\n")

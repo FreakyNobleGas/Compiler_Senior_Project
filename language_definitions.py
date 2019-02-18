@@ -11,8 +11,23 @@
 # e ::= ... | var | let var:= e in e
 # var ::= variable-not-otherwise-mentioned
 
-# Class Definitions
+### Support Classes ###
+
+########################## Node #########################################################
+# -- Node Class for Linked List in Env (Enviroment) --
+
+class node():
+	def __init__(self, var, num):
+		self._var = var
+		self._num = num
+		self.next = None
+
+
+### Language Class Definitions ###
+
+########################## Expr #########################################################
 # -- Base Class for Expressions --
+
 class expr:
 	# Global Variables - I've placed these here because it's easier to find
 	arry_of_reads = []
@@ -30,7 +45,9 @@ class expr:
 	def opt(self):
 		return 0;
 
+########################## Num ##########################################################
 # -- Inherited Class for Number Values --
+
 class num(expr):
 	def __init__(self, num):
 		self._num = num
@@ -51,7 +68,9 @@ class num(expr):
 		else:
 			return self._num * -1;
 
+########################## Neg ##########################################################
 # -- Inherited Class for Negating Numbers --
+
 class neg(expr):
 	def __init__(self, num):
 		self._num = num
@@ -66,7 +85,10 @@ class neg(expr):
 		expr.neg_count -= 1
 		return temp;
 
+
+########################## Add ##########################################################
 # -- Inherited Class for Adding Numbers --
+
 class add(expr):
 	def __init__(self, lhs, rhs):
 		self._lhs = lhs
@@ -78,7 +100,9 @@ class add(expr):
 	def opt(self):
 		return self._lhs.opt() + self._rhs.opt();
 
+########################## Read #########################################################
 # -- Inherited Class for Adding Numbers --
+
 class read(expr):
 	def __init__(self, num = 0, debug_mode = False):
 		if debug_mode:
@@ -116,6 +140,7 @@ class read(expr):
 			expr.arry_of_reads.insert(0, -1)
 		return 0;
 
+########################## Let ##########################################################
 # -- Inherited Class for the Let -- 
 
 class let(expr):
@@ -206,13 +231,8 @@ class let(expr):
 		else:
 			return let(self._x, xe_result, xb_result);
 
-# -- Creating Linked List Class for the Inherited Class env (enviroment) --
-
-class node():
-	def __init__(self, var, num):
-		self._var = var
-		self._num = num
-		self.next = None
+########################## Env ##########################################################
+# -- Inherited Class env (enviroment) --
 
 class env(expr):
 	def __init__(self):
@@ -237,7 +257,9 @@ class env(expr):
 			self._head = new_node
 		return;
 
+########################## Var ##########################################################
 # -- Inherited Class for Var --
+
 class var(expr):
 	def __init__(self, var):
 		self._var = var
@@ -267,7 +289,9 @@ class var(expr):
 				expr.arry_of_vars.insert(0, ("-", self._var)) #@ Might be a string
 			return 0; #@ Might need to put this in a num()
 
+########################## Prog #########################################################
 # -- Inherited Class for the Program "Container" --
+
 class prog(expr):
 	# Global variable that holds the linked list that maps var->num
 	map_env = env()

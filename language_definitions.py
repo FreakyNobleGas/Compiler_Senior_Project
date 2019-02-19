@@ -98,17 +98,19 @@ class add(expr):
 	def pretty_print(self):
 		return "(" + str(self._lhs.pretty_print()) + "+" + str(self._rhs.pretty_print()) + ")";
 	def opt(self):
-		# Check if either side is a let
-		#if (type(self._rhs) is let) and (type(self._lhs) is let):
-		#	return add(self._rhs, self._lhs);
-		# Check if right side is let
-		#if type(self._rhs) is let:
-		#	return add(self._rhs, self._lhs.opt());
-		# Check if left side is let
-		#if type(self._lhs) is let:
-		#	return add(self._lhs, self._rhs.opt());
+		right_opt = self._rhs.opt()
+		left_opt = self._lhs.opt()
+			
+		if (type(right_opt) is let) or (type(left_opt) is let):
+			if isinstance(right_opt, int):
+				right_opt = num(right_opt)
 
-		return self._lhs.opt() + self._rhs.opt();
+			if isinstance(left_opt, int):
+				left_opt = num(left_opt)
+
+			return add(right_opt, left_opt);
+
+		return right_opt + left_opt;
 
 ########################## Read #########################################################
 # -- Inherited Class for Adding Numbers --
@@ -198,11 +200,13 @@ class let(expr):
 		while i < diff_of_reads:
 			del expr.arry_of_reads[0]
 			i += 1
+		print("opt: reads after deleting ==", len(expr.arry_of_reads))
+
 		
 		# Add the xe_result to the linked list (enviroment)
 		prog.map_env.add_var(self._x, xe_result)
 
-		# Being working on xb
+		# Begin working on xb
 		num_of_reads = len(expr.arry_of_reads)
 		print("opt: reads before xb == ", num_of_reads)
 		var_count = expr.num_of_vars
@@ -212,9 +216,16 @@ class let(expr):
 		# and read will return 0
 		xb_result = num(self._xb.opt())
 
-		# For each read, insert reads into xb_result
+		# Number of reads and vars counted after optomizing xb
 		print("opt: reads after xb == ", len(expr.arry_of_reads))
 		diff_of_reads = (len(expr.arry_of_reads) - num_of_reads)
+		print("opt: vars after xb == ", expr.num_of_vars)
+		diff_of_vars = expr.num_of_vars - var_count
+		
+		if (diff_of_reads == 0) and (diff_of_vars == 0):
+			return xb_result;
+		
+		# For each read, insert a read() into xb_result
 		i = 0
 		while i < diff_of_reads:
 			if (expr.arry_of_reads[i] == -1):			
@@ -225,15 +236,15 @@ class let(expr):
 				print("Something went wrong. Neither 1 or -1 in let opt")
 			i += 1
 		
-		# Delete reads from array since we do not know if they are positive or negative
+		# Delete reads from array
 		i = 0
 		while i < diff_of_reads:
 			del expr.arry_of_reads[0]
 			i += 1
 
-		# For each var, insert vars into xb_result. Var can either be a number or an expression with reads
-		print("opt: vars after xb == ", expr.num_of_vars)
-		diff_of_vars = expr.num_of_vars - var_count
+		print("opt: reads after deleting from array == ", len(expr.arry_of_reads))
+
+		# For each var, insert vars into xb_result. Var can either be a number or an expression with reads		
 		i = 0
 		while i < diff_of_vars:
 			if (expr.arry_of_vars[i][0] == "+"):
@@ -241,20 +252,17 @@ class let(expr):
 			else:
 				xb_result = add(neg(var(expr.arry_of_vars[i][1])), xb_result)
 			i += 1
-
-		# Delete reads from array since we do not know if they are positive or negative
+ 
+		# Delete var from array
 		i = 0
 		while i < diff_of_vars:
 			del expr.arry_of_vars[0]
 			expr.num_of_vars -= 1
 			i += 1
 
-		print("opt: vars after xb == ", expr.num_of_vars)
+		print("opt: vars after deleting from array == ", expr.num_of_vars)
 
-		if isinstance(xb_result, int):
-			return xb_result;
-		else:
-			return let(self._x, xe_result, xb_result);
+		return let(self._x, xe_result, xb_result);
 
 ########################## Env ##########################################################
 # -- Inherited Class env (enviroment) --

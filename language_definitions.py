@@ -126,12 +126,17 @@ class add(expr):
 			if (isinstance(right_opt, num) and (right_opt.opt() == 0)):
 				return left_opt;
 
-			if (isinstance(left_opt, num) and (left_opt.opt() == 0)):
+			if (isinstance(left_opt, num) and (left_opt.opt() == 0)):			
 				return right_opt;
 
 			return add(right_opt, left_opt);
-		
-		return right_opt + left_opt;
+		else:
+			if (isinstance(right_opt, num) and (right_opt.opt() == 0)):
+				return left_opt;
+
+			if (isinstance(left_opt, num) and (left_opt.opt() == 0)):
+				return right_opt;
+			return right_opt + left_opt;
 
 ########################## Read #########################################################
 # -- Inherited Class for Adding Numbers --
@@ -195,25 +200,33 @@ class let(expr):
 		num_of_reads = len(expr.arry_of_reads)
 
 		# This will always be an integer since read returns 0
-		xe_result = num(self._xe.opt())
+		temp_xe = self._xe.opt()
+		xe_result = num(temp_xe)
+		xe_result_temp = xe_result
 		
 		# Number of Reads counted after optomizing xe
-		diff_of_reads = (len(expr.arry_of_reads) - num_of_reads)
+		xe_diff_of_reads = (len(expr.arry_of_reads) - num_of_reads)
 
 		# For each read, insert a read() into xe_result
 		i = 0
-		while i < diff_of_reads:
-			if (expr.arry_of_reads[i] == -1):			
-				xe_result = add(neg(read()), xe_result)
+		while i < xe_diff_of_reads:
+			if (expr.arry_of_reads[i] == -1):
+				if (xe_result_temp == xe_result) and (temp_xe == 0):
+					xe_result = neg(read())
+				else:	
+					xe_result = add(neg(read()), xe_result)
 			elif (expr.arry_of_reads[i]):
-				xe_result = add(read(), xe_result)
+				if (xe_result_temp == xe_result) and (temp_xe == 0):				
+					xe_result = read()
+				else:
+					xe_result = add(read(), xe_result)
 			else:
 				print("Something went wrong. Neither 1 or -1 in let opt")
 			i += 1
 
 		# Delete reads from array since we do not know if they are positive or negative
 		i = 0
-		while i < diff_of_reads:
+		while i < xe_diff_of_reads:
 			del expr.arry_of_reads[0]
 			i += 1
 		
@@ -226,29 +239,34 @@ class let(expr):
 		
 		# This will always be an int since var returns 0 if the mapping is not an int
 		# and read will return 0
-		xb_result = num(self._xb.opt())
+		temp_xb = self._xb.opt()
+		xb_result = num(temp_xb)
+		xb_result_temp = xb_result
 
 		# Number of reads and vars counted after optomizing xb
-		diff_of_reads = (len(expr.arry_of_reads) - num_of_reads)
+		xb_diff_of_reads = (len(expr.arry_of_reads) - num_of_reads)
 		diff_of_vars = expr.num_of_vars - var_count
-		
-		if (diff_of_reads == 0) and (diff_of_vars == 0):
-			return xb_result;
 		
 		# For each read, insert a read() into xb_result
 		i = 0
-		while i < diff_of_reads:
-			if (expr.arry_of_reads[i] == -1):			
-				xb_result = add(neg(read()), xb_result)
+		while i < xb_diff_of_reads:
+			if (expr.arry_of_reads[i] == -1):
+				if temp_xb == 0:
+					xb_result = neg(read())
+				else:			
+					xb_result = add(neg(read()), xb_result)
 			elif (expr.arry_of_reads[i]):
-				xb_result = add(read(), xb_result)
+				if temp_xb == 0:
+					xb_result = read()
+				else:
+					xb_result = add(read(), xb_result)
 			else:
 				print("Something went wrong. Neither 1 or -1 in let opt")
 			i += 1
 		
 		# Delete reads from array
 		i = 0
-		while i < diff_of_reads:
+		while i < xb_diff_of_reads:
 			del expr.arry_of_reads[0]
 			i += 1
 
@@ -256,9 +274,15 @@ class let(expr):
 		i = 0
 		while i < diff_of_vars:
 			if (expr.arry_of_vars[i][0] == "+"):
-				xb_result = add(var(expr.arry_of_vars[i][1]), xb_result)
+				if (xb_result_temp == xb_result) and (temp_xb == 0):
+					xb_result = var(expr.arry_of_vars[i][1])
+				else:
+					xb_result = add(var(expr.arry_of_vars[i][1]), xb_result)
 			else:
-				xb_result = add(neg(var(expr.arry_of_vars[i][1])), xb_result)
+				if (xb_result_temp == xb_result) and (temp_xb == 0):
+					xb_result = neg(var(expr.arry_of_vars[i][1]))
+				else:
+					xb_result = add(neg(var(expr.arry_of_vars[i][1])), xb_result)
 			i += 1
  
 		# Delete var from array
@@ -267,7 +291,10 @@ class let(expr):
 			del expr.arry_of_vars[0]
 			expr.num_of_vars -= 1
 			i += 1
-
+		if (xe_diff_of_reads == 0) and (xb_diff_of_reads == 0):
+			xb_result = xb_result.opt()
+			if isinstance(xb_result, int):
+				return xb_result
 		return let(self._x, xe_result, xb_result);
 
 ########################## Env ##########################################################
@@ -319,11 +346,11 @@ class var(expr):
 	def opt(self):
 		value = prog.map_env.find_var(self._var)
 
-		if isinstance(value, int):
+		if isinstance(value, num):
 			if expr.neg_count % 2 == 0:
-				return value;
+				return value.opt();
 			else:
-				return value * -1;
+				return value.opt() * -1;
 		else:
 			expr.num_of_vars += 1
 			if expr.neg_count % 2 == 0:
@@ -362,10 +389,16 @@ class prog(expr):
 		generate = num(result)
 		# Insert a read into the program based on if the read was intended to be negative or not
 		for reads in expr.arry_of_reads:
-			if (reads == -1):			
-				generate = add(neg(read()), generate)
+			if (reads == -1):
+				if (isinstance(result, int)) and (result == 0):
+					generate = neg(read())
+				else:			
+					generate = add(neg(read()), generate)
 			elif (reads == 1):
-				generate = add(read(), generate)
+				if (isinstance(result, int)) and (result == 0):
+					generate = read()
+				else:
+					generate = add(read(), generate)
 			else:
 				print("Something went wrong. Neither 1 or -1")
 

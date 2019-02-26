@@ -57,8 +57,9 @@ def generate_large_program(n, language = None):
 				else:
 					print("Something very wrong happened")
 	elif(language == "R1"):
+		i = 0
 		# Unused vars waiting to be used at random
-		input_array = ["b", "c", "d", "e", "f", "g", "h", "i", "j"]
+		input_array = ["b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"]
 		# vars that have been used. "a" is used by default to initialize the first let
 		output_array = ["a"]
 		# Create the first let function
@@ -66,19 +67,20 @@ def generate_large_program(n, language = None):
 			generate = let(output_array[0], add(read(), read()), add(var(output_array[0]), var(output_array[0])))
 		else:
 			generate = let(output_array[0], add(num(rand_num()), num(rand_num())), add(var(output_array[0]), var(output_array[0])))
+
 		# Insert lets up to n depth, or the maximum range of the rand_num() function
 		while (i < n) and (i < 10):
-			i += 1
 			# Get a used and unused var
-			random_var = input_array[rand_num() % len(input_array)]
+			print ("I == ", i, " == ", input_array[i])
+			next_var = input_array[i]
 			random_used_var = output_array[rand_num() % len(output_array)]
-			# Delete the var waiting to be used from the list
-			del input_array[input_array.index(random_var)]
 			# Append used var to output array
-			output_array.append(random_var)
+			output_array.append(next_var)
 			# Create new let with unused var, and nest previous lets
-			generate = let(random_used_var, add(num(rand_num()), num(rand_num())), add(var(random_used_var), generate))
-				
+			generate = let(next_var, add(var(random_used_var), num(rand_num())), add(var(next_var), generate))
+			#generate = let(next_var, add(num(rand_num()), num(rand_num())), add(var(next_var), generate))
+			i += 1
+
 	return prog(None, generate);
 
 ########################## Generate Large Number ########################################
@@ -286,12 +288,19 @@ def testing():
 	print("\n")
 	
 	print("\n\n------------- Testing R1 Generate Programs -------------\n\n")
-	
+	x = "x"
+	y = "y"
+	print("TESTING.... 21")
+	test = prog(None, let(y, num(5), add( var(y), let(x, add(var(y), num(3)), add(var(x), var(x))))))
+	test = test.opt()
+	test.interp()
+	print("NOT TESTING...")
+
 	i = 48
 	while i < 55:
 		i += 1
 		print("Test ", i ,": Random Generate Program")
-		test = generate_large_program(i, language = "R1")
+		test = generate_large_program(rand_num(), language = "R1")
 		test.interp()
 		print("\n")
 

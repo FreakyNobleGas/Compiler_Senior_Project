@@ -51,6 +51,7 @@ class expr:
 class num(expr):
 	def __init__(self, num):
 		self._num = num
+
 	def interp(self):
 		# Check if self._num is an integer just in case this is called
 		# like num(var(x)) in the R1 language
@@ -58,8 +59,13 @@ class num(expr):
 			return self._num;
 		else:
 			return self._num.interp();
+
 	def pretty_print(self):
-		return str(self._num);
+		if isinstance( self._num, int):
+			return str(self._num);
+		
+		return str(self._num.pretty_print());
+
 	# The neg count is a way of "checking parentheses" to tell if the value should
 	# be negative or not
 	def opt(self):
@@ -74,10 +80,13 @@ class num(expr):
 class neg(expr):
 	def __init__(self, num):
 		self._num = num
+
 	def interp(self):
 		return -1 * self._num.interp();
+
 	def pretty_print(self):
 		return "-" + str(self._num.pretty_print());
+
 	def opt(self):
 		# Increase neg_count if 
 		expr.neg_count += 1
@@ -93,23 +102,35 @@ class add(expr):
 	def __init__(self, lhs, rhs):
 		self._lhs = lhs
 		self._rhs = rhs
+
 	def interp(self):
 		return self._lhs.interp() + self._rhs.interp();
+
 	def pretty_print(self):
 		return "(" + str(self._lhs.pretty_print()) + "+" + str(self._rhs.pretty_print()) + ")";
+
 	def opt(self):
 		right_opt = self._rhs.opt()
 		left_opt = self._lhs.opt()
-			
+		
+		# Check whether either expression is a let
 		if (type(right_opt) is let) or (type(left_opt) is let):
-			if isinstance(right_opt, int):
+			# Check if either side is a integer
+			if isinstance(right_opt, int): 
 				right_opt = num(right_opt)
 
 			if isinstance(left_opt, int):
 				left_opt = num(left_opt)
 
-			return add(right_opt, left_opt);
+			# Check if either side is a zero so it can be removed 
+			if (isinstance(right_opt, num) and (right_opt.opt() == 0)):
+				return left_opt;
 
+			if (isinstance(left_opt, num) and (left_opt.opt() == 0)):
+				return right_opt;
+
+			return add(right_opt, left_opt);
+		
 		return right_opt + left_opt;
 
 ########################## Read #########################################################
@@ -162,11 +183,9 @@ class let(expr):
 		self._xb = xb
 
 	def pretty_print(self):
-		return "Let " + str(self._x) + " in " + str(self._xe.pretty_print()) + " in " + str(self._xb.pretty_print());
+		return "Let " + str(self._x) + " = " + str(self._xe.pretty_print()) + " in " + str(self._xb.pretty_print());
 
 	def interp(self):
-		print("interp: var == ", self._x)
-		print("interp: xe == ", self._xe)
 		prog.map_env.add_var(self._x, self._xe.interp())
 		return self._xb.interp()
 	
@@ -174,12 +193,9 @@ class let(expr):
 
 		# Begin working on xe
 		num_of_reads = len(expr.arry_of_reads)
-		print("opt: reads before xe == ", num_of_reads)
 
 		# This will always be an integer since read returns 0
 		xe_result = num(self._xe.opt())
-		
-		print("opt: reads after xe == ", len(expr.arry_of_reads))
 		
 		# Number of Reads counted after optomizing xe
 		diff_of_reads = (len(expr.arry_of_reads) - num_of_reads)
@@ -200,26 +216,20 @@ class let(expr):
 		while i < diff_of_reads:
 			del expr.arry_of_reads[0]
 			i += 1
-		print("opt: reads after deleting ==", len(expr.arry_of_reads))
-
 		
 		# Add the xe_result to the linked list (enviroment)
 		prog.map_env.add_var(self._x, xe_result)
 
 		# Begin working on xb
 		num_of_reads = len(expr.arry_of_reads)
-		print("opt: reads before xb == ", num_of_reads)
 		var_count = expr.num_of_vars
-		print("opt: vars before xb  == ", var_count)
 		
 		# This will always be an int since var returns 0 if the mapping is not an int
 		# and read will return 0
 		xb_result = num(self._xb.opt())
 
 		# Number of reads and vars counted after optomizing xb
-		print("opt: reads after xb == ", len(expr.arry_of_reads))
 		diff_of_reads = (len(expr.arry_of_reads) - num_of_reads)
-		print("opt: vars after xb == ", expr.num_of_vars)
 		diff_of_vars = expr.num_of_vars - var_count
 		
 		if (diff_of_reads == 0) and (diff_of_vars == 0):
@@ -242,8 +252,6 @@ class let(expr):
 			del expr.arry_of_reads[0]
 			i += 1
 
-		print("opt: reads after deleting from array == ", len(expr.arry_of_reads))
-
 		# For each var, insert vars into xb_result. Var can either be a number or an expression with reads		
 		i = 0
 		while i < diff_of_vars:
@@ -259,8 +267,6 @@ class let(expr):
 			del expr.arry_of_vars[0]
 			expr.num_of_vars -= 1
 			i += 1
-
-		print("opt: vars after deleting from array == ", expr.num_of_vars)
 
 		return let(self._x, xe_result, xb_result);
 
@@ -301,7 +307,11 @@ class var(expr):
 		value = prog.map_env.find_var(self._var)
 		if (value == None):
 			value = self._var
-		return str(self._var) + "(" + str(prog.map_env.find_var(self._var)) + ")";
+
+		if isinstance(value, int):
+			return str(self._var) + "(" + str(value) + ")";
+
+		return str(self._var) + "(" + str(value.pretty_print()) + ")";
 
 	def interp(self):
 		return prog.map_env.find_var(self._var);
@@ -320,7 +330,7 @@ class var(expr):
 				expr.arry_of_vars.insert(0, ("+", self._var))
 			else:
 				expr.arry_of_vars.insert(0, ("-", self._var))
-			return 0; #@ Might need to put this in a num()
+			return 0;
 
 ########################## Prog #########################################################
 # -- Inherited Class for the Program "Container" --
@@ -340,10 +350,10 @@ class prog(expr):
 		# Save the result first so that we can pretty print
 		result = self._e.interp()
 		result = int(result)
-		return print(self._e.pretty_print() + " = " + str(result));
+		return print(str(self._e.pretty_print()) + " = " + str(result));
 
 	def pretty_print(self):
-		return self._e.pretty_print();
+		return str(self._e.pretty_print());
 
 	def opt(self):
 		expr.arry_of_reads.clear()

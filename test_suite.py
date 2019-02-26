@@ -297,7 +297,7 @@ def testing():
 
 	print("\n\n------------- Testing R1 Optomization -------------\n\n")
 
-	expr.opt_flag = 0
+	expr.opt_flag = 1
 	y = "y"
 	x = "x"
 
@@ -324,7 +324,8 @@ def testing():
 	test = test.opt()
 	print("Interp: ")
 	test.interp()
-	
+	print("\n")
+
 	i = 60
 	while i <= 65:
 		generate_arry_of_ints(50)

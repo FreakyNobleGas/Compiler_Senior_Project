@@ -57,13 +57,17 @@ class xblock:
 ########################## Instruction ##################################################
 
 class xinstr:
-	temp = 0
+	def emitter():
+		return 0;
 ########################## Addq #########################################################
 
 class addq(xinstr):
 	def __init__(self, arg1, arg2):
 		self._arg1 = arg1
 		self._arg2 = arg2
+
+	def emitter():
+		print("addq ", self._arg1.emitter(), " ", self._arg2.emitter())
 
 ########################## Subq #########################################################
 
@@ -72,6 +76,9 @@ class subq(xinstr):
 		self._arg1 = arg1
 		self._arg2 = arg2
 
+	def emitter():
+		print("subq ", self._arg1.emitter(), " ", self._arg2.emitter())
+
 ########################## Movq #########################################################
 
 class movq(xinstr):
@@ -79,10 +86,14 @@ class movq(xinstr):
 		self._arg1 = arg1
 		self._arg2 = arg2
 
+	def emitter():
+		print("movq ", self._arg1.emitter(), " ", self._arg2.emitter())
+
 ########################## Retq #########################################################
 
 class retq(xinstr):
-	temp = 0
+	def emitter():
+		print("retq")
 
 ########################## Negq #########################################################
 
@@ -90,11 +101,17 @@ class negq(xinstr):
 	def __init__(self, arg):
 		self._arg = arg
 
+	def emitter():
+		print("negq ", self._arg.emitter())
+
 ########################## Callq ########################################################
 
 class callq(xinstr):
 	def __init__(self, label):
 		self._label = label
+
+	def emitter():
+		print("callq ", self._label.emitter())
 
 ########################## Jmp ##########################################################
 
@@ -102,11 +119,17 @@ class jmp(xinstr):
 	def __init__(self, label):
 		self._label = label
 
+	def emitter():
+		print("jmp ", self._label.emitter())
+
 ########################## Pushq ########################################################
 
 class pushq(xinstr):
 	def __init__(self, arg):
 		self._arg = arg
+
+	def emitter():
+		print("pushq ", self._arg.emitter())
 
 ########################## Popq #########################################################
 
@@ -114,16 +137,23 @@ class popq(xinstr):
 	def __init__(self, arg):
 		self._arg = arg
 
+	def emitter():
+		print("popq ", self._arg.emitter())
+
 ########################## Arg ##########################################################
 
 class xarg:
-	temp = 0
-	
+	def emitter():
+		return 0;
+
 ########################## X0 Number ####################################################
 
 class xnum(xarg):
 	def __init__(self, num):
 		self._num = num
+
+	def emitter():
+		print("$", self._num)
 
 ########################## Register #####################################################
 
@@ -131,18 +161,27 @@ class xreg(xarg):
 	def __init__(self, reg):
 		self._reg = reg
 
+	def emitter():
+		print("%", self._reg)
+
 ########################## Memory #######################################################
 
 class xmem(xarg):
-	def __init__(self, offset):
+	def __init__(self, offset, reg):
 		self._offset = offset
+		self._reg = reg
 
+	def emitter():
+		print("%", self._reg, "(", self._offset, ")")
 ########################## X0 Var #######################################################
 
 class xvar(xarg):
 	def __init__(self, var):
 		self._var = var
 
+	def emitter():
+		print("(", self._var, ")")
+		
 ########################## Expr #########################################################
 # -- Base Class for Expressions --
 

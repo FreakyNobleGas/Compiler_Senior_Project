@@ -59,6 +59,7 @@ class xblock:
 class xinstr:
 	def emitter():
 		return 0;
+		
 ########################## Addq #########################################################
 
 class addq(xinstr):
@@ -181,7 +182,7 @@ class xvar(xarg):
 
 	def emitter():
 		print("(", self._var, ")")
-		
+
 ########################## Expr #########################################################
 # -- Base Class for Expressions --
 

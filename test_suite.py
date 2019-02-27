@@ -62,11 +62,11 @@ def generate_large_program(n, language = None):
 
 		# vars that have been used. "a" is used by default to initialize the first let
 		output_array = ["a"]
-		
+
 		# Create a random number of reads and lets
 		if( n == 0 ):
 			random = rand_num()
-			
+
 			generate = let(output_array[0], add(read(), read()), add(var(output_array[0]), var(output_array[0])))
 
 			i = 1
@@ -97,7 +97,7 @@ def generate_large_program(n, language = None):
 				# Create new let with unused var, and nest previous lets
 				if i == (n - 2):
 					generate = let(next_var, add(num(rand_num()), num(rand_num())), add(var(next_var), generate))
-				else:				
+				else:
 					generate = let(next_var, add(var(input_array[i + 1]), num(rand_num())), add(var(next_var), generate))
 
 				i += 1
@@ -126,7 +126,7 @@ def generate_large_number(n):
 # -- Test random programs --
 
 def testing():
-	
+
 	print("\n\n------------- Testing Interp -------------\n\n")
 
 	print("Test 1: Answer = -64")
@@ -217,12 +217,12 @@ def testing():
 		i += 1
 
 	print("\n\n------------- Testing Optomizer -------------\n\n")
-	
+
 	while i <= 30:
 		generate_arry_of_ints(50)
 		print("Test " + str(i) + ": Optomizer")
-		test = generate_large_program(rand_num())	
-		test.interp()	
+		test = generate_large_program(rand_num())
+		test.interp()
 		opt_test = test.opt()
 		opt_test.interp()
 		print("\n")
@@ -231,17 +231,17 @@ def testing():
 	while i <= 35:
 		generate_arry_of_ints(50)
 		print("Test " + str(i) + ": Optomizer")
-		test = generate_large_program(0)	
-		test.interp()	
+		test = generate_large_program(0)
+		test.interp()
 		opt_test = test.opt()
 		opt_test.interp()
 		print("\n")
 		i += 1
 	expr.opt_flag = 0
-	
+
 
 	print("\n\n------------- Testing R1 Programs -------------\n\n")
-	
+
 	y = "y"
 	print ("Test 36: Answer = 5")
 	test = prog(None, let(y, num(5), (var(y))))
@@ -307,7 +307,7 @@ def testing():
 	test = prog(None, let(y, let(y, neg(read(5, True)), add(var(y), var(y))), neg(add(var(y), var(y)))))
 	test.interp()
 	print("\n")
-	
+
 	print("\n\n------------- Testing R1 Generate Programs -------------\n\n")
 	expr.opt_flag = 1
 
@@ -336,13 +336,13 @@ def testing():
 	print("\n Testing 56")
 	test = prog(None, let(y, add(num(5),num(5)), add(var(y), var(y))))
 	test = test.opt()
-	print("Interp: " ) 
+	print("Interp: " )
 	test.interp()
-	
+
 	print("\n Testing 57")
 	test = prog(None, let(y, add(num(4),num(5)), add(read(), var(y))))
 	test = test.opt()
-	print("Interp: ") 
+	print("Interp: ")
 	test.interp()
 
 	print("\n Testing 58")
@@ -362,8 +362,8 @@ def testing():
 	while i <= 65:
 		generate_arry_of_ints(50)
 		print("Test " + str(i) + ": Optomizer")
-		test = generate_large_program(rand_num(), "R1")	
-		test.interp()	
+		test = generate_large_program(rand_num(), "R1")
+		test.interp()
 		opt_test = test.opt()
 		opt_test.interp()
 		print("\n")
@@ -372,12 +372,73 @@ def testing():
 	while i <= 70:
 		generate_arry_of_ints(50)
 		print("Test " + str(i) + ": Optomizer")
-		test = generate_large_program(0, "R1")	
-		test.interp()	
+		test = generate_large_program(0, "R1")
+		test.interp()
 		opt_test = test.opt()
 		opt_test.interp()
 		print("\n")
 		i += 1
 
 	expr.opt_flag = 0
-	
+
+print("\n\n------------- Testing X0 Programs -------------\n\n")
+
+print("\n Testing 70 - Answer = 15")
+r1_prog = add(num(5), num(10))
+test =
+test.interp()
+
+print("\n Testing 71 - Answer = 12")
+r1_prog = num(12)
+test =
+test.interp()
+
+print("\n Testing 72 - Answer = -5")
+r1_prog = neg(neg(num(-5)))
+test =
+test.interp()
+
+print("\n Testing 73 - Answer = -64")
+r1_prog = neg( add( num(17), add(read(5, True), num(42))))
+test =
+test.interp()
+
+print("\n Testing 74 - Answer = 95")
+r1_prog = add( num(45), num(50))
+test =
+test.interp()
+
+print("\n Testing 75 - Answer = -150")
+r1_prog = neg( add(read(50, True), read(100, True)))
+test =
+test.interp()
+
+print("\n Testing 76 - Answer = 5")
+r1_prog = let(y, num(5), (var(y)))
+test =
+test.interp()
+
+print("\n Testing 77 - Answer = 40")
+r1_prog = let(y, neg(num(20)), neg(add(var(y), var(y))))
+test =
+test.interp()
+
+print("\n Testing 78 - Answer = ")
+r1_prog = let(y, add(neg(num(45)), neg(num(45))), neg(var(y)))
+test =
+test.interp()
+
+print("\n Testing 79 - Answer = 21")
+r1_prog =  let(y, num(5), add( var(y), let(x, add(var(y), num(3)), add(var(x), var(x)))))
+test =
+test.interp()
+
+print("\n Testing 80 - Answer = -18000")
+r1_prog = let(y, add(num(3000), num(3000)), neg(add( var(y), add(var(y), var(y)))))
+test =
+test.interp()
+
+print("\n Testing 81 - Answer = 0")
+r1_prog = let(y, read(5, True), add(neg(var(y)), read(5, True)))
+test =
+test.interp()

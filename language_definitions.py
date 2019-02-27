@@ -10,6 +10,17 @@
 # Language R1:
 # e ::= ... | var | let var:= e in e
 # var ::= variable-not-otherwise-mentioned
+#
+# Language X0:
+#
+# Program := program info [label -> block]
+# block := block info instr ...
+# instr := addq arg1, arg2 | subq arg1, arg2 | movq arg1, arg2
+#          retq            | negq arg1       | callq label
+#          jmp label       | pushq arg1      | popq arg
+# arg :=   number($n)      | reg (%rn)       | mem %rn(offset)
+#          var (x)
+
 
 ### Support Classes ###
 
@@ -25,6 +36,113 @@ class node():
 
 ### Language Class Definitions ###
 
+########################## X0 Program ###################################################
+
+class xprog:
+	def __init__(self, prog, info, label):
+		self._prog = prog
+		self._info = info
+		# Label will be a hash map to instructions
+		self._label = label
+
+########################## Block ########################################################
+
+class xblock:
+	def __init__(self, block, info, instr):
+		self._block = block
+		self._info = info
+		# List of instructions
+		self._instr = instr
+
+########################## Instruction ##################################################
+
+class xinstr:
+	temp = 0
+########################## Addq #########################################################
+
+class addq(xinstr):
+	def __init__(self, arg1, arg2):
+		self._arg1 = arg1
+		self._arg2 = arg2
+
+########################## Subq #########################################################
+
+class subq(xinstr):
+	def __init__(self, arg1, arg2):
+		self._arg1 = arg1
+		self._arg2 = arg2
+
+########################## Movq #########################################################
+
+class movq(xinstr):
+	def __init__(self, arg1, arg2):
+		self._arg1 = arg1
+		self._arg2 = arg2
+
+########################## Retq #########################################################
+
+class retq(xinstr):
+	temp = 0
+
+########################## Negq #########################################################
+
+class negq(xinstr):
+	def __init__(self, arg):
+		self._arg = arg
+
+########################## Callq ########################################################
+
+class callq(xinstr):
+	def __init__(self, label):
+		self._label = label
+
+########################## Jmp ##########################################################
+
+class jmp(xinstr):
+	def __init__(self, label):
+		self._label = label
+
+########################## Pushq ########################################################
+
+class pushq(xinstr):
+	def __init__(self, arg):
+		self._arg = arg
+
+########################## Popq #########################################################
+
+class popq(xinstr):
+	def __init__(self, arg):
+		self._arg = arg
+
+########################## Arg ##########################################################
+
+class xarg:
+	temp = 0
+	
+########################## X0 Number ####################################################
+
+class xnum(xarg):
+	def __init__(self, num):
+		self._num = num
+
+########################## Register #####################################################
+
+class xreg(xarg):
+	def __init__(self, reg):
+		self._reg = reg
+
+########################## Memory #######################################################
+
+class xmem(xarg):
+	def __init__(self, offset):
+		self._offset = offset
+
+########################## X0 Var #######################################################
+
+class xvar(xarg):
+	def __init__(self, var):
+		self._var = var
+
 ########################## Expr #########################################################
 # -- Base Class for Expressions --
 
@@ -35,9 +153,10 @@ class expr:
 	random_arry_of_ints = []
 
 	num_of_vars = 0
-	neg_count = 0	
+	neg_count = 0
 	opt_flag = 0
 	opt_index = 0
+
 	def interp(self):
 		return 0;
 	def pretty_print(self):
@@ -63,7 +182,7 @@ class num(expr):
 	def pretty_print(self):
 		if isinstance( self._num, int):
 			return str(self._num);
-		
+
 		return str(self._num.pretty_print());
 
 	# The neg count is a way of "checking parentheses" to tell if the value should
@@ -88,7 +207,7 @@ class neg(expr):
 		return "-" + str(self._num.pretty_print());
 
 	def opt(self):
-		# Increase neg_count if 
+		# Increase neg_count if
 		expr.neg_count += 1
 		temp = self._num.opt()
 		expr.neg_count -= 1
@@ -112,21 +231,21 @@ class add(expr):
 	def opt(self):
 		right_opt = self._rhs.opt()
 		left_opt = self._lhs.opt()
-		
+
 		# Check whether either expression is a let
 		if (type(right_opt) is let) or (type(left_opt) is let):
 			# Check if either side is a integer
-			if isinstance(right_opt, int): 
+			if isinstance(right_opt, int):
 				right_opt = num(right_opt)
 
 			if isinstance(left_opt, int):
 				left_opt = num(left_opt)
 
-			# Check if either side is a zero so it can be removed 
+			# Check if either side is a zero so it can be removed
 			if (isinstance(right_opt, num) and (right_opt.opt() == 0)):
 				return left_opt;
 
-			if (isinstance(left_opt, num) and (left_opt.opt() == 0)):			
+			if (isinstance(left_opt, num) and (left_opt.opt() == 0)):
 				return right_opt;
 
 			return add(right_opt, left_opt);
@@ -179,7 +298,7 @@ class read(expr):
 		return 0;
 
 ########################## Let ##########################################################
-# -- Inherited Class for the Let -- 
+# -- Inherited Class for the Let --
 
 class let(expr):
 	def __init__(self, x, xe, xb):
@@ -193,7 +312,7 @@ class let(expr):
 	def interp(self):
 		prog.map_env.add_var(self._x, self._xe.interp())
 		return self._xb.interp()
-	
+
 	def opt(self):
 
 		# Begin working on xe
@@ -203,7 +322,7 @@ class let(expr):
 		temp_xe = self._xe.opt()
 		xe_result = num(temp_xe)
 		xe_result_temp = xe_result
-		
+
 		# Number of Reads counted after optomizing xe
 		xe_diff_of_reads = (len(expr.arry_of_reads) - num_of_reads)
 
@@ -213,10 +332,10 @@ class let(expr):
 			if (expr.arry_of_reads[i] == -1):
 				if (xe_result_temp == xe_result) and (temp_xe == 0):
 					xe_result = neg(read())
-				else:	
+				else:
 					xe_result = add(neg(read()), xe_result)
 			elif (expr.arry_of_reads[i]):
-				if (xe_result_temp == xe_result) and (temp_xe == 0):				
+				if (xe_result_temp == xe_result) and (temp_xe == 0):
 					xe_result = read()
 				else:
 					xe_result = add(read(), xe_result)
@@ -229,14 +348,14 @@ class let(expr):
 		while i < xe_diff_of_reads:
 			del expr.arry_of_reads[0]
 			i += 1
-		
+
 		# Add the xe_result to the linked list (enviroment)
 		prog.map_env.add_var(self._x, xe_result)
 
 		# Begin working on xb
 		num_of_reads = len(expr.arry_of_reads)
 		var_count = expr.num_of_vars
-		
+
 		# This will always be an int since var returns 0 if the mapping is not an int
 		# and read will return 0
 		temp_xb = self._xb.opt()
@@ -246,14 +365,14 @@ class let(expr):
 		# Number of reads and vars counted after optomizing xb
 		xb_diff_of_reads = (len(expr.arry_of_reads) - num_of_reads)
 		diff_of_vars = expr.num_of_vars - var_count
-		
+
 		# For each read, insert a read() into xb_result
 		i = 0
 		while i < xb_diff_of_reads:
 			if (expr.arry_of_reads[i] == -1):
 				if temp_xb == 0:
 					xb_result = neg(read())
-				else:			
+				else:
 					xb_result = add(neg(read()), xb_result)
 			elif (expr.arry_of_reads[i]):
 				if temp_xb == 0:
@@ -263,14 +382,14 @@ class let(expr):
 			else:
 				print("Something went wrong. Neither 1 or -1 in let opt")
 			i += 1
-		
+
 		# Delete reads from array
 		i = 0
 		while i < xb_diff_of_reads:
 			del expr.arry_of_reads[0]
 			i += 1
 
-		# For each var, insert vars into xb_result. Var can either be a number or an expression with reads		
+		# For each var, insert vars into xb_result. Var can either be a number or an expression with reads
 		i = 0
 		while i < diff_of_vars:
 			if (expr.arry_of_vars[i][0] == "+"):
@@ -284,7 +403,7 @@ class let(expr):
 				else:
 					xb_result = add(neg(var(expr.arry_of_vars[i][1])), xb_result)
 			i += 1
- 
+
 		# Delete var from array
 		i = 0
 		while i < diff_of_vars:
@@ -395,7 +514,7 @@ class prog(expr):
 			if (reads == -1):
 				if (isinstance(result, int)) and (result == 0):
 					generate = neg(read())
-				else:			
+				else:
 					generate = add(neg(read()), generate)
 			elif (reads == 1):
 				if (isinstance(result, int)) and (result == 0):
@@ -406,6 +525,3 @@ class prog(expr):
 				print("Something went wrong. Neither 1 or -1")
 
 		return prog(None, generate);
-
-
-

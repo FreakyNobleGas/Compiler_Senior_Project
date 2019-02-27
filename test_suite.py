@@ -57,29 +57,50 @@ def generate_large_program(n, language = None):
 				else:
 					print("Something very wrong happened")
 	elif(language == "R1"):
-		i = 0
 		# Unused vars waiting to be used at random
 		input_array = ["b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"]
+
 		# vars that have been used. "a" is used by default to initialize the first let
 		output_array = ["a"]
-		# Create the first let function
+		
+		# Create a random number of reads and lets
 		if( n == 0 ):
+			random = rand_num()
+			
 			generate = let(output_array[0], add(read(), read()), add(var(output_array[0]), var(output_array[0])))
-		else:
+
+			i = 1
+			while i <= random:
+				xe = read()
+				random2 = rand_num()
+				while i <= random2:
+					i += 1
+					xe = add(read(), xe)
+				generate = let(input_array[i], xe, add(var(input_array[i]), generate))
+		# Base case for depth 1
+		elif( n == 1 ):
 			generate = let(output_array[0], add(num(rand_num()), num(rand_num())), add(var(output_array[0]), var(output_array[0])))
 
-		# Insert lets up to n depth, or the maximum range of the rand_num() function
-		while (i < n) and (i < 10):
-			# Get a used and unused var
-			print ("I == ", i, " == ", input_array[i])
-			next_var = input_array[i]
-			random_used_var = output_array[rand_num() % len(output_array)]
-			# Append used var to output array
-			output_array.append(next_var)
-			# Create new let with unused var, and nest previous lets
-			generate = let(next_var, add(var(random_used_var), num(rand_num())), add(var(next_var), generate))
-			#generate = let(next_var, add(num(rand_num()), num(rand_num())), add(var(next_var), generate))
-			i += 1
+		# Create nested lets to depth n
+		else:
+			generate = let(output_array[0], add(var(input_array[0]), num(rand_num())), add(var(output_array[0]), var(input_array[0])))
+
+			i = 0
+			# Insert lets up to n depth, or the maximum range of the rand_num() function
+			while (i < (n - 1)) and (i < 10):
+				# Get a used and unused var
+				next_var = input_array[i]
+
+				# Append used var to output array
+				output_array.append(next_var)
+
+				# Create new let with unused var, and nest previous lets
+				if i == (n - 2):
+					generate = let(next_var, add(num(rand_num()), num(rand_num())), add(var(next_var), generate))
+				else:				
+					generate = let(next_var, add(var(input_array[i + 1]), num(rand_num())), add(var(next_var), generate))
+
+				i += 1
 
 	return prog(None, generate);
 
@@ -288,6 +309,8 @@ def testing():
 	print("\n")
 	
 	print("\n\n------------- Testing R1 Generate Programs -------------\n\n")
+	expr.opt_flag = 1
+
 	x = "x"
 	y = "y"
 	print("TESTING.... 21")

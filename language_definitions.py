@@ -346,11 +346,14 @@ class var(expr):
 	def opt(self):
 		value = prog.map_env.find_var(self._var)
 
+		# Return value if num
 		if isinstance(value, num):
 			if expr.neg_count % 2 == 0:
 				return value.opt();
 			else:
 				return value.opt() * -1;
+
+		# Otherwise, return the full expression
 		else:
 			expr.num_of_vars += 1
 			if expr.neg_count % 2 == 0:

@@ -47,15 +47,10 @@ class ms():
 		self._reg_num = reg_num
 		self._reg_map = {"R8":0, "R9":0, "R10":0, "R11":0, "R12":0, "R13":0, "R14":0, "R15":0, "rsp":0,\
 		"rbp":0, "rax":0, "rbx":0, "rcx":0, "rdx":0, "rsi":0, "rdi":0 }
-		#self._rsp = []
-		#self._rsp_offset = 0
-		#self._rbp = []
-		#self._rax = []
-		#self._rbx = []
-		#self._rcx = []
-		#self._rdx = []
-		#self._rsi = []
-		#self._rdi = []
+
+		# Alternate way
+		#self._reg_map = {"R8":[], "R9":[], "R10":[], "R11":[], "R12":[], "R13":[], "R14":[], "R15":[], "rsp":[],\
+		#"rbp":[], "rax":[], "rbx":[], "rcx":[], "rdx":[], "rsi":[], "rdi":[] }
 
 		# Addresses
 		self._addr = addr
@@ -75,14 +70,21 @@ class ms():
 		else:
 			self._block = label_map[label]
 
-	def find(self, x, offset = 0):
+	def find(self, x):
+		print("MS -> FIND -> X == ", x)
 		# If x is a good register
-		if (x == "R8") and (x == "R9") and (x == "R10") and (x == "R11") and (x == "R12") and (x == "R13") and (x == "R14") and (x == "R15"):
+		if (x == "R8") or (x == "R9") or (x == "R10") or (x == "R11") or (x == "R12") or (x == "R13") or (x == "R14") or (x == "R15"):
 			return xprog.ms._reg_map[x];
 
 		# If x is a bad register
-		elif(x == "rsp" and x == "rbp" and (x == "rax") and (x == "rbx") and (x == "rcx") and (x == "rdx") and (x == "rsi") and (x == "rdi")):
+		elif((x == "rsp") or (x == "rbp") or (x == "rax") or (x == "rbx") or (x == "rcx") or (x == "rdx") or (x == "rsi") or (x == "rdi")):
 			print("Need to flesh these registers out\n")
+
+			# Returns the value at the address indicated
+			#if offset != 0:
+			#	address = xprog.ms._reg_map[x]
+			#	return xprog.ms._addr_map[address + offset]
+
 			return xprog.ms._reg_map[x];
 
 		# If x is a addr
@@ -98,24 +100,42 @@ class ms():
 	def insert(self, dst, value, offset = 0):
 
 		# If dst is a register
-		if (dst == "R8") and (dst == "R9") and (dst == "R10") and (dst == "R11") and (dst == "R12") and (dst == "R13") and (dst == "R14") and (dst == "R15"):
+		if (dst == "R8") or (dst == "R9") or (dst == "R10") or (dst == "R11") or (dst == "R12") or (dst == "R13") or (dst == "R14") or (dst == "R15"):
+			print("MS -> INSERT : ", dst, " == ", value)
 			xprog.ms._reg_map[dst] = value
 			return;
 
 		# If dst is a bad register
-		elif((dst == "rbp") and (dst == "rax") and (dst == "rbx") and (dst == "rcx") and (dst == "rdx") and (dst == "rsi") and (dst == "rdi")):
-			print("Need to flesh these registers out\n")
+		elif((dst == "rbp") or (dst == "rax") or (dst == "rbx") or (dst == "rcx") or (dst == "rdx") or (dst == "rsi") or (dst == "rdi")):
+			print("Need to flesh these registers out")
 			xprog.ms._reg_map[dst] = value;
 			return;
 
 		# If dst is rsp
 		elif(dst == "rsp"):
 
-			# For pushq or popq
-			# ms[%rsp(0) -> ms(src)]
-			xprog.ms._addr_map[self.reg_map(dst)] = value
-			# [%rsp -> ms (%rsp) - 8]
-			xprog.ms._reg_map[dst] = (self.reg_map(dst) + offset)
+			# pushq
+			if offset == -8:
+				# If value is a register, find the value 
+				if (value == "R8") or (value == "R9") or (value == "R10") or (value == "R11") or (value == "R12") or (value == "R13") or\
+				 (value == "R14") or (value == "R15") or (value == "rsp") or (value == "rbp") or (value == "rax") or (value == "rbx") or\
+				 (value == "rcx") or (value == "rdx") or (value == "rsi") or (value == "rdi"):
+					value = xprog.ms.find(value)
+
+				# [%rsp -> ms (%rsp) - 8]
+				xprog.ms._reg_map[dst] = (xprog.ms._reg_map[dst] + offset) # Increase rsp
+
+				# ms[%rsp(0) -> ms(src)]
+				xprog.ms._addr_map[xprog.ms._reg_map[dst]] = value # Update value of current position
+
+			# popq
+			elif offset == 8:
+				# Insert value from the top of the stack to value passed
+				xprog.ms.insert(value, xprog.ms._addr_map[xprog.ms._reg_map[dst]])
+
+				# Decrease rsp
+				xprog.ms._reg_map[dst] = (xprog.ms._reg_map[dst] + offset)
+
 
 		# If dst is a addr
 		elif(isinstance(dst, int)):
@@ -224,15 +244,21 @@ class subq(xinstr):
 		print("subq ", self._arg1.emitter(), " ", self._arg2.emitter())
 
 	def interp(self):
-		src = xprog.ms.find(self._arg1.interp())
-		result = xprog.ms.find(self._arg2.interp())
+		print("SUBQ INTERP")
+		src = self._arg1.interp()
+		if not isinstance(src, int):
+			src = xprog.ms.find(src)
 
-		# [ dst -> ms(src) - ms(src)]
+		result = self._arg2.interp()
+		if not isinstance(result, int):
+			result = xprog.ms.find(result)
+
+		# [ dst -> ms(src) + ms(src)]
 		result -= src
-		xprog.ms.insert(self._arg2.interp(), result) # Should this be interp?
+		print("SUBQ RESULT == ", result)
+		xprog.ms.insert(self._arg2.interp(), result)
 
 		return;
-
 ########################## Movq #########################################################
 
 class movq(xinstr):
@@ -247,6 +273,11 @@ class movq(xinstr):
 		value = self._arg1.interp()
 		destination = self._arg2.interp()
 		# movq ms' = ms[dst -> ms(src)]
+
+		if isinstance(self._arg1, xreg):
+			print( " MOVQ : ARG1 IS REG")
+			value = xprog.ms.find(value)
+
 		xprog.ms.insert(destination, value)
 
 		return;
@@ -376,16 +407,20 @@ class xreg(xarg):
 ########################## Memory #######################################################
 
 class xmem(xarg):
-	def __init__(self, offset, reg):
-		self._offset = offset
+	def __init__(self, reg, offset):
 		self._reg = reg
+		self._offset = offset
 
 	def emitter():
 		print("%", self._reg, "(", self._offset, ")")
 
 	def interp(self):
-		# I'm not sure if this is right, I think this is only used for pointer registers
-		return xprog.ms.find(self._reg) + self._offset
+		# Look up value from the register
+		address = xprog.ms.find(self._reg)
+		# Look up value + offset in address mapping in machine state
+		address = xprog.ms.find(address + self._offset)
+
+		return address;
 
 ########################## X0 Var #######################################################
 

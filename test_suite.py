@@ -382,63 +382,64 @@ def testing():
 	expr.opt_flag = 0
 
 print("\n\n------------- Testing X0 Programs -------------\n\n")
-
+y = "y"
+x = "x"
 print("\n Testing 70 - Answer = 15")
 r1_prog = add(num(5), num(10))
-test =
-test.interp()
+#test =
+#test.interp()
 
 print("\n Testing 71 - Answer = 12")
 r1_prog = num(12)
-test =
-test.interp()
+#test =
+#test.interp()
 
 print("\n Testing 72 - Answer = -5")
 r1_prog = neg(neg(num(-5)))
-test =
-test.interp()
+#test =
+#test.interp()
 
 print("\n Testing 73 - Answer = -64")
 r1_prog = neg( add( num(17), add(read(5, True), num(42))))
-test =
-test.interp()
+#test =
+#test.interp()
 
 print("\n Testing 74 - Answer = 95")
 r1_prog = add( num(45), num(50))
-test =
-test.interp()
+#test =
+#test.interp()
 
 print("\n Testing 75 - Answer = -150")
 r1_prog = neg( add(read(50, True), read(100, True)))
-test =
-test.interp()
+#test =
+#test.interp()
 
 print("\n Testing 76 - Answer = 5")
 r1_prog = let(y, num(5), (var(y)))
-test =
-test.interp()
+#test =
+#test.interp()
 
 print("\n Testing 77 - Answer = 40")
 r1_prog = let(y, neg(num(20)), neg(add(var(y), var(y))))
-test =
-test.interp()
+#test =
+#test.interp()
 
 print("\n Testing 78 - Answer = ")
 r1_prog = let(y, add(neg(num(45)), neg(num(45))), neg(var(y)))
-test =
-test.interp()
+#test =
+#test.interp()
 
 print("\n Testing 79 - Answer = 21")
 r1_prog =  let(y, num(5), add( var(y), let(x, add(var(y), num(3)), add(var(x), var(x)))))
-test =
-test.interp()
+#test =
+#test.interp()
 
 print("\n Testing 80 - Answer = -18000")
 r1_prog = let(y, add(num(3000), num(3000)), neg(add( var(y), add(var(y), var(y)))))
-test =
-test.interp()
+#test =
+#test.interp()
 
 print("\n Testing 81 - Answer = 0")
 r1_prog = let(y, read(5, True), add(neg(var(y)), read(5, True)))
-test =
-test.interp()
+#test =
+#test.interp()

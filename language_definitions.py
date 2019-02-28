@@ -23,10 +23,6 @@
 # arg :=   number($n)      | reg (%rn)       | mem %rn(offset)
 #          var (x)
 
-### Global Variables ###
-
-label_map = {}
-
 ### Support Classes ###
 
 ########################## Node #########################################################
@@ -37,13 +33,6 @@ class node():
 		self._var = var
 		self._num = num
 		self.next = None
-
-########################## Label to Block Function ######################################
-
-def lab_to_block(label): # PROBABLY DONT NEED
-	global label_map
-	return label_map[label];
-
 
 ########################## Machine State Data Structure #################################
 
@@ -56,7 +45,17 @@ class ms():
 		# -- Good Reg Names: reg 8 -> reg 15
 		self._reg = reg
 		self._reg_num = reg_num
-		self._reg_map = {"R8":0, "R9":0, "R10":0, "R11":0, "R12":0, "R13":0, "R14":0, "R15":0 }
+		self._reg_map = {"R8":0, "R9":0, "R10":0, "R11":0, "R12":0, "R13":0, "R14":0, "R15":0, "rsp":0,\
+		"rbp":0, "rax":0, "rbx":0, "rcx":0, "rdx":0, "rsi":0, "rdi":0 }
+		#self._rsp = []
+		#self._rsp_offset = 0
+		#self._rbp = []
+		#self._rax = []
+		#self._rbx = []
+		#self._rcx = []
+		#self._rdx = []
+		#self._rsi = []
+		#self._rdi = []
 
 		# Addresses
 		self._addr = addr
@@ -71,28 +70,52 @@ class ms():
 		# Label Mapping
 		# (lab -> block) lets program look up existing labels
 		self._label = label
-		self._block = label_map[label]
+		if label_map == None:
+			self._block = None
+		else:
+			self._block = label_map[label]
 
 	def find(x):
-		# If x is a register
-		if (x == "R8") || (x == "R9") || (x == "R10") || (x == "R11") || (x == "R12") || (x == "R13") || (x == "R14") || (x == "R15"):
+		# If x is a good register
+		if (x == "R8") and (x == "R9") and (x == "R10") and (x == "R11") and (x == "R12") and (x == "R13") and (x == "R14") and (x == "R15"):
+			return self._reg_map(x);
+
+		# If x is a bad register
+		elif(x == "rsp" and x == "rbp" and (x == "rax") and (x == "rbx") and (x == "rcx") and (x == "rdx") and (x == "rsi") and (x == "rdi")):
+			print("Need to flesh these registers out\n")
 			return self._reg_map(x);
 
 		# If x is a addr
-		elif(isinstance(x, int)):
+		elif(isinstance(x, int)): # Should make this an arg data type
 			return self._addr_map(x);
 
 		# If x is a var
-		else:
-			return self._var_map(x):
+		else: # Should check if this a var data type
+			return self._var_map(x);
 
-	def insert(dst, value):
+	def insert(dst, value, offset = 0):
+
 		# If dst is a register
-		if (dst == "R8") || (dst == "R9") || (dst == "R10") || (dst == "R11") || (dst == "R12") || (dst == "R13") || (dst == "R14") || (dst == "R15"):
+		if (dst == "R8") and (dst == "R9") and (dst == "R10") and (dst == "R11") and (dst == "R12") and (dst == "R13") and (dst == "R14") and (dst == "R15"):
 			self._reg_map[dst] = value
 			return;
 
-		# If x is a addr
+		# If dst is a bad register
+		elif((dst == "rbp") and (dst == "rax") and (dst == "rbx") and (dst == "rcx") and (dst == "rdx") and (dst == "rsi") and (dst == "rdi")):
+			print("Need to flesh these registers out\n")
+			self._reg_map[dst] = value;
+			return;
+
+		# If dst is rsp
+		elif(dst == "rsp"):
+
+			# For pushq or popq
+			# ms[%rsp(0) -> ms(src)]
+			self._addr_map[self.reg_map(dst)] = value
+			# [%rsp -> ms (%rsp) - 8]
+			self._reg_map[dst] = (self.reg_map(dst) + offset)
+
+		# If dst is a addr
 		elif(isinstance(dst, int)):
 			self._addr_map[dst] = value
 			return;
@@ -110,7 +133,7 @@ class ms():
 class xprog:
 
 	# Global var for machine state
-	ms = ms(0,0,0,0,0,0, self._label, "main")
+	ms = ms(0,0,0,0,0,0, None, "main")
 
 	def __init__(self, info, label_map):
 		self._info = info
@@ -118,12 +141,15 @@ class xprog:
 		# Label -> Blocks
 		self._label_map = label_map
 
+		# Set Label Map for Machine State Zero
+		xprog.ms.label_map = label_map
+
 	# Ultimately returns a number
 	def interp():
 
 		# Start interp on machine state zero
-		 return xblock.interp(ms, self._label);	# Blocks has the ms and label - Where are the instructions?
-						     						# Should be ms0 _main | main
+		 return xblock.interp(self._label);	# Blocks has the ms and label - Where are the instructions?
+						     				# Should be ms0 _main | main
 
 
 ########################## Block ########################################################
@@ -135,9 +161,9 @@ class xblock:
 		# Block -> Instructions
 		self._instr = instr
 
-	def interp(self, ms, self._label): # ms x label
+	def interp(self, label): # ms x label
 		# First instruction should be ms0 and label _main
-		return xinstr.interp(ms, ms._block._instr);
+		return xinstr.interp(xprog.ms._block._instr);
 
 ########################## Instruction ##################################################
 
@@ -145,11 +171,13 @@ class xinstr:
 	def emitter():
 		return 0;
 
-	def interp(ms, instr):
+	def interp(self, instr):
 		# instr is a list
 		# K = What to do next ( But can be pulled from instruction list )
-		next_instr = 1
-		return instr[0].interp(ms, next_instr);
+		for i in instr:
+			instr[i].interp()
+
+		return;
 
 ########################## Addq #########################################################
 
@@ -161,15 +189,15 @@ class addq(xinstr):
 	def emitter():
 		print("addq ", self._arg1.emitter(), " ", self._arg2.emitter())
 
-	def interp(ms):
-		src = ms.find(self._arg1)
-		dst = ms.find(self._arg2)
+	def interp(self):
+		src = xprog.ms.find(self._arg1.interp())
+		result = xprog.ms.find(self._arg2.interp())
 
 		# [ dst -> ms(src) + ms(src)]
-		dst += src
-		ms.insert(self._arg2, dst)
+		result += src
+		xprog.ms.insert(self._arg2, result)
 
-		return instr[]
+		return;
 
 ########################## Subq #########################################################
 
@@ -181,6 +209,16 @@ class subq(xinstr):
 	def emitter():
 		print("subq ", self._arg1.emitter(), " ", self._arg2.emitter())
 
+	def interp(self):
+		src = xprog.ms.find(self._arg1.interp())
+		result = xprog.ms.find(self._arg2.interp())
+
+		# [ dst -> ms(src) - ms(src)]
+		result -= src
+		xprog.ms.insert(self._arg2.interp(), result) # Should this be interp?
+
+		return;
+
 ########################## Movq #########################################################
 
 class movq(xinstr):
@@ -191,11 +229,25 @@ class movq(xinstr):
 	def emitter():
 		print("movq ", self._arg1.emitter(), " ", self._arg2.emitter())
 
+	def interp(self):
+		src = xprog.ms.find(self._arg1.interp())
+
+		# movq ms' = ms[dst -> ms(src)]
+		xprog.ms.insert(self._arg2.interp(), src)
+
+		return;
+
+
 ########################## Retq #########################################################
 
 class retq(xinstr):
+
 	def emitter():
 		print("retq")
+
+	def interp():
+		# This should be the last instruction
+		return xprog.ms.find("rax");
 
 ########################## Negq #########################################################
 
@@ -206,6 +258,14 @@ class negq(xinstr):
 	def emitter():
 		print("negq ", self._arg.emitter())
 
+	def interp(self):
+		src = xprog.ms.find(self._arg.interp())
+		src *= -1
+
+		xprog.ms.insert(self._arg.interp(), src)
+
+		return;
+
 ########################## Callq ########################################################
 
 class callq(xinstr):
@@ -214,6 +274,16 @@ class callq(xinstr):
 
 	def emitter():
 		print("callq ", self._label.emitter())
+
+	# Need to find a way to let the prog know that when it's label hits
+	# _read_int, then it needs to come here
+	def interp():
+		src = input("Please enter a numerical value: ")
+		src = int(src)
+
+		xprog.ms.insert("rax", src)
+		return;
+
 
 ########################## Jmp ##########################################################
 
@@ -224,6 +294,9 @@ class jmp(xinstr):
 	def emitter():
 		print("jmp ", self._label.emitter())
 
+	def interp():
+		return xblock.interp(self._label);
+
 ########################## Pushq ########################################################
 
 class pushq(xinstr):
@@ -233,6 +306,10 @@ class pushq(xinstr):
 	def emitter():
 		print("pushq ", self._arg.emitter())
 
+	def interp(self):
+		xprog.ms.insert("rsp", self._arg.interp(), -8)
+		return;
+
 ########################## Popq #########################################################
 
 class popq(xinstr):
@@ -241,6 +318,10 @@ class popq(xinstr):
 
 	def emitter():
 		print("popq ", self._arg.emitter())
+
+	def interp(self):
+		xprog.ms.insert("rsp", self._arg.interp(), 8)
+		return;
 
 ########################## Arg ##########################################################
 
@@ -257,6 +338,9 @@ class xnum(xarg):
 	def emitter():
 		print("$", self._num)
 
+	def interp(self):
+		return self._num;
+
 ########################## Register #####################################################
 # -- Bad Reg Names: rsp | rbp | rax | rbx | rcx | rdx | rsi | rdi
 # -- Good Reg Names: reg 8 -> reg 15
@@ -267,6 +351,9 @@ class xreg(xarg):
 	def emitter():
 		print("%", self._reg)
 
+	def interp():
+		return self._reg;
+
 ########################## Memory #######################################################
 
 class xmem(xarg):
@@ -276,6 +363,10 @@ class xmem(xarg):
 
 	def emitter():
 		print("%", self._reg, "(", self._offset, ")")
+
+	def interp():
+		# I'm not sure if this is right, I think this is only used for pointer registers
+		return xprog.ms.find(reg) + offset
 ########################## X0 Var #######################################################
 
 class xvar(xarg):
@@ -284,6 +375,9 @@ class xvar(xarg):
 
 	def emitter():
 		print("(", self._var, ")")
+
+	def interp():
+		return self._var;
 
 ########################## Expr #########################################################
 # -- Base Class for Expressions --

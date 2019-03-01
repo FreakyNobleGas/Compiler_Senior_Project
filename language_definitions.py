@@ -48,10 +48,6 @@ class ms():
 		self._reg_map = {"R8":0, "R9":0, "R10":0, "R11":0, "R12":0, "R13":0, "R14":0, "R15":0, "rsp":0,\
 		"rbp":0, "rax":0, "rbx":0, "rcx":0, "rdx":0, "rsi":0, "rdi":0 }
 
-		# Alternate way
-		#self._reg_map = {"R8":[], "R9":[], "R10":[], "R11":[], "R12":[], "R13":[], "R14":[], "R15":[], "rsp":[],\
-		#"rbp":[], "rax":[], "rbx":[], "rcx":[], "rdx":[], "rsi":[], "rdi":[] }
-
 		# Addresses
 		self._addr = addr
 		self._addr_num = addr_num

@@ -478,13 +478,56 @@ def testing():
 	test.interp()
 	instr.clear()
 	label_map.clear()
+
 	print("\n Testing 77 - Answer = ")
-	#test =
-	#test.interp()
+
+	instr = [\
+	movq(xnum(14), xreg("R10")),\
+	jmp("end")
+	]
+
+	end = [\
+	movq(xreg("R10"), xreg("rax")),\
+	retq()
+	]
+
+	label_map = {"main" : instr, "end": end}
+	test = xprog(None, label_map)
+	test.interp()
+	instr.clear()
+	end.clear()
+	label_map.clear()
 
 	print("\n Testing 78 - Answer = ")
-	#test =
-	#test.interp()
+
+	main = [\
+	pushq(xreg("rbp")),\
+	movq(xreg("rsp"), xreg("rbp")),\
+	subq(xnum(16), xreg("rsp")),\
+	jmp("start")
+	]
+
+	start = [\
+	movq(xnum(10), xmem("rbp", -8)),\
+	negq(xmem("rbp", -8)),\
+	movq(xmem("rbp", -8), xreg("rax")),\
+	addq(xnum(52), xreg("rax")),\
+	jmp("conclusion")
+	]
+
+	conclusion = [\
+	addq(xnum(16), xreg("rsp")),\
+	popq(xreg("rbp")),\
+	retq()
+	]
+
+	label_map = {"main" : main, "start": start, "conclusion": conclusion}
+	test = xprog(None, label_map)
+	test.interp()
+	instr.clear()
+	end.clear()
+	label_map.clear()
+
 
 	print("\n Testing 79 - Answer = ")
 	#test =

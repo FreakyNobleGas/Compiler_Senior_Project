@@ -78,13 +78,6 @@ class ms():
 
 		# If x is a bad register
 		elif((x == "rsp") or (x == "rbp") or (x == "rax") or (x == "rbx") or (x == "rcx") or (x == "rdx") or (x == "rsi") or (x == "rdi")):
-			print("Need to flesh these registers out\n")
-
-			# Returns the value at the address indicated
-			#if offset != 0:
-			#	address = xprog.ms._reg_map[x]
-			#	return xprog.ms._addr_map[address + offset]
-
 			return xprog.ms._reg_map[x];
 
 		# If x is a addr
@@ -98,25 +91,33 @@ class ms():
 			return xprog.ms._var_map[x];
 
 	def insert(self, dst, value, offset = 0):
+		print("MS -> INSERT : ", dst, " == ", value)
 
 		# If dst is a register
 		if (dst == "R8") or (dst == "R9") or (dst == "R10") or (dst == "R11") or (dst == "R12") or (dst == "R13") or (dst == "R14") or (dst == "R15"):
-			print("MS -> INSERT : ", dst, " == ", value)
 			xprog.ms._reg_map[dst] = value
 			return;
 
 		# If dst is a bad register
-		elif((dst == "rbp") or (dst == "rax") or (dst == "rbx") or (dst == "rcx") or (dst == "rdx") or (dst == "rsi") or (dst == "rdi")):
-			print("Need to flesh these registers out")
+		elif((dst == "rax") or (dst == "rbx") or (dst == "rcx") or (dst == "rdx") or (dst == "rsi") or (dst == "rdi")):
+			print("INSERT -> ", dst, " = ", value)
 			xprog.ms._reg_map[dst] = value;
 			return;
+
+		elif dst == "rbp":
+			# Find current value in rbp
+			address = xprog.ms._reg_map[dst]
+			# Calculate offset
+			address += offset
+			# Insert value
+			xprog.ms._reg_map[address] = value
 
 		# If dst is rsp
 		elif(dst == "rsp"):
 
 			# pushq
 			if offset == -8:
-				# If value is a register, find the value 
+				# If value is a register, find the value
 				if (value == "R8") or (value == "R9") or (value == "R10") or (value == "R11") or (value == "R12") or (value == "R13") or\
 				 (value == "R14") or (value == "R15") or (value == "rsp") or (value == "rbp") or (value == "rax") or (value == "rbx") or\
 				 (value == "rcx") or (value == "rdx") or (value == "rsi") or (value == "rdi"):
@@ -139,6 +140,7 @@ class ms():
 
 		# If dst is a addr
 		elif(isinstance(dst, int)):
+			print("INSERT -> ADDR ")
 			xprog.ms._addr_map[dst] = value
 			return;
 
@@ -163,6 +165,7 @@ class xprog:
 		# Label will be a hash map (dict) to blocks that hold instructions
 		# Label -> Blocks
 		self._label_map = label_map
+		xprog.ms = ms(0,0,0,0,0,0, None, "main")
 
 	# Ultimately returns a number
 	def interp(self):
@@ -278,6 +281,7 @@ class movq(xinstr):
 			print( " MOVQ : ARG1 IS REG")
 			value = xprog.ms.find(value)
 
+		print("MOVQ : DST == ", destination, " VALUE == ", value)
 		xprog.ms.insert(destination, value)
 
 		return;
@@ -345,6 +349,7 @@ class jmp(xinstr):
 		print("jmp ", self._label.emitter())
 
 	def interp(self):
+		print("JUMP -> ", self._label, "\n\n")
 		return xblock.interp(self._label);
 
 ########################## Pushq ########################################################

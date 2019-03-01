@@ -71,7 +71,6 @@ class ms():
 			self._block = label_map[label]
 
 	def find(self, x):
-		print("MS -> FIND -> X == ", x)
 		# If x is a good register
 		if (x == "R8") or (x == "R9") or (x == "R10") or (x == "R11") or (x == "R12") or (x == "R13") or (x == "R14") or (x == "R15"):
 			return xprog.ms._reg_map[x];
@@ -82,8 +81,6 @@ class ms():
 
 		# If x is a addr
 		elif(isinstance(x, int)): # Should make this an arg data type
-			#return self._addr_map[x];
-			print("FIND -> INT == ", x)
 			return xprog.ms._addr_map[x];
 
 		# If x is a var ( represented by a string )
@@ -91,7 +88,6 @@ class ms():
 			return xprog.ms._var_map[x];
 
 	def insert(self, dst, value, offset = 0):
-		print("MS -> INSERT : ", dst, " == ", value)
 
 		# If dst is a register
 		if (dst == "R8") or (dst == "R9") or (dst == "R10") or (dst == "R11") or (dst == "R12") or (dst == "R13") or (dst == "R14") or (dst == "R15"):
@@ -100,7 +96,6 @@ class ms():
 
 		# If dst is a bad register
 		elif((dst == "rax") or (dst == "rbx") or (dst == "rcx") or (dst == "rdx") or (dst == "rsi") or (dst == "rdi")):
-			print("INSERT -> ", dst, " = ", value)
 			xprog.ms._reg_map[dst] = value;
 			return;
 
@@ -140,13 +135,11 @@ class ms():
 
 		# If dst is a addr
 		elif(isinstance(dst, int)):
-			print("INSERT -> ADDR ")
 			xprog.ms._addr_map[dst] = value
 			return;
 
 		# If x is a var
 		else:
-			print ("INSERTING VAR")
 			xprog.ms._var_map[dst] = value
 			return;
 
@@ -169,7 +162,6 @@ class xprog:
 
 	# Ultimately returns a number
 	def interp(self):
-		print("XPROG INTERP")
 		# Set Label Map for Machine State Zero
 		xprog.ms._label_map = self._label_map
 
@@ -188,7 +180,6 @@ class xblock:
 		self._instr = instr
 
 	def interp(label): # ms x label
-		print("XBLOCK INTERP")
 		# Set block to instruction set
 		xprog.ms._block = xprog.ms._label_map[label]
 
@@ -231,7 +222,6 @@ class addq(xinstr):
 
 		# [ dst -> ms(src) + ms(src)]
 		result += src
-		print("ADDQ RESULT == ", result)
 		xprog.ms.insert(self._arg2.interp(), result)
 
 		return;
@@ -247,7 +237,6 @@ class subq(xinstr):
 		print("subq ", self._arg1.emitter(), " ", self._arg2.emitter())
 
 	def interp(self):
-		print("SUBQ INTERP")
 		src = self._arg1.interp()
 		if not isinstance(src, int):
 			src = xprog.ms.find(src)
@@ -258,7 +247,6 @@ class subq(xinstr):
 
 		# [ dst -> ms(src) + ms(src)]
 		result -= src
-		print("SUBQ RESULT == ", result)
 		xprog.ms.insert(self._arg2.interp(), result)
 
 		return;
@@ -277,11 +265,9 @@ class movq(xinstr):
 		destination = self._arg2.interp()
 		# movq ms' = ms[dst -> ms(src)]
 
-		if isinstance(self._arg1, xreg):
-			print( " MOVQ : ARG1 IS REG")
+		if not isinstance(self._arg1, xnum):
 			value = xprog.ms.find(value)
 
-		print("MOVQ : DST == ", destination, " VALUE == ", value)
 		xprog.ms.insert(destination, value)
 
 		return;
@@ -298,7 +284,6 @@ class retq(xinstr):
 		print("retq")
 
 	def interp(self):
-		print("RETQ INTERP")
 		# This should be the last instruction
 		print(xprog.ms.find("rax"))
 		return xprog.ms.find("rax");
@@ -349,7 +334,6 @@ class jmp(xinstr):
 		print("jmp ", self._label.emitter())
 
 	def interp(self):
-		print("JUMP -> ", self._label, "\n\n")
 		return xblock.interp(self._label);
 
 ########################## Pushq ########################################################
@@ -422,8 +406,9 @@ class xmem(xarg):
 	def interp(self):
 		# Look up value from the register
 		address = xprog.ms.find(self._reg)
+
 		# Look up value + offset in address mapping in machine state
-		address = xprog.ms.find(address + self._offset)
+		address = address + self._offset
 
 		return address;
 

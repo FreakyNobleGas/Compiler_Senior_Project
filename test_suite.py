@@ -479,7 +479,7 @@ def testing():
 	instr.clear()
 	label_map.clear()
 
-	print("\n Testing 77 - Answer = ")
+	print("\n Testing 77 - Answer = 14")
 
 	instr = [\
 	movq(xnum(14), xreg("R10")),\
@@ -498,7 +498,7 @@ def testing():
 	end.clear()
 	label_map.clear()
 
-	print("\n Testing 78 - Answer = ")
+	print("\n Testing 78 - Answer = 42")
 
 	main = [\
 	pushq(xreg("rbp")),\
@@ -524,19 +524,50 @@ def testing():
 	label_map = {"main" : main, "start": start, "conclusion": conclusion}
 	test = xprog(None, label_map)
 	test.interp()
-	instr.clear()
-	end.clear()
+	main.clear()
+	start.clear()
+	conclusion.clear()
 	label_map.clear()
 
 
-	print("\n Testing 79 - Answer = ")
-	#test =
-	#test.interp()
+	print("\n Testing 79 - Answer = Callq")
 
-	print("\n Testing 80 - Answer = ")
-	#test =
-	#test.interp()
+	main = [\
+	callq("main"),\
+	retq()
+	]
+	label_map = {"main": main}
+	test = xprog(None, label_map)
+	test.interp()
+	main.clear()
 
-	print("\n Testing 81 - Answer = ")
-	#test =
-	#test.interp()
+
+	print("\n Testing 80 - Answer = 30")
+
+	main = [\
+	movq(xnum(15), xreg("R10")),\
+	movq(xreg("R10"), xreg("R11")),\
+	addq(xreg("R10"), xreg("R11")),\
+	movq(xreg("R11"), xreg("rax")),\
+	retq()
+	]
+	label_map = {"main" : main}
+	test = xprog(None, label_map)
+	test.interp()
+	main.clear()
+
+	print("\n Testing 81 - Answer = -20")
+
+	main = [\
+	pushq(xnum(80)),\
+	pushq(xnum(100)),\
+	popq(xreg("R10")),\
+	popq(xreg("R11")),\
+	subq(xreg("R10"), xreg("R11")),\
+	movq(xreg("R11"), xreg("rax")),\
+	retq()
+	]
+	label_map = {"main": main}
+	test = xprog(None, label_map)
+	test.interp()
+	main.clear()

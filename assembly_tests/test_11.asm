@@ -2,8 +2,8 @@ globl .main
 main:
 pushq $80
 pushq $100
-popq %R10
-popq %R11
-subq %R10, %R11
-movq %R11, %rax
+popq %r10
+popq %r11
+subq %r10, %r11
+movq %r11, %rax
 retq

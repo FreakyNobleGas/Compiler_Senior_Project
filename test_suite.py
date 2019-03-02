@@ -417,9 +417,9 @@ def testing():
 
 	print("\n Testing 72 - Answer = 8")
 	instr = [\
-	movq(xnum(8), xreg("R8")),\
-	movq(xreg("R8"), xreg("R9")),\
-	movq(xreg("R9"), xreg("rax")),\
+	movq(xnum(8), xreg("r8")),\
+	movq(xreg("r8"), xreg("r9")),\
+	movq(xreg("r9"), xreg("rax")),\
 	retq()
 	]
 
@@ -432,9 +432,9 @@ def testing():
 
 	print("\n Testing 73 - Answer = -50")
 	instr = [\
-	movq(xnum(50), xreg("R10")),\
-	negq(xreg("R10")),\
-	movq(xreg("R10"), xreg("rax")),\
+	movq(xnum(50), xreg("r10")),\
+	negq(xreg("r10")),\
+	movq(xreg("r10"), xreg("rax")),\
 	retq()
 	]
 	label_map = {"main" : instr}
@@ -489,12 +489,12 @@ def testing():
 	print("\n Testing 77 - Answer = 14")
 
 	instr = [\
-	movq(xnum(14), xreg("R10")),\
+	movq(xnum(14), xreg("r10")),\
 	jmp("end")
 	]
 
 	end = [\
-	movq(xreg("R10"), xreg("rax")),\
+	movq(xreg("r10"), xreg("rax")),\
 	retq()
 	]
 
@@ -555,10 +555,10 @@ def testing():
 	print("\n Testing 80 - Answer = 30")
 
 	main = [\
-	movq(xnum(15), xreg("R10")),\
-	movq(xreg("R10"), xreg("R11")),\
-	addq(xreg("R10"), xreg("R11")),\
-	movq(xreg("R11"), xreg("rax")),\
+	movq(xnum(15), xreg("r10")),\
+	movq(xreg("r10"), xreg("r11")),\
+	addq(xreg("r10"), xreg("r11")),\
+	movq(xreg("r11"), xreg("rax")),\
 	retq()
 	]
 	label_map = {"main" : main}
@@ -572,10 +572,10 @@ def testing():
 	main = [\
 	pushq(xnum(80)),\
 	pushq(xnum(100)),\
-	popq(xreg("R10")),\
-	popq(xreg("R11")),\
-	subq(xreg("R10"), xreg("R11")),\
-	movq(xreg("R11"), xreg("rax")),\
+	popq(xreg("r10")),\
+	popq(xreg("r11")),\
+	subq(xreg("r10"), xreg("r11")),\
+	movq(xreg("r11"), xreg("rax")),\
 	retq()
 	]
 	label_map = {"main": main}
@@ -585,5 +585,3 @@ def testing():
 	main.clear()
 
 	testing = addq(xnum(5), xreg("rax"))
-
-	

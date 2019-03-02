@@ -1,7 +1,7 @@
 globl .main
 main:
-movq $14, %R10
+movq $14, %r10
 jmp end:
-movq %R10, %rax
+movq %r10, %rax
 retq
 

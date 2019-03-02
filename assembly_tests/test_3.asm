@@ -1,6 +1,6 @@
 globl .main
 main:
-movq $50, %R10
-negq %R10
-movq %R10, %rax
+movq $50, %r10
+negq %r10
+movq %r10, %rax
 retq

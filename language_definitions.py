@@ -45,7 +45,7 @@ class ms():
 		# -- Good Reg Names: reg 8 -> reg 15
 		self._reg = reg
 		self._reg_num = reg_num
-		self._reg_map = {"R8":0, "R9":0, "R10":0, "R11":0, "R12":0, "R13":0, "R14":0, "R15":0, "rsp":0,\
+		self._reg_map = {"r8":0, "r9":0, "r10":0, "r11":0, "r12":0, "r13":0, "r14":0, "r15":0, "rsp":0,\
 		"rbp":0, "rax":0, "rbx":0, "rcx":0, "rdx":0, "rsi":0, "rdi":0 }
 
 		# Addresses
@@ -68,7 +68,7 @@ class ms():
 
 	def find(self, x):
 		# If x is a good register
-		if (x == "R8") or (x == "R9") or (x == "R10") or (x == "R11") or (x == "R12") or (x == "R13") or (x == "R14") or (x == "R15"):
+		if (x == "r8") or (x == "r9") or (x == "r10") or (x == "r11") or (x == "r12") or (x == "r13") or (x == "r14") or (x == "r15"):
 			return xprog.ms._reg_map[x];
 
 		# If x is a bad register
@@ -86,7 +86,7 @@ class ms():
 	def insert(self, dst, value, offset = 0):
 
 		# If dst is a register
-		if (dst == "R8") or (dst == "R9") or (dst == "R10") or (dst == "R11") or (dst == "R12") or (dst == "R13") or (dst == "R14") or (dst == "R15"):
+		if (dst == "r8") or (dst == "r9") or (dst == "r10") or (dst == "r11") or (dst == "r12") or (dst == "r13") or (dst == "r14") or (dst == "r15"):
 			xprog.ms._reg_map[dst] = value
 			return;
 
@@ -109,8 +109,8 @@ class ms():
 			# pushq
 			if offset == -8:
 				# If value is a register, find the value
-				if (value == "R8") or (value == "R9") or (value == "R10") or (value == "R11") or (value == "R12") or (value == "R13") or\
-				 (value == "R14") or (value == "R15") or (value == "rsp") or (value == "rbp") or (value == "rax") or (value == "rbx") or\
+				if (value == "r8") or (value == "r9") or (value == "r10") or (value == "r11") or (value == "r12") or (value == "r13") or\
+				 (value == "r14") or (value == "r15") or (value == "rsp") or (value == "rbp") or (value == "rax") or (value == "rbx") or\
 				 (value == "rcx") or (value == "rdx") or (value == "rsi") or (value == "rdi"):
 					value = xprog.ms.find(value)
 
@@ -148,6 +148,7 @@ class xprog:
 
 	# Global var for machine state
 	ms = ms(0,0,0,0,0,0, None, "main")
+	num_of_tests = 0
 
 	def __init__(self, info, label_map):
 		self._info = info
@@ -155,6 +156,23 @@ class xprog:
 		# Label -> Blocks
 		self._label_map = label_map
 		xprog.ms = ms(0,0,0,0,0,0, None, "main")
+
+	def emitter(self, var = 0):
+		# Open file for writing
+		file = open("assembly_tests/test_" + str(xprog.num_of_tests) + ".asm", "w+")
+		xprog.num_of_tests += 1
+
+		# Begin program
+		file.write("globl .main\n")
+		xprog.ms._label_map = self._label_map
+
+		# Call emitter on the rest of instructions
+		xblock.emitter(file, "main")
+
+		# Close file
+		file.close()
+
+		return;
 
 	# Ultimately returns a number
 	def interp(self):
@@ -175,6 +193,15 @@ class xblock:
 		# Block -> Instructions
 		self._instr = instr
 
+	def emitter(file, label):
+		# Set block to instruction set
+		xprog.ms._block = xprog.ms._label_map[label]
+		file.write(label + ":\n")
+		# xprog.ms._block contains a list of instructions
+		xinstr.emitter(file, xprog.ms._block)
+
+		return;
+
 	def interp(label): # ms x label
 		# Set block to instruction set
 		xprog.ms._block = xprog.ms._label_map[label]
@@ -186,8 +213,13 @@ class xblock:
 ########################## Instruction ##################################################
 
 class xinstr:
-	def emitter():
-		return 0;
+	def emitter(file, instr):
+		# Each i in instr is a instruction (ie - addq(xnum(5), xreg("rax")))
+		for i in instr:
+			i.emitter(file)
+			file.write("\n")
+
+		return;
 
 	def interp(instr):
 		# instr is a list
@@ -204,8 +236,13 @@ class addq(xinstr):
 		self._arg1 = arg1
 		self._arg2 = arg2
 
-	def emitter():
-		print("addq ", self._arg1.emitter(), " ", self._arg2.emitter())
+	def emitter(self, file):
+		file.write("addq ")
+		self._arg1.emitter(file)
+		file.write(", ")
+		self._arg2.emitter(file)
+
+		return;
 
 	def interp(self):
 		src = self._arg1.interp()
@@ -229,8 +266,13 @@ class subq(xinstr):
 		self._arg1 = arg1
 		self._arg2 = arg2
 
-	def emitter():
-		print("subq ", self._arg1.emitter(), " ", self._arg2.emitter())
+	def emitter(self, file):
+		file.write("subq ")
+		self._arg1.emitter(file)
+		file.write(", ")
+		self._arg2.emitter(file)
+
+		return;
 
 	def interp(self):
 		src = self._arg1.interp()
@@ -253,8 +295,12 @@ class movq(xinstr):
 		self._arg1 = arg1
 		self._arg2 = arg2
 
-	def emitter():
-		print("movq ", self._arg1.emitter(), " ", self._arg2.emitter())
+	def emitter(self, file):
+		file.write("movq ")
+		self._arg1.emitter(file)
+		file.write(", ")
+		self._arg2.emitter(file)
+		return;
 
 	def interp(self):
 		value = self._arg1.interp()
@@ -276,8 +322,9 @@ class retq(xinstr):
 	def __init__(self):
 		pass
 
-	def emitter():
-		print("retq")
+	def emitter(self, file):
+		file.write("retq")
+		return;
 
 	def interp(self):
 		# This should be the last instruction
@@ -290,8 +337,10 @@ class negq(xinstr):
 	def __init__(self, arg):
 		self._arg = arg
 
-	def emitter():
-		print("negq ", self._arg.emitter())
+	def emitter(self, file):
+		file.write("negq ")
+		self._arg.emitter(file)
+		return;
 
 	def interp(self):
 		src = xprog.ms.find(self._arg.interp())
@@ -307,8 +356,10 @@ class callq(xinstr):
 	def __init__(self, label):
 		self._label = label
 
-	def emitter():
-		print("callq ", self._label.emitter())
+	def emitter(self, file):
+		# rax is the default label for callq
+		file.write("callq %rax")
+		return;
 
 	# Need to find a way to let the prog know that when it's label hits
 	# _read_int, then it needs to come here
@@ -326,8 +377,10 @@ class jmp(xinstr):
 	def __init__(self, label):
 		self._label = label
 
-	def emitter():
-		print("jmp ", self._label.emitter())
+	def emitter(self, file):
+		file.write("jmp ")
+		xblock.emitter(file, self._label)
+		return;
 
 	def interp(self):
 		return xblock.interp(self._label);
@@ -338,8 +391,10 @@ class pushq(xinstr):
 	def __init__(self, arg):
 		self._arg = arg
 
-	def emitter():
-		print("pushq ", self._arg.emitter())
+	def emitter(self, file):
+		file.write("pushq ")
+		self._arg.emitter(file)
+		return;
 
 	def interp(self):
 		xprog.ms.insert("rsp", self._arg.interp(), -8)
@@ -351,8 +406,10 @@ class popq(xinstr):
 	def __init__(self, arg):
 		self._arg = arg
 
-	def emitter():
-		print("popq ", self._arg.emitter())
+	def emitter(self, file):
+		file.write("popq ")
+		self._arg.emitter(file)
+		return;
 
 	def interp(self):
 		xprog.ms.insert("rsp", self._arg.interp(), 8)
@@ -370,8 +427,9 @@ class xnum(xarg):
 	def __init__(self, num):
 		self._num = num
 
-	def emitter():
-		print("$", self._num)
+	def emitter(self, file):
+		file.write("$" + str(self._num));
+		return;
 
 	def interp(self):
 		return self._num;
@@ -383,8 +441,9 @@ class xreg(xarg):
 	def __init__(self, reg):
 		self._reg = reg
 
-	def emitter():
-		print("%", self._reg)
+	def emitter(self, file):
+		file.write("%" + self._reg)
+		return;
 
 	def interp(self):
 		return self._reg;
@@ -396,8 +455,9 @@ class xmem(xarg):
 		self._reg = reg
 		self._offset = offset
 
-	def emitter():
-		print("%", self._reg, "(", self._offset, ")")
+	def emitter(self, file):
+		file.write("%" + self._reg + "(" + str(self._offset) + ")");
+		return;
 
 	def interp(self):
 		# Look up value from the register
@@ -414,8 +474,9 @@ class xvar(xarg):
 	def __init__(self, var):
 		self._var = var
 
-	def emitter():
-		print("(", self._var, ")")
+	def emitter(self, file):
+		file.write("(" + self._var + ")")
+		return;
 
 	def interp(self):
 		return self._var;

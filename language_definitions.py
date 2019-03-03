@@ -22,6 +22,16 @@
 #          jmp label       | pushq arg1      | popq arg
 # arg :=   number($n)      | reg (%rn)       | mem %rn(offset)
 #          var (x)
+#
+# Language C0:
+#
+# p := (program info [label -> tail] ... )
+# tail := (return arg) | (seq start tail)
+# stmt := set var expr
+# expr := arg | (read) | (-arg) | (+ arg arg)
+# arg := number | var
+#
+
 
 ### Support Classes ###
 

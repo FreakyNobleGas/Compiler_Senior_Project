@@ -216,11 +216,11 @@ def testing():
 		print("\n")
 		i += 1
 
-	print("\n\n------------- Testing Optomizer -------------\n\n")
+	print("\n\n------------- Testing Optimizer -------------\n\n")
 
 	while i <= 30:
 		generate_arry_of_ints(50)
-		print("Test " + str(i) + ": Optomizer")
+		print("Test " + str(i) + ": Optimizer")
 		test = generate_large_program(rand_num())
 		test.interp()
 		opt_test = test.opt()
@@ -230,7 +230,7 @@ def testing():
 
 	while i <= 35:
 		generate_arry_of_ints(50)
-		print("Test " + str(i) + ": Optomizer")
+		print("Test " + str(i) + ": Optimizer")
 		test = generate_large_program(0)
 		test.interp()
 		opt_test = test.opt()
@@ -327,7 +327,7 @@ def testing():
 		test.interp()
 		print("\n")
 
-	print("\n\n------------- Testing R1 Optomization -------------\n\n")
+	print("\n\n------------- Testing R1 Optimization -------------\n\n")
 
 	expr.opt_flag = 1
 	y = "y"
@@ -361,7 +361,7 @@ def testing():
 	i = 60
 	while i <= 65:
 		generate_arry_of_ints(100)
-		print("Test " + str(i) + ": Optomizer")
+		print("Test " + str(i) + ": Optimizer")
 		test = generate_large_program(rand_num(), "R1")
 		test.interp()
 		opt_test = test.opt()
@@ -371,7 +371,7 @@ def testing():
 
 	while i <= 70:
 		generate_arry_of_ints(100)
-		print("Test " + str(i) + ": Optomizer")
+		print("Test " + str(i) + ": Optimizer")
 		test = generate_large_program(0, "R1")
 		test.interp()
 		opt_test = test.opt()

@@ -44,37 +44,64 @@ class node():
 		self._num = num
 		self.next = None
 
+########################## Env ##########################################################
+# -- Inherited Class env (enviroment) --
+
+class env():
+	def __init__(self):
+		self._head = None
+
+	def find_var(self, var):
+		temp = self._head
+		while temp != None:
+			if (temp._var == var):
+				return temp._num;
+			temp = temp.next;
+		print (" No mapping found. ")
+		return None;
+
+	def add_var(self, var, x):
+		new_node = node(var, x)
+		if (self._head == None):
+			self._head = new_node
+		else:
+			temp = self._head
+			new_node.next = temp
+			self._head = new_node
+
 #########################################################################################
 ##########################        C0 Language           #################################
 #########################################################################################
 
 ########################## C0 Program ###################################################
 class cprog():
-
+	# Program = (Program Info [label->tail])
 	def __init__(self, info, label):
 		self._info = info
-		# [label -> tail]
 		self._label = label
 
 ########################## Tail #########################################################
 class ctail():
-
+	# tail = (return arg) | (sequence statement tail)
 	def __init__(self, info):
 		self._info = info
 
 ########################## Statement ####################################################
 class cstmt():
+	# Statement = set: var expresion
 	def __init__(self, var, expr):
 		self._var = var
 		self._expr = expr
 
 ########################## Expression ###################################################
 class cexpr():
+	# Expression = arg | (read) | (-arg) | (+ arg arg)
 	def __init__(self, arg):
 		self._arg = arg
 
 ########################## Arguments ####################################################
 class carg():
+	# arg = number | vaar
 	def __init__(self, arg):
 		self._arg = arg
 
@@ -805,32 +832,6 @@ class let(expr):
 			if isinstance(xb_result, int):
 				return xb_result
 		return let(self._x, xe_result, xb_result);
-
-########################## Env ##########################################################
-# -- Inherited Class env (enviroment) --
-
-class env(expr):
-	def __init__(self):
-		self._head = None
-
-	def find_var(self, var):
-		temp = self._head
-		while temp != None:
-			if (temp._var == var):
-				return temp._num;
-			temp = temp.next;
-		print (" No mapping found. ")
-		return None;
-
-	def add_var(self, var, x):
-		new_node = node(var, x)
-		if (self._head == None):
-			self._head = new_node
-		else:
-			temp = self._head
-			new_node.next = temp
-			self._head = new_node
-		return;
 
 ########################## Var ##########################################################
 # -- Inherited Class for Var --

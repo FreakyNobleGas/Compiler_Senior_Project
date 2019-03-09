@@ -585,3 +585,177 @@ def testing():
 	main.clear()
 
 	testing = addq(xnum(5), xreg("rax"))
+
+	print("\n\n------------- Testing C0 Programs -------------\n\n")
+	# Set a few common variables as strings
+	x = "x"
+	y = "y"
+	z = "z"
+	# Initialize Label Map (Dictionary)
+	label_map = {}
+	# Initialize Instruction List
+	instr = []
+	print("\n Testing 82 - Answer = -3")
+	instr = [\
+		cstmt(x, cadd( carg(5), cneg( carg(8)))),\
+		carg(x)
+	]
+	label_map = {"main": instr}
+	test = cprog(None, label_map)
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 83 - Answer = 15")
+	instr = [\
+		cstmt(x, carg(5)),\
+		cstmt(y, carg(10)),\
+		cstmt(z, cadd(carg(x), carg(y))),\
+		carg(z)
+	]
+
+	label_map = {"main": instr}
+	test = cprog(None, label_map)
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 84 - Answer = 10")
+	instr = [\
+		cstmt(x, carg(5)),\
+		cstmt(y, carg(x)),\
+		cstmt(z, cadd(carg(x), carg(y))),\
+		carg(z)
+	]
+
+	label_map = {"main": instr}
+	test = cprog(None, label_map)
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 85 - Answer = -5")
+	instr = [\
+		carg(-5)
+	]
+
+	label_map = {"main": instr}
+	test = cprog(None, label_map)
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 86 - Answer = -45")
+	instr = [\
+		cstmt(x, carg(5)),\
+		cstmt(y, carg(50)),\
+		cstmt(y, cneg(carg(y))),\
+		cstmt(z, cadd(carg(x), carg(y))),\
+		carg(z)
+	]
+
+	label_map = {"main": instr}
+	test = cprog(None, label_map)
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 87 - Answer = Read Value")
+	instr = [\
+		cstmt(x, cread()),\
+		carg(x)
+	]
+
+	label_map = {"main": instr}
+	test = cprog(None, label_map)
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 88 - Answer = 25")
+	instr = [\
+		cstmt(x, carg(5)),\
+		cstmt(y, carg(10)),\
+		cstmt(z, cadd( carg(y), cadd(carg(x), carg(y)))),\
+		carg(z)
+	]
+
+	label_map = {"main": instr}
+	test = cprog(None, label_map)
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 89 - Answer = 10")
+	instr = [\
+		cstmt(x, carg(5)),\
+		cstmt(y, carg(10)),\
+		cstmt("a", cadd(carg(x), cneg(carg(y)))),\
+		cstmt(z, cadd(carg("a"), cadd(carg(x), carg(y)))),\
+		carg(z)
+	]
+
+	label_map = {"main": instr}
+	test = cprog(None, label_map)
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 90 - Answer = 10")
+	instr = [\
+		cstmt(x, carg(5)),\
+		cstmt(y, carg(10)),\
+		cstmt(z, cadd(carg(x), carg(x))),\
+		carg(z)
+	]
+
+	label_map = {"main": instr}
+	test = cprog(None, label_map)
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 91 - Answer = 5 + Read Value")
+	instr = [\
+		cstmt(x, carg(5)),\
+		cstmt(y, cread()),\
+		cstmt(z, cadd(carg(x), carg(y))),\
+		carg(z)
+	]
+
+	label_map = {"main": instr}
+	test = cprog(None, label_map)
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 92 - Answer = 30")
+	instr = [\
+		cstmt(x, carg(5)),\
+		cstmt(y, carg(10)),\
+		cstmt(z, cadd(carg(x), carg(y))),\
+		cstmt(z, cadd(carg(z), cadd(carg(x), carg(y)))),\
+		carg(z)
+	]
+
+	label_map = {"main": instr}
+	test = cprog(None, label_map)
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 93 - Answer = 60")
+	instr = [\
+		cstmt(x, carg(5)),\
+		cstmt(y, carg(10)),\
+		cstmt(z, cadd(carg(x), carg(y))),\
+		cstmt(z, cadd(carg(z), cadd(carg(x), carg(y)))),\
+		cstmt(z, cadd(carg(z), carg(z))),\
+		carg(z)
+	]
+
+	label_map = {"main": instr}
+	test = cprog(None, label_map)
+	test.interp()
+	instr.clear()
+	label_map.clear()

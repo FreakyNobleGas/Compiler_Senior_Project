@@ -45,7 +45,7 @@ class node():
 		self.next = None
 
 ########################## Env ##########################################################
-# -- Inherited Class env (enviroment) --
+# -- Class env (enviroment) --
 
 class env():
 	def __init__(self):
@@ -68,6 +68,19 @@ class env():
 			temp = self._head
 			new_node.next = temp
 			self._head = new_node
+
+########################## Uniquify #####################################################
+
+def uniquify(var, enviroment):
+	unique_count = 0
+	temp = enviroment.find_var(var)
+	new_var = var
+	while(temp != None):
+		new_var = var + str(unique_count)
+		temp = enviroment.find_var(new_var)
+		unique_count += 1
+
+	return new_var;
 
 #########################################################################################
 ##########################        C0 Language           #################################
@@ -801,7 +814,7 @@ class let(expr):
 		return self._xb.interp()
 
 	def opt(self):
-
+		
 		# Begin working on xe
 		num_of_reads = len(expr.arry_of_reads)
 

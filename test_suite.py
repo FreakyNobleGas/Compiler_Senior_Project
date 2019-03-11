@@ -231,10 +231,12 @@ def testing():
 	while i <= 35:
 		generate_arry_of_ints(50)
 		print("Test " + str(i) + ": Optimizer")
-		test = generate_large_program(0)
+		test1 = generate_large_program(0)
+		test = test1
 		test.interp()
-		opt_test = test.opt()
-		opt_test.interp()
+		opt_test = test1
+		test2 = opt_test.opt()
+		test2.interp()
 		print("\n")
 		i += 1
 	expr.opt_flag = 0

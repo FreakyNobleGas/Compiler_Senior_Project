@@ -663,6 +663,8 @@ class expr:
 		return 0;
 	def opt(self):
 		return 0;
+	def unique(self, unique):
+		return 0;
 
 ########################## Num ##########################################################
 # -- Inherited Class for Number Values --
@@ -693,6 +695,9 @@ class num(expr):
 		else:
 			return self._num * -1;
 
+	def uniq(self, unique_var):
+		return;
+
 ########################## Neg ##########################################################
 # -- Inherited Class for Negating Numbers --
 
@@ -713,6 +718,9 @@ class neg(expr):
 		expr.neg_count -= 1
 		return temp;
 
+	def uniq(self, unique_var):
+		self._num.uniq(unique_var)
+		return;
 
 ########################## Add ##########################################################
 # -- Inherited Class for Adding Numbers --
@@ -757,6 +765,15 @@ class add(expr):
 				return right_opt;
 			return right_opt + left_opt;
 
+	def uniq(self, unique_var):
+		# If either side is a let, then we do not want to go further since
+		# we call uniq from let for each instance of a let
+		if(type(self._lhs) is not let):
+			self._lhs.uniq(unique_var)
+		if(type(self._rhs) is not let):
+			self._rhs.uniq(unique_var)
+		return;
+
 ########################## Read #########################################################
 # -- Inherited Class for Adding Numbers --
 
@@ -797,6 +814,9 @@ class read(expr):
 			expr.arry_of_reads.insert(0, -1)
 		return 0;
 
+	def uniq(self, unique_var):
+		return;
+
 ########################## Let ##########################################################
 # -- Inherited Class for the Let --
 
@@ -812,6 +832,7 @@ class let(expr):
 	def interp(self):
 		# Immediately call Uniquify to avoid duplicate variables in env
 		self._x = uniquify(self._x, prog.map_env)
+		self._xb.uniq(self._x)
 
 		prog.map_env.add_var(self._x, self._xe.interp())
 		return self._xb.interp()
@@ -819,6 +840,7 @@ class let(expr):
 	def opt(self):
 		# Immediately call Uniquify to avoid duplicate variables in env
 		self._x = uniquify(self._x, prog.map_env)
+		self._xb.uniq(self._x)
 
 		# Begin working on xe
 		num_of_reads = len(expr.arry_of_reads)
@@ -921,6 +943,10 @@ class let(expr):
 				return xb_result
 		return let(self._x, xe_result, xb_result);
 
+	def uniq(self, unique_var):
+		print("Error: uniq let function should not have been hit.")
+		return;
+
 ########################## Var ##########################################################
 # -- Inherited Class for Var --
 
@@ -959,6 +985,11 @@ class var(expr):
 			else:
 				expr.arry_of_vars.insert(0, ("-", self._var))
 			return 0;
+
+	def uniq(self, unique_var):
+		self._var = unique_var
+		return;
+
 
 ########################## Prog #########################################################
 # -- Inherited Class for the Program "Container" --
@@ -1010,3 +1041,7 @@ class prog(expr):
 				print("Something went wrong. Neither 1 or -1")
 
 		return prog(None, generate);
+
+	def uniq(self, unique_var):
+		print ("Error: uniq prog function should not have been hit.")
+		return;

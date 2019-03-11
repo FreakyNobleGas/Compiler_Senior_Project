@@ -57,7 +57,7 @@ class env():
 			if (temp._var == var):
 				return temp._num;
 			temp = temp.next;
-		print (" No mapping found. ")
+		#print (" No mapping found. ")
 		return None;
 
 	def add_var(self, var, x):
@@ -72,7 +72,7 @@ class env():
 ########################## Uniquify #####################################################
 
 def uniquify(var, enviroment):
-	unique_count = 0
+	unique_count = 1
 	temp = enviroment.find_var(var)
 	new_var = var
 	while(temp != None):
@@ -810,11 +810,16 @@ class let(expr):
 		return "Let " + str(self._x) + " = " + str(self._xe.pretty_print()) + " in " + str(self._xb.pretty_print());
 
 	def interp(self):
+		# Immediately call Uniquify to avoid duplicate variables in env
+		self._x = uniquify(self._x, prog.map_env)
+
 		prog.map_env.add_var(self._x, self._xe.interp())
 		return self._xb.interp()
 
 	def opt(self):
-		
+		# Immediately call Uniquify to avoid duplicate variables in env
+		self._x = uniquify(self._x, prog.map_env)
+
 		# Begin working on xe
 		num_of_reads = len(expr.arry_of_reads)
 
@@ -967,6 +972,9 @@ class prog(expr):
 		self._e = e
 
 	def interp(self):
+		# Reinitialize Enviroment Mapping
+		prog.map_env = env()
+
 		# Index is used for optomization tests so that the default test has the same
 		# random read values as the optomized test
 		expr.opt_index = 0
@@ -979,6 +987,9 @@ class prog(expr):
 		return str(self._e.pretty_print());
 
 	def opt(self):
+		# Reinitialize Enviroment Mapping
+		prog.map_env = env()
+
 		expr.arry_of_reads.clear()
 		result = self._e.opt()
 		expr.neg_count = 0

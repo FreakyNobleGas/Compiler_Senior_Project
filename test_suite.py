@@ -759,3 +759,17 @@ def testing():
 	test.interp()
 	instr.clear()
 	label_map.clear()
+
+	print("\n\n------------- Testing Uniquify -------------\n\n")
+
+	print("\n Testing 94 - Answer = 30")
+	test = prog(None, let(y, num(10), add( var(y), let(y, add(num(5),num(5)), add(var(y), var(y))))))
+	test.interp()
+
+	print("\n Testing 95 - Answer = 60")
+	test = prog(None, let(y, num(30), add(var(y), let(y, num(10), add( var(y), let(y, add(num(5),num(5)), add(var(y), var(y))))))))
+	test.interp()
+
+	print("\n Testing 96 - Answer= 80")
+	test = prog(None, let(y, num(40), add(var(y), let(x, num(20), add(var(x), let(y, add(num(5),num(5)), add(var(y), var(y))))))))
+	test.interp()

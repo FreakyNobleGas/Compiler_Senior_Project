@@ -651,6 +651,7 @@ class expr:
 	arry_of_reads = []
 	arry_of_vars = []
 	random_arry_of_ints = []
+	list_of_lets = []
 
 	num_of_vars = 0
 	neg_count = 0
@@ -698,7 +699,7 @@ class num(expr):
 	def uniq(self, unique_var, old_var):
 		return;
 
-	def rco(self, list_of_lets):
+	def rco(self):
 		# Just return the number
 		return self._num;
 
@@ -725,6 +726,26 @@ class neg(expr):
 	def uniq(self, unique_var, old_var):
 		self._num.uniq(unique_var, old_var)
 		return;
+
+	def rco(self):
+		# If value is just a num or var, then save it to a new var and add to env
+		if ((isinstance(self._num, num)) || isinstance(self._num, var)):
+			result = self._num.rco()
+			result_var = create_unique_var()
+			xprog.map_env.add_var(result_var, result)
+			expr.list_of_lets.append(result_var)
+		# If not just a num or a var, get the var from calling rco, all other functions
+		# will return a var name
+		else:
+			result_var = self._num.rco()
+
+		# Create overarching var for the result
+		neg_var = create_unique_var()
+		xprog.map_env.add_var(neg_var, neg(result_var))
+		expr.list_of_lets.append(neg_var)
+
+		# Return name of overarching var
+		return neg_var;
 
 ########################## Add ##########################################################
 # -- Inherited Class for Adding Numbers --
@@ -778,23 +799,28 @@ class add(expr):
 			self._rhs.uniq(unique_var, old_var)
 		return;
 
-	def rco(self, list_of_lets):
-		# Calculate left side, and insert new vars
-		new_left_var = self._lhs.rco()
-		unique_var = create_unique_var()
-		list_of_lets.append(unique_var)
+	def rco(self):
+		if ((isinstance(self.lhs, num)) || (isinstance(self._lhs, var))):
+			lhs_var = create_unique_var()
+			lhs_result = self.lhs.rco()
+			xprog.map_env.add_var(lhs_var, lhs_result)
+			expr.list_of_lets.append(lhs_var)
+		else:
+			lhs_var = self.lhs.rco()
 
-		# Calculate right side, and insert new vars
-		new_right_var = self._rhs.rco()
-		unique_var = create_unique_var()
-		list_of_lets.append(unique_var)
+		if ((isinstance(self.rhs, num)) || (isinstance(self._rhs, var))):
+			rhs_var = create_unique_var()
+			rhs_result = self.rhs.rco()
+			xprog.map_env.add_var(rhs_var, rhs_result)
+			expr.list_of_lets.append(rhs_var)
+		else:
+			lhs_var = self.rhs.rco()
 
-		# Insert new unique var
-		unique_var = create_unique_var()
-		list_of_lets.append(unique_var)
+		add_var = create_unique_var()
+		xprog.map_env.add_var(add_var, add(lhs_var, rhs_var))
+		expr.list_of_lets.append(add_var)
 
-		return;
-
+		return add_var;
 
 
 ########################## Read #########################################################
@@ -839,6 +865,16 @@ class read(expr):
 
 	def uniq(self, unique_var, old_var):
 		return;
+
+	def rco(self):
+		num = input("Please enter a numerical value: ")
+		self._num = int(num)
+
+		read_var = create_unique_var()
+		xprog.map_env.add_var(read_var, self._num)
+		expr.list_of_lets.append(read_var)
+
+		return read_var;
 
 ########################## Let ##########################################################
 # -- Inherited Class for the Let --
@@ -972,6 +1008,28 @@ class let(expr):
 		print("Error: uniq let function should not have been hit.")
 		return;
 
+	def rco(self):
+		if ((isinstance(self._xe, num)) || (isinstance(self._xe, var))):
+			xe_var = create_unique_var()
+			xe_result = self._xe.rco()
+			prog.map_env.add_var(xe_var, xe_result)
+			expr.list_of_lets.append(xe_var)
+		else:
+			xe_var = self._xe.rco()
+
+		if ((isinstance(self._xb, num)) (isinstance(self._xb, var))):
+			xb_var = create_unique_var()
+			xb_result = self._xb.rco()
+			prog.map_env.add_var(xb_var, xb_result)
+			expr.list_of_lets.append(xb_var)
+		else:
+			xb_var = self._xe.rco()
+
+		prog.map_env.add_var(self._x, xb_var)
+		expr.list_of_lets.append(self._x)
+
+		return self._x;
+
 ########################## Var ##########################################################
 # -- Inherited Class for Var --
 
@@ -1018,7 +1076,7 @@ class var(expr):
 			self._var = unique_var
 		return;
 
-	def rco(self, list_of_lets):
+	def rco(self):
 		# Return the name of the variable
 		return self._var;
 
@@ -1078,6 +1136,8 @@ class prog(expr):
 		return;
 
 	def rco(self):
-		list_of_lets = []
-		generate = self._e.rco(list_of_lets)
+		# Reset list of lets
+		expr.list_of_lets.clear()
+
+		generate = self._e.rco()
 		return prog(None, generate);

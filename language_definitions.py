@@ -663,7 +663,7 @@ class expr:
 		return 0;
 	def opt(self):
 		return 0;
-	def unique(self, unique):
+	def uniq(self, unique_var, old_var):
 		return 0;
 
 ########################## Num ##########################################################
@@ -695,8 +695,12 @@ class num(expr):
 		else:
 			return self._num * -1;
 
-	def uniq(self, unique_var):
+	def uniq(self, unique_var, old_var):
 		return;
+
+	def rco(self, list_of_lets):
+		# Just return the number
+		return self._num;
 
 ########################## Neg ##########################################################
 # -- Inherited Class for Negating Numbers --
@@ -718,8 +722,8 @@ class neg(expr):
 		expr.neg_count -= 1
 		return temp;
 
-	def uniq(self, unique_var):
-		self._num.uniq(unique_var)
+	def uniq(self, unique_var, old_var):
+		self._num.uniq(unique_var, old_var)
 		return;
 
 ########################## Add ##########################################################
@@ -765,14 +769,33 @@ class add(expr):
 				return right_opt;
 			return right_opt + left_opt;
 
-	def uniq(self, unique_var):
+	def uniq(self, unique_var, old_var):
 		# If either side is a let, then we do not want to go further since
 		# we call uniq from let for each instance of a let
 		if(type(self._lhs) is not let):
-			self._lhs.uniq(unique_var)
+			self._lhs.uniq(unique_var, old_var)
 		if(type(self._rhs) is not let):
-			self._rhs.uniq(unique_var)
+			self._rhs.uniq(unique_var, old_var)
 		return;
+
+	def rco(self, list_of_lets):
+		# Calculate left side, and insert new vars
+		new_left_var = self._lhs.rco()
+		unique_var = create_unique_var()
+		list_of_lets.append(unique_var)
+
+		# Calculate right side, and insert new vars
+		new_right_var = self._rhs.rco()
+		unique_var = create_unique_var()
+		list_of_lets.append(unique_var)
+
+		# Insert new unique var
+		unique_var = create_unique_var()
+		list_of_lets.append(unique_var)
+
+		return;
+
+
 
 ########################## Read #########################################################
 # -- Inherited Class for Adding Numbers --
@@ -814,7 +837,7 @@ class read(expr):
 			expr.arry_of_reads.insert(0, -1)
 		return 0;
 
-	def uniq(self, unique_var):
+	def uniq(self, unique_var, old_var):
 		return;
 
 ########################## Let ##########################################################
@@ -831,16 +854,18 @@ class let(expr):
 
 	def interp(self):
 		# Immediately call Uniquify to avoid duplicate variables in env
+		old_var = self._x
 		self._x = uniquify(self._x, prog.map_env)
-		self._xb.uniq(self._x)
+		self._xb.uniq(self._x, old_var)
 
 		prog.map_env.add_var(self._x, self._xe.interp())
 		return self._xb.interp()
 
 	def opt(self):
 		# Immediately call Uniquify to avoid duplicate variables in env
+		old_var = self._x
 		self._x = uniquify(self._x, prog.map_env)
-		self._xb.uniq(self._x)
+		self._xb.uniq(self._x, old_var)
 
 		# Begin working on xe
 		num_of_reads = len(expr.arry_of_reads)
@@ -986,10 +1011,16 @@ class var(expr):
 				expr.arry_of_vars.insert(0, ("-", self._var))
 			return 0;
 
-	def uniq(self, unique_var):
-		self._var = unique_var
+	def uniq(self, unique_var, old_var):
+		# If var is previous name before uniquify, then change,
+		# otherwise, this var is not the same.
+		if(self._var == old_var):
+			self._var = unique_var
 		return;
 
+	def rco(self, list_of_lets):
+		# Return the name of the variable
+		return self._var;
 
 ########################## Prog #########################################################
 # -- Inherited Class for the Program "Container" --
@@ -1042,6 +1073,11 @@ class prog(expr):
 
 		return prog(None, generate);
 
-	def uniq(self, unique_var):
+	def uniq(self, unique_var, old_var):
 		print ("Error: uniq prog function should not have been hit.")
 		return;
+
+	def rco(self):
+		list_of_lets = []
+		generate = self._e.rco(list_of_lets)
+		return prog(None, generate);

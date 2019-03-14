@@ -775,3 +775,13 @@ def testing():
 	print("\n Testing 96 - Answer= 80")
 	test = prog(None, let(y, num(40), add(var(y), let(x, num(20), add(var(x), let(y, add(num(5),num(5)), add(var(y), var(y))))))))
 	test.interp()
+
+	print("\n\n------------- Testing RCO -----------------\n\n")
+
+	print("\n Testing 97 - Answer = 30")
+	test = prog(None, let(y, num(10), add( var(y), let(y, add(num(5),num(5)), add(var(y), var(y))))))
+	test.interp()
+
+	print("Running RCO")
+	test = test.rco()
+	test.interp()

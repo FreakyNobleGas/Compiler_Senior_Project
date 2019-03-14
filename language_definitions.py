@@ -82,6 +82,14 @@ def uniquify(var, enviroment):
 
 	return new_var;
 
+########################## Create Unique Var ############################################
+
+def create_unique_var(enviroment):
+	default_var = "_u"
+	unique_var = uniquify(default_var, enviroment)
+	print("CREATE_UNIQUE_VAR == ", unique_var)
+	return unique_var;
+
 #########################################################################################
 ##########################        C0 Language           #################################
 #########################################################################################
@@ -701,7 +709,7 @@ class num(expr):
 
 	def rco(self):
 		# Just return the number
-		return self._num;
+		return num(self._num);
 
 ########################## Neg ##########################################################
 # -- Inherited Class for Negating Numbers --
@@ -728,10 +736,15 @@ class neg(expr):
 		return;
 
 	def rco(self):
+		print("NEG RCO")
 		# If value is just a num or var, then save it to a new var and add to env
-		if ((isinstance(self._num, num)) || isinstance(self._num, var)):
+		if ((isinstance(self._num, num)) or isinstance(self._num, var)):
 			result = self._num.rco()
-			result_var = create_unique_var()
+
+			if(isinstance(result, str)):
+				result = var(result)
+
+			result_var = create_unique_var(prog.map_env)
 			xprog.map_env.add_var(result_var, result)
 			expr.list_of_lets.append(result_var)
 		# If not just a num or a var, get the var from calling rco, all other functions
@@ -740,8 +753,8 @@ class neg(expr):
 			result_var = self._num.rco()
 
 		# Create overarching var for the result
-		neg_var = create_unique_var()
-		xprog.map_env.add_var(neg_var, neg(result_var))
+		neg_var = create_unique_var(prog.map_env)
+		prog.map_env.add_var(neg_var, neg(var(result_var)))
 		expr.list_of_lets.append(neg_var)
 
 		# Return name of overarching var
@@ -800,24 +813,33 @@ class add(expr):
 		return;
 
 	def rco(self):
-		if ((isinstance(self.lhs, num)) || (isinstance(self._lhs, var))):
-			lhs_var = create_unique_var()
-			lhs_result = self.lhs.rco()
-			xprog.map_env.add_var(lhs_var, lhs_result)
+		print("ADD RCO")
+		if ((isinstance(self._lhs, num)) or (isinstance(self._lhs, var))):
+			lhs_var = create_unique_var(prog.map_env)
+			lhs_result = self._lhs.rco()
+
+			if(isinstance(lhs_result, str)):
+				lhs_result = var(lhs_result)
+
+			prog.map_env.add_var(lhs_var, lhs_result)
 			expr.list_of_lets.append(lhs_var)
 		else:
 			lhs_var = self.lhs.rco()
 
-		if ((isinstance(self.rhs, num)) || (isinstance(self._rhs, var))):
-			rhs_var = create_unique_var()
-			rhs_result = self.rhs.rco()
-			xprog.map_env.add_var(rhs_var, rhs_result)
+		if ((isinstance(self._rhs, num)) or (isinstance(self._rhs, var))):
+			rhs_var = create_unique_var(prog.map_env)
+			rhs_result = self._rhs.rco()
+
+			if(isinstance(rhs_result, str)):
+				rhs_result = var(rhs_result)
+
+			prog.map_env.add_var(rhs_var, rhs_result)
 			expr.list_of_lets.append(rhs_var)
 		else:
-			lhs_var = self.rhs.rco()
+			rhs_var = self._rhs.rco()
 
-		add_var = create_unique_var()
-		xprog.map_env.add_var(add_var, add(lhs_var, rhs_var))
+		add_var = create_unique_var(prog.map_env)
+		prog.map_env.add_var(add_var, add(var(lhs_var), var(rhs_var)))
 		expr.list_of_lets.append(add_var)
 
 		return add_var;
@@ -867,11 +889,12 @@ class read(expr):
 		return;
 
 	def rco(self):
+		print("READ RCO")
 		num = input("Please enter a numerical value: ")
 		self._num = int(num)
 
-		read_var = create_unique_var()
-		xprog.map_env.add_var(read_var, self._num)
+		read_var = create_unique_var(prog.map_env)
+		prog.map_env.add_var(read_var, self._num)
 		expr.list_of_lets.append(read_var)
 
 		return read_var;
@@ -889,15 +912,27 @@ class let(expr):
 		return "Let " + str(self._x) + " = " + str(self._xe.pretty_print()) + " in " + str(self._xb.pretty_print());
 
 	def interp(self):
+		# Check if self._x is accidently a var. If so, return to string.
+		if(isinstance(self._x, var)):
+			print("SELF._X == VAR OBJECT")
+			self._x = self._x._var
+		else:
+			print("SELF._X == NOT VAR, TYPE == ", type(self._x))
 		# Immediately call Uniquify to avoid duplicate variables in env
 		old_var = self._x
 		self._x = uniquify(self._x, prog.map_env)
+		print("SELF._X ==", self._x)
+		print("OLD VAR == ", old_var)
 		self._xb.uniq(self._x, old_var)
 
 		prog.map_env.add_var(self._x, self._xe.interp())
 		return self._xb.interp()
 
 	def opt(self):
+		# Check if self._x is accidently a var. If so, return to string
+		if(isinstance(self._x, var)):
+			self._x = self._x._var
+
 		# Immediately call Uniquify to avoid duplicate variables in env
 		old_var = self._x
 		self._x = uniquify(self._x, prog.map_env)
@@ -1004,26 +1039,39 @@ class let(expr):
 				return xb_result
 		return let(self._x, xe_result, xb_result);
 
-	def uniq(self, unique_var):
+	def uniq(self, unique_var, old_var):
 		print("Error: uniq let function should not have been hit.")
 		return;
 
 	def rco(self):
-		if ((isinstance(self._xe, num)) || (isinstance(self._xe, var))):
-			xe_var = create_unique_var()
+		print("HITTING LET RCO")
+		if ((isinstance(self._xe, num)) or (isinstance(self._xe, var))):
+			print("XE: HITTING JUST A NUM OR VAR")
+			xe_var = create_unique_var(prog.map_env)
 			xe_result = self._xe.rco()
+
+			if(isinstance(xe_result, str)):
+				xe_result = var(xe_result)
+
 			prog.map_env.add_var(xe_var, xe_result)
 			expr.list_of_lets.append(xe_var)
 		else:
+			print("XE: HITTING NOT A NUM OR VAR")
 			xe_var = self._xe.rco()
 
-		if ((isinstance(self._xb, num)) (isinstance(self._xb, var))):
-			xb_var = create_unique_var()
+		if ((isinstance(self._xb, num)) or (isinstance(self._xb, var))):
+			print("XB: HITTING JUST A NUM OR VAR")
+			xb_var = create_unique_var(prog.map_env)
 			xb_result = self._xb.rco()
+
+			if(isistance(xb_result, str)):
+				xb_result = var(xb_result)
+
 			prog.map_env.add_var(xb_var, xb_result)
 			expr.list_of_lets.append(xb_var)
 		else:
-			xb_var = self._xe.rco()
+			print("XB: HITTING NOT A NUM OR VAR")
+			xb_var = self._xb.rco()
 
 		prog.map_env.add_var(self._x, xb_var)
 		expr.list_of_lets.append(self._x)
@@ -1135,9 +1183,39 @@ class prog(expr):
 		print ("Error: uniq prog function should not have been hit.")
 		return;
 
+	# Helps recursively enter lets
+	def rco_helper(index):
+		# If last let
+		if (index == (len(expr.list_of_lets) - 1)):
+			print("ENTERING HELPER: LAST LET")
+			vars = expr.list_of_lets[index]
+			result = prog.map_env.find_var(vars)
+			return let(vars, result, var(vars));
+
+		# If not last let
+		elif (index < len(expr.list_of_lets)):
+			print("ENTERING HELPER: NOT LAST LET")
+			vars = expr.list_of_lets[index]
+			result = prog.map_env.find_var(vars)
+			return let(vars, result, prog.rco_helper(index + 1));
+
+		# This should never be hit
+		else:
+			print("Error: rco_helper else block was hit.")
+			return;
+
+
 	def rco(self):
 		# Reset list of lets
 		expr.list_of_lets.clear()
 
-		generate = self._e.rco()
+		# Descends down program and determines lets by appending the names of
+		# vars to list of lets
+		self._e.rco()
+		print("LIST OF LETS == ", len(expr.list_of_lets))
+		# Initialize first let, and then recursively enter lets using helper function
+		vars = expr.list_of_lets[0]
+		result = prog.map_env.find_var(vars)
+		generate = let(vars, result, prog.rco_helper(1))
+
 		return prog(None, generate);

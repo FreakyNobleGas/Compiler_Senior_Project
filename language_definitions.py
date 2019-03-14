@@ -1044,9 +1044,8 @@ class let(expr):
 		return;
 
 	def rco(self):
-		print("HITTING LET RCO")
+		# Calculate XE
 		if ((isinstance(self._xe, num)) or (isinstance(self._xe, var))):
-			print("XE: HITTING JUST A NUM OR VAR")
 			xe_var = create_unique_var(prog.map_env)
 			xe_result = self._xe.rco()
 
@@ -1056,25 +1055,24 @@ class let(expr):
 			prog.map_env.add_var(xe_var, xe_result)
 			expr.list_of_lets.append(xe_var)
 		else:
-			print("XE: HITTING NOT A NUM OR VAR")
 			xe_var = self._xe.rco()
 
+		# Add X to the enviroment
+		prog.map_env.add_var(self._x, var(xe_var))
+		expr.list_of_lets.append(self._x)
+
+		# Calculate XB
 		if ((isinstance(self._xb, num)) or (isinstance(self._xb, var))):
-			print("XB: HITTING JUST A NUM OR VAR")
 			xb_var = create_unique_var(prog.map_env)
 			xb_result = self._xb.rco()
 
-			if(isistance(xb_result, str)):
+			if(isinstance(xb_result, str)):
 				xb_result = var(xb_result)
 
 			prog.map_env.add_var(xb_var, xb_result)
 			expr.list_of_lets.append(xb_var)
 		else:
-			print("XB: HITTING NOT A NUM OR VAR")
 			xb_var = self._xb.rco()
-
-		prog.map_env.add_var(self._x, xb_var)
-		expr.list_of_lets.append(self._x)
 
 		return self._x;
 
@@ -1134,7 +1132,7 @@ class var(expr):
 class prog(expr):
 	# Global variable that holds the linked list that maps var->num
 	map_env = env()
-
+	debugger = ""
 	def __init__(self, info, e):
 		self._info = info
 		self._e = e
@@ -1187,16 +1185,16 @@ class prog(expr):
 	def rco_helper(index):
 		# If last let
 		if (index == (len(expr.list_of_lets) - 1)):
-			print("ENTERING HELPER: LAST LET")
 			vars = expr.list_of_lets[index]
 			result = prog.map_env.find_var(vars)
+			prog.debugger += "let " + str(vars) + " = " + str(result) + "in" + str(vars)
 			return let(vars, result, var(vars));
 
 		# If not last let
 		elif (index < len(expr.list_of_lets)):
-			print("ENTERING HELPER: NOT LAST LET")
 			vars = expr.list_of_lets[index]
 			result = prog.map_env.find_var(vars)
+			prog.debugger += "let " + str(vars) + " = " + str(result) + "in\n"
 			return let(vars, result, prog.rco_helper(index + 1));
 
 		# This should never be hit
@@ -1214,8 +1212,10 @@ class prog(expr):
 		self._e.rco()
 		print("LIST OF LETS == ", len(expr.list_of_lets))
 		# Initialize first let, and then recursively enter lets using helper function
+		#index = len(expr.list_of_lets) - 1
 		vars = expr.list_of_lets[0]
 		result = prog.map_env.find_var(vars)
+		prog.debugger += "let " + str(vars) + " = " + str(result) + "in\n"
 		generate = let(vars, result, prog.rco_helper(1))
-
+		print (prog.debugger)
 		return prog(None, generate);

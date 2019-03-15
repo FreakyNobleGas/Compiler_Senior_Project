@@ -70,7 +70,8 @@ class env():
 			self._head = new_node
 
 ########################## Uniquify #####################################################
-
+# -- Looks for the var passed in the enviroment, and creates a new unique var if it already
+# -- exists
 def uniquify(var, enviroment):
 	unique_count = 1
 	temp = enviroment.find_var(var)
@@ -83,11 +84,11 @@ def uniquify(var, enviroment):
 	return new_var;
 
 ########################## Create Unique Var ############################################
-
+# -- Creates a new unique variable based of the enviroment. These variables are distinguished
+# -- because they start with "_u"
 def create_unique_var(enviroment):
 	default_var = "_u"
 	unique_var = uniquify(default_var, enviroment)
-	print("CREATE_UNIQUE_VAR == ", unique_var)
 	return unique_var;
 
 #########################################################################################
@@ -736,7 +737,6 @@ class neg(expr):
 		return;
 
 	def rco(self):
-		print("NEG RCO")
 		# If value is just a num or var, then save it to a new var and add to env
 		if ((isinstance(self._num, num)) or isinstance(self._num, var)):
 			result = self._num.rco()
@@ -813,7 +813,8 @@ class add(expr):
 		return;
 
 	def rco(self):
-		print("ADD RCO")
+		# Check if left hand side a num/var, else call rco again to get to a
+		# num or var
 		if ((isinstance(self._lhs, num)) or (isinstance(self._lhs, var))):
 			lhs_var = create_unique_var(prog.map_env)
 			lhs_result = self._lhs.rco()
@@ -826,6 +827,7 @@ class add(expr):
 		else:
 			lhs_var = self.lhs.rco()
 
+		# Same as left hand side, now with right hand side
 		if ((isinstance(self._rhs, num)) or (isinstance(self._rhs, var))):
 			rhs_var = create_unique_var(prog.map_env)
 			rhs_result = self._rhs.rco()
@@ -838,10 +840,12 @@ class add(expr):
 		else:
 			rhs_var = self._rhs.rco()
 
+		# Create var that will add the new variables for lhs and rhs
 		add_var = create_unique_var(prog.map_env)
 		prog.map_env.add_var(add_var, add(var(lhs_var), var(rhs_var)))
 		expr.list_of_lets.append(add_var)
 
+		# return var in case there are more calls
 		return add_var;
 
 
@@ -888,8 +892,8 @@ class read(expr):
 	def uniq(self, unique_var, old_var):
 		return;
 
+	# Ask the user for a num, and add that num to a new unique var
 	def rco(self):
-		print("READ RCO")
 		num = input("Please enter a numerical value: ")
 		self._num = int(num)
 
@@ -914,15 +918,11 @@ class let(expr):
 	def interp(self):
 		# Check if self._x is accidently a var. If so, return to string.
 		if(isinstance(self._x, var)):
-			print("SELF._X == VAR OBJECT")
 			self._x = self._x._var
-		else:
-			print("SELF._X == NOT VAR, TYPE == ", type(self._x))
+
 		# Immediately call Uniquify to avoid duplicate variables in env
 		old_var = self._x
 		self._x = uniquify(self._x, prog.map_env)
-		print("SELF._X ==", self._x)
-		print("OLD VAR == ", old_var)
 		self._xb.uniq(self._x, old_var)
 
 		prog.map_env.add_var(self._x, self._xe.interp())
@@ -1040,7 +1040,6 @@ class let(expr):
 		return let(self._x, xe_result, xb_result);
 
 	def uniq(self, unique_var, old_var):
-		print("Error: uniq let function should not have been hit.")
 		return;
 
 	def rco(self):
@@ -1074,7 +1073,7 @@ class let(expr):
 		else:
 			xb_var = self._xb.rco()
 
-		return self._x;
+		return xb_var;
 
 ########################## Var ##########################################################
 # -- Inherited Class for Var --
@@ -1187,14 +1186,12 @@ class prog(expr):
 		if (index == (len(expr.list_of_lets) - 1)):
 			vars = expr.list_of_lets[index]
 			result = prog.map_env.find_var(vars)
-			prog.debugger += "let " + str(vars) + " = " + str(result) + "in" + str(vars)
 			return let(vars, result, var(vars));
 
 		# If not last let
 		elif (index < len(expr.list_of_lets)):
 			vars = expr.list_of_lets[index]
 			result = prog.map_env.find_var(vars)
-			prog.debugger += "let " + str(vars) + " = " + str(result) + "in\n"
 			return let(vars, result, prog.rco_helper(index + 1));
 
 		# This should never be hit
@@ -1210,12 +1207,9 @@ class prog(expr):
 		# Descends down program and determines lets by appending the names of
 		# vars to list of lets
 		self._e.rco()
-		print("LIST OF LETS == ", len(expr.list_of_lets))
 		# Initialize first let, and then recursively enter lets using helper function
 		#index = len(expr.list_of_lets) - 1
 		vars = expr.list_of_lets[0]
 		result = prog.map_env.find_var(vars)
-		prog.debugger += "let " + str(vars) + " = " + str(result) + "in\n"
 		generate = let(vars, result, prog.rco_helper(1))
-		print (prog.debugger)
 		return prog(None, generate);

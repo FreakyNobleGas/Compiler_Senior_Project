@@ -820,9 +820,16 @@ def testing():
 	test = test.rco()
 	test.interp()
 
-	print("\n Testing 103 - Answer = 30")
-	test = prog(None, let(y, num(10), add( var(y), let(y, add(num(5),num(5)), add(var(y), var(y))))))
+	print("\n Testing 103 - Answer = 25")
+	test = prog(None, let(y, num(5), add( var(y), let(y, add(num(5),num(5)), add(var(y), var(y))))))
 	test.interp()
 	print("Running RCO")
+	test = test.rco()
+	test.interp()
+
+	print("\n Testing 104 - Answer = 60")
+	test = prog(None, let(y, num(30), add(var(y), let(y, num(10), add( var(y), let(y, add(num(5),num(5)), add(var(y), var(y))))))))
+	test.interp()
+	print("Running RC0")
 	test = test.rco()
 	test.interp()

@@ -941,6 +941,7 @@ def testing():
 	test = test.select()
 	print("Interp X # 2: ")
 	test.interp()
+	test.emitter()
 
 	print("\n Testing 115 - Answer = 15")
 	test = prog(None, add(num(5), add(num(5), num(5))))
@@ -952,6 +953,7 @@ def testing():
 	test = test.select()
 	print("Interp X # 2: ")
 	test.interp()
+	test.emitter()
 
 	print("\n Testing 116 - Answer = 13")
 	test = prog(None, let(x, num(5), add(var(x), num(8))))
@@ -963,6 +965,7 @@ def testing():
 	test = test.select()
 	print("Interp X # 2: ")
 	test.interp()
+	test.emitter()
 
 	print("\n Testing 117 - Answer = 15")
 	test = prog(None, let(x, num(5), add(var(x), let(y, num(10), var(y)))))
@@ -974,6 +977,7 @@ def testing():
 	test = test.select()
 	print("Interp X # 2: ")
 	test.interp()
+	test.emitter()
 
 	print("\n Testing 118 - Answer = 25")
 	test = prog(None, let(y, num(5), add( var(y), let(y, add(num(5),num(5)), add(var(y), var(y))))))
@@ -985,6 +989,7 @@ def testing():
 	test = test.select()
 	print("Interp X # 2: ")
 	test.interp()
+	test.emitter()
 
 	print("\n Testing 119 - Answer = 60")
 	test = prog(None, let(y, num(30), add(var(y), let(y, num(10), add( var(y), let(y, add(num(5),num(5)), add(var(y), var(y))))))))
@@ -996,3 +1001,4 @@ def testing():
 	test = test.select()
 	print("Interp X # 2: ")
 	test.interp()
+	test.emitter()

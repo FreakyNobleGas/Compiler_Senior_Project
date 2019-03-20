@@ -12,6 +12,7 @@
 # arg := number | var
 #
 
+from language_x import *
 from support import *
 
 #########################################################################################
@@ -22,6 +23,8 @@ from support import *
 class cprog():
     # Dictionary to hold all vars -> (x...)
     info_dict = {}
+    # Mapping for select pass
+    label_map = {}
 
     # Program = (Program Info [label->tail])
     def __init__(self, info, label):
@@ -53,6 +56,31 @@ class cprog():
         ctail.uncover(cenv, instr)
         return cprog(cprog.info_dict, self._label);
 
+    # Takes a C program and returns a X0 program
+    def select(self):
+        # Reinitialize mapping
+        cprog.label_map.clear()
+        # List of C instructions
+        c_instr = self._label["middle"]
+        # Empty List to hold new X instructions
+        x_instr = []
+        # New enviroment
+        cenv = env()
+
+        # Go through C program and create X program
+        x_instr = ctail.select(cenv, c_instr, x_instr)
+
+        # Select will return the x_instr list
+        cprog.label_map["main"] = x_instr
+
+        # After rco, every program will have at least one variable so we will need this
+        # label for now
+        end_instr = [retq()]
+        cprog.label_map["end"] = end_instr
+
+        return xprog(None, cprog.label_map);
+
+
 ########################## C Tail ########################################################
 class ctail():
     # tail = (return arg) | (sequence statement tail)
@@ -81,6 +109,23 @@ class ctail():
 
         return "Error: No return statement in uncover.";
 
+    def select(cenv, c_instr, x_instr):
+        for i in c_instr:
+            if isinstance(i, cstmt):
+                # sequence stmt tail
+                x_instr = i.select(cenv, c_instr, x_instr)
+            else:
+                # Last instruction, should be a return so we will jump to a new label
+                # since we do not know how many local variales are in the stack
+                dst = None
+                arg = i.select(cenv, c_instr, x_instr, dst)
+                x_instr.append(movq(arg, xreg("rax")))
+                x_instr.append(jmp("end"))
+                #i.select(cenv, c_instr, x_instr, dst)
+                return x_instr;
+
+        return "Error: No return statement in select.";
+
 ########################## C Statement ##################################################
 class cstmt():
     # Statement = set: var expresion
@@ -104,6 +149,11 @@ class cstmt():
             print(" " + self._var, " = ", self._expr.uncover(cenv))
         return;
 
+    def select(self, cenv, c_instr, x_instr):
+        dst = xvar(self._var)
+        x_instr = self._expr.select(cenv, c_instr, x_instr, dst)
+        return x_instr;
+
 ########################## C Expression #################################################
 class cexpr():
     # Expression = arg | (read) | (-arg) | (+ arg arg)
@@ -116,6 +166,11 @@ class cexpr():
     def uncover(self, cenv):
         #print("Error: cexpr was hit in uncover-locals function.")
         return self._arg.uncover(cenv);
+
+    def select(self, cenv, c_instr, x_instr, dst):
+        x_instr = self._arg.select(cenv, c_instr, x_instr, dst)
+        return x_instr;
+
 
 ########################## C Read #######################################################
 class cread():
@@ -132,6 +187,11 @@ class cread():
         #print("Error: cread was hit in uncover-locals function.")
         return "Read()";
 
+    def select(self, cenv, c_instr, x_instr, dst):
+        x_instr.append(callq("_read_int"))
+        x_instr.append(movq("rax", dst))
+        return x_instr;
+
 ########################## C Negate #####################################################
 class cneg():
     def __init__(self, arg):
@@ -146,6 +206,19 @@ class cneg():
     def uncover(self, cenv):
         #print("Error: cneg was hit in uncover-locals function.")
         return "cneg(" + str(self._arg) + ")";
+
+    def select(self, cenv, c_instr, x_instr, dst):
+        # Retrieve actual argument value from carg object
+        if(isinstance(self._arg, carg)):
+            self._arg = self._arg._arg
+            
+        if(isinstance(self._arg, int)):
+            x_instr.append(movq(xnum(self._arg), dst))
+        else:
+            x_instr.append(movq(xvar(self._arg), dst))
+
+        x_instr.append(negq(dst))
+        return x_instr;
 
 ########################## C Add ########################################################
 class cadd():
@@ -166,6 +239,24 @@ class cadd():
         if(isinstance(self._arg1, carg) and isinstance(self._arg2, carg)):
             return "add(" + str(self._arg1.uncover(cenv)) + "," + str(self._arg2.uncover(cenv)) + ")";
 
+    def select(self, cenv, c_instr, x_instr, dst):
+        # Retrieve actual argument value from carg object
+        if(isinstance(self._arg1, carg)):
+            self._arg1 = self._arg1._arg
+        if(isinstance(self._arg2, carg)):
+            self._arg2 = self._arg2._arg
+
+        if(isinstance(self._arg2, int)):
+            x_instr.append(movq(xnum(self._arg2), dst))
+        else:
+            x_instr.append(movq(xvar(self._arg2), dst))
+
+        if(isinstance(self._arg1,int)):
+            x_instr.append(addq(xnum(self._arg1), dst))
+        else:
+            x_instr.append(addq(xvar(self._arg1), dst))
+
+        return x_instr;
 
 ########################## C Argument ###################################################
 class carg():
@@ -186,3 +277,17 @@ class carg():
     def uncover(self, cenv):
         #print("Error: carg was hit in uncover-locals function.")
         return "carg(" + str(self._arg) + ")";
+
+    def select(self, cenv, c_instr, x_instr, dst):
+        if(dst is None):
+            if(isinstance(self._arg, int)):
+                return xnum(self._arg);
+            else:
+                return xvar(self._arg);
+        else:
+            if(isinstance(self._arg, int)):
+                x_instr.append(movq(xnum(self._arg), dst))
+                return x_instr;
+            else:
+                x_instr.append(movq(xvar(self._arg), dst))
+                return x_instr;

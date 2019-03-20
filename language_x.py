@@ -344,7 +344,7 @@ class callq(xinstr):
 
 	def emitter(self, file):
 		# rax is the default label for callq
-		file.write("callq %rax")
+		file.write("callq %rax") # This might need to be "_read_int"
 		return;
 
 	# Need to find a way to let the prog know that when it's label hits

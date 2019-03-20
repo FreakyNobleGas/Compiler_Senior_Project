@@ -20,6 +20,9 @@ from support import *
 
 ########################## C Program ####################################################
 class cprog():
+    # Dictionary to hold all vars -> (x...)
+    info_dict = {}
+
     # Program = (Program Info [label->tail])
     def __init__(self, info, label):
         self._info = info
@@ -36,6 +39,19 @@ class cprog():
 
         return print("return ", ctail.interp(cenv, instr), "\n")
 
+    # Requires that ECON and RCO have passed
+    def uncover(self):
+        # Reinitialize info dictionary
+        cprog.info_dict.clear()
+
+        # Initialize empty enviroment
+        cenv = env()
+
+        # middle is label created by ECON
+        instr = self._label["middle"]
+
+        ctail.uncover(cenv, instr)
+        return cprog(cprog.info_dict, self._label);
 
 ########################## C Tail ########################################################
 class ctail():
@@ -53,7 +69,17 @@ class ctail():
                 arg = i.interp(cenv)
                 return arg;
 
-        return "Error: No return statement."
+        return "Error: No return statement in interp.";
+
+    def uncover(cenv, instr):
+        for i in instr:
+            if isinstance(i, cstmt):
+                # sequence stmt tail
+                i.uncover(cenv)
+            else:
+                return;
+
+        return "Error: No return statement in uncover.";
 
 ########################## C Statement ##################################################
 class cstmt():
@@ -68,6 +94,16 @@ class cstmt():
         cenv.add_var(self._var, expr)
         return;
 
+    def uncover(self, cenv):
+        cprog.info_dict[self._var] = self._expr
+
+        # Call to uncover from here is strictly for pretty print feature
+        if(self._var.startswith("_")):
+            print(self._var, " = ", self._expr.uncover(cenv))
+        else:
+            print(" " + self._var, " = ", self._expr.uncover(cenv))
+        return;
+
 ########################## C Expression #################################################
 class cexpr():
     # Expression = arg | (read) | (-arg) | (+ arg arg)
@@ -76,6 +112,10 @@ class cexpr():
 
     def interp(self, cenv):
         return self._arg.interp(cenv);
+
+    def uncover(self, cenv):
+        #print("Error: cexpr was hit in uncover-locals function.")
+        return self._arg.uncover(cenv);
 
 ########################## C Read #######################################################
 class cread():
@@ -88,6 +128,10 @@ class cread():
         print(" read ", self._num, " ")
         return self._num;
 
+    def uncover(self, cenv):
+        #print("Error: cread was hit in uncover-locals function.")
+        return "Read()";
+
 ########################## C Negate #####################################################
 class cneg():
     def __init__(self, arg):
@@ -98,6 +142,10 @@ class cneg():
         result *= -1
         print("Neg(", result, ")")
         return result
+
+    def uncover(self, cenv):
+        #print("Error: cneg was hit in uncover-locals function.")
+        return "cneg(" + str(self._arg) + ")";
 
 ########################## C Add ########################################################
 class cadd():
@@ -112,6 +160,13 @@ class cadd():
         print("add(", arg1, ",", arg2, ")")
         return result;
 
+    def uncover(self, cenv):
+        #print("Error: cadd was hit in uncover-locals function.")
+
+        if(isinstance(self._arg1, carg) and isinstance(self._arg2, carg)):
+            return "add(" + str(self._arg1.uncover(cenv)) + "," + str(self._arg2.uncover(cenv)) + ")";
+
+
 ########################## C Argument ###################################################
 class carg():
     # arg = number | var
@@ -125,3 +180,9 @@ class carg():
         # If arg is a var
         arg = cenv.find_var(self._arg)
         return arg;
+
+    # I do not believe carg needs to be implemented for uncover-locals to work. I may need to
+    # change this in the future.
+    def uncover(self, cenv):
+        #print("Error: carg was hit in uncover-locals function.")
+        return "carg(" + str(self._arg) + ")";

@@ -1199,7 +1199,6 @@ class prog(expr):
 			print("Error: rco_helper else block was hit.")
 			return;
 
-
 	def rco(self):
 		# Reset list of lets
 		expr.list_of_lets.clear()

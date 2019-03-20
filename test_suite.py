@@ -4,10 +4,14 @@
 #	This file is the testing suite, and is primarily used to make
 #	sure there are no bugs in the compiler and everything is
 #	functioning as expected. This file will also contain other function
-#	definitions such as generate
+#	definitions such as generate large program that is exclusively used for
+#	testing.
 
 # Imports all the data type definitions
-from language_definitions import *
+from language_c import *
+from language_x import *
+from language_r import *
+from support import *
 import random
 import sys
 

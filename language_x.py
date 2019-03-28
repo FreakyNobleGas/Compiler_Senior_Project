@@ -169,6 +169,30 @@ class xprog:
 		return xblock.interp("main");	# Blocks has the ms and label - Where are the instructions?
 						     				# Should be ms0 _main | main
 
+	# Takes a X prog w/ vars, and returns a xprog w/o vars
+	def assign_homes(self):
+		# Find number of variables to push to stack and adjust for memory size
+		vc = len(self._label_map) * 8
+
+		# Make sure memory size for variables is divisible by 16
+		if (vc % 16 != 0):
+			vc = (len(self._label_map) + 1) * 8
+
+		# Instructions to start program
+		begin_instr =\
+		[ pushq("rbp"),\
+		movq("rsp", "rbp"),\
+		subq(vc, "rsp"),\
+		jmp("main")
+		]
+
+		# Instructions to end program
+		end_instr =\
+		[ addq(vc, "rsp"),\
+		movq("rbp"),\
+		retq()
+		]
+
 
 ########################## Block ########################################################
 

@@ -7,6 +7,7 @@ movq $8, (_u2)
 movq (_u2), (_u3)
 addq (_u1), (_u3)
 movq (_u3), %rax
-jmp end:
+jmp end
+end:
 retq
 

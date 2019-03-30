@@ -15,6 +15,7 @@ addq (_u5), (_u7)
 movq (_u7), (_u8)
 addq (_u1), (_u8)
 movq (_u8), %rax
-jmp end:
+jmp end
+end:
 retq
 

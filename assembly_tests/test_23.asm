@@ -1,4 +1,9 @@
 globl .main
+begin:
+pushq %rbp
+movq %rsp, %rbp
+subq $16, %rsp
+jmp main
 main:
 movq $30, %rsp(8)
 movq %rsp(8), %rsp(16)
@@ -20,8 +25,10 @@ addq %rsp(48), %rsp(112)
 movq %rsp(112), %rsp(120)
 addq %rsp(24), %rsp(120)
 movq %rsp(120), %rax
-jmp end:
+jmp end
+end:
 addq $16, %rsp
 popq %rbp
 retq
+
 

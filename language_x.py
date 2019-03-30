@@ -379,7 +379,12 @@ class movq(xinstr):
 		return;
 
 	def interp(self):
-		value = self._arg1.interp()
+		if( isinstance(self._arg1, xmem)):
+			value = self._arg1.interp()
+			value = xprog.ms.find(value)
+		else:
+			value = self._arg1.interp()
+			
 		destination = self._arg2.interp()
 		# movq ms' = ms[dst -> ms(src)]
 

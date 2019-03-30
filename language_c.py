@@ -78,7 +78,7 @@ class cprog():
         end_instr = [retq()]
         cprog.label_map["end"] = end_instr
 
-        return xprog(None, cprog.label_map);
+        return xprog(self._info, cprog.label_map);
 
 
 ########################## C Tail ########################################################
@@ -211,7 +211,7 @@ class cneg():
         # Retrieve actual argument value from carg object
         if(isinstance(self._arg, carg)):
             self._arg = self._arg._arg
-            
+
         if(isinstance(self._arg, int)):
             x_instr.append(movq(xnum(self._arg), dst))
         else:

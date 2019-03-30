@@ -185,14 +185,41 @@ class xprog:
 		subq(vc, "rsp"),\
 		jmp("main")
 		]
+		self._label_map["begin"] = begin_instr
 
 		# Instructions to end program
 		end_instr =\
 		[ addq(vc, "rsp"),\
-		movq("rbp"),\
+		popq("rbp"),\
 		retq()
 		]
+		self._label_map["end"] = end_instr
 
+		# Contains all variables in program
+		all_vars = self._info
+
+		# Create a new enviroment that contains the address of each
+		# variable on the stack
+		var_env = env()
+
+		# ** Does byte count need to be negative? **
+		byte_count = 8
+		list_of_vars = []
+		for vars in all_vars:
+			var_env.add_var(vars, xmem("rsp", byte_count))
+			list_of_vars.append(movq(all_vars[vars], xmem("rsp", byte_count)))
+			byte_count += 8
+			print("VAR IS ", vars, "== ", all_vars[vars])
+
+		# Set Label Map for Machine State Zero
+		xprog.ms._label_map = self._label_map
+
+		xblock.assign_homes("main", var_env)
+
+		# Update instruction block after call to assign homes
+		xprog.ms._label_map["main"] = list_of_vars + xprog.ms._block
+
+		return xprog(self._info, self._label_map)
 
 ########################## Block ########################################################
 
@@ -220,6 +247,12 @@ class xblock:
 		# xprog.ms._block contains a list of instructions
 		return xinstr.interp(xprog.ms._block);
 
+	def assign_homes(label, var_env):
+		xprog.ms._block = xprog.ms._label_map[label]
+
+		xinstr.assign_homes(xprog.ms._block, var_env)
+		return;
+
 ########################## Instruction ##################################################
 
 class xinstr:
@@ -236,6 +269,12 @@ class xinstr:
 		# K = What to do next ( But can be pulled from instruction list )
 		for i in instr:
 			i.interp()
+
+		return;
+
+	def assign_homes(instr, var_env):
+		for i in instr:
+			i.assign_homes(var_env)
 
 		return;
 
@@ -269,6 +308,16 @@ class addq(xinstr):
 
 		return;
 
+	def assign_homes(self, var_env):
+		print("ARG 1 IS ", self._arg1, " ARG 2 IS ", self._arg2)
+		if ( isinstance(self._arg1, xvar) ):
+			self._arg1 = var_env.find_var(self._arg1.interp())
+
+		if ( isinstance(self._arg2, xvar) ):
+			self._arg2 = var_env.find_var(self._arg2.interp())
+
+		return;
+
 ########################## Subq #########################################################
 
 class subq(xinstr):
@@ -298,6 +347,16 @@ class subq(xinstr):
 		xprog.ms.insert(self._arg2.interp(), result)
 
 		return;
+
+	def assign_homes(self, var_env):
+		if ( isinstance(self._arg1, xvar) ):
+			self._arg1 = var_env.find_var(self._arg1.interp())
+
+		if ( isinstance(self._arg2, xvar) ):
+			self._arg2 = var_env.find_var(self._arg2.interp())
+
+		return;
+
 ########################## Movq #########################################################
 
 class movq(xinstr):
@@ -324,6 +383,15 @@ class movq(xinstr):
 
 		return;
 
+	def assign_homes(self, var_env):
+		if ( isinstance(self._arg1, xvar) ):
+			self._arg1 = var_env.find_var(self._arg1.interp())
+
+		if ( isinstance(self._arg2, xvar) ):
+			self._arg2 = var_env.find_var(self._arg2.interp())
+
+
+		return;
 
 ########################## Retq #########################################################
 
@@ -341,6 +409,9 @@ class retq(xinstr):
 		print(xprog.ms.find("rax"))
 		return xprog.ms.find("rax");
 
+	def assign_homes(self, var_env):
+		return;
+
 ########################## Negq #########################################################
 
 class negq(xinstr):
@@ -357,6 +428,12 @@ class negq(xinstr):
 		src *= -1
 
 		xprog.ms.insert(self._arg.interp(), src)
+
+		return;
+
+	def assign_homes(self, var_env):
+		if ( isinstance(self._arg1, xvar) ):
+			self._arg = var_env.find_var(self._arg1.interp())
 
 		return;
 
@@ -380,6 +457,8 @@ class callq(xinstr):
 		xprog.ms.insert("rax", src)
 		return;
 
+	def assign_homes(self, var_env):
+		return;
 
 ########################## Jmp ##########################################################
 
@@ -395,6 +474,9 @@ class jmp(xinstr):
 	def interp(self):
 		return xblock.interp(self._label);
 
+	def assign_homes(self, var_env):
+		return;
+
 ########################## Pushq ########################################################
 
 class pushq(xinstr):
@@ -408,6 +490,12 @@ class pushq(xinstr):
 
 	def interp(self):
 		xprog.ms.insert("rsp", self._arg.interp(), -8)
+		return;
+
+	def assign_homes(self, var_env):
+		if ( isinstance(self._arg, xvar) ):
+			self._arg = var_env.find_var(self._arg.interp())
+
 		return;
 
 ########################## Popq #########################################################
@@ -425,11 +513,19 @@ class popq(xinstr):
 		xprog.ms.insert("rsp", self._arg.interp(), 8)
 		return;
 
+	def assign_homes(self, var_env):
+		if ( isinstance(self._arg, xvar) ):
+			self._arg = var_env.find_var(self._arg.interp())
+
+		return;
+
 ########################## Arg ##########################################################
 
 class xarg:
 	def emitter():
 		return 0;
+	def assign_homes(self, var_env):
+		return;
 
 ########################## X0 Number ####################################################
 
@@ -444,6 +540,9 @@ class xnum(xarg):
 	def interp(self):
 		return self._num;
 
+	def assign_homes(self, var_env):
+		return;
+
 ########################## Register #####################################################
 # -- Bad Reg Names: rsp | rbp | rax | rbx | rcx | rdx | rsi | rdi
 # -- Good Reg Names: reg 8 -> reg 15
@@ -457,6 +556,9 @@ class xreg(xarg):
 
 	def interp(self):
 		return self._reg;
+
+	def assign_homes(self, var_env):
+		return;
 
 ########################## Memory #######################################################
 
@@ -478,6 +580,9 @@ class xmem(xarg):
 
 		return address;
 
+	def assign_homes(self, var_env):
+		return;
+
 ########################## X0 Var #######################################################
 
 class xvar(xarg):
@@ -490,3 +595,6 @@ class xvar(xarg):
 
 	def interp(self):
 		return self._var;
+
+	def assign_homes(self, var_env):
+		return;

@@ -180,17 +180,17 @@ class xprog:
 
 		# Instructions to start program
 		begin_instr =\
-		[ pushq("rbp"),\
-		movq("rsp", "rbp"),\
-		subq(vc, "rsp"),\
+		[ pushq(xreg("rbp")),\
+		movq(xreg("rsp"), xreg("rbp")),\
+		subq(xnum(vc), xreg("rsp")),\
 		jmp("main")
 		]
 		self._label_map["begin"] = begin_instr
 
 		# Instructions to end program
 		end_instr =\
-		[ addq(vc, "rsp"),\
-		popq("rbp"),\
+		[ addq(xnum(vc), xreg("rsp")),\
+		popq(xreg("rbp")),\
 		retq()
 		]
 		self._label_map["end"] = end_instr
@@ -206,18 +206,18 @@ class xprog:
 		byte_count = 8
 		list_of_vars = []
 		for vars in all_vars:
+			print("Adding var ", vars)
 			var_env.add_var(vars, xmem("rsp", byte_count))
-			list_of_vars.append(movq(all_vars[vars], xmem("rsp", byte_count)))
+			#list_of_vars.append(movq(all_vars[vars], xmem("rsp", byte_count)))
 			byte_count += 8
-			print("VAR IS ", vars, "== ", all_vars[vars])
 
 		# Set Label Map for Machine State Zero
 		xprog.ms._label_map = self._label_map
 
 		xblock.assign_homes("main", var_env)
-
 		# Update instruction block after call to assign homes
-		xprog.ms._label_map["main"] = list_of_vars + xprog.ms._block
+		#xprog.ms._label_map["main"] = list_of_vars + xprog.ms._block
+		xprog.ms._label_map["main"] = xprog.ms._block
 
 		return xprog(self._info, self._label_map)
 
@@ -294,6 +294,7 @@ class addq(xinstr):
 		return;
 
 	def interp(self):
+		#print("\nADDQ INTERP ARG1 IS ", self._arg1, " ARG 2 IS ", self._arg2)
 		src = self._arg1.interp()
 		if not isinstance(src, int):
 			src = xprog.ms.find(src)
@@ -305,17 +306,21 @@ class addq(xinstr):
 		# [ dst -> ms(src) + ms(src)]
 		result += src
 		xprog.ms.insert(self._arg2.interp(), result)
-
+		#print("ADDQ INTERP ARG1 IS ", self._arg1, " ARG 2 IS ", self._arg2)
+		print("ADDQ(", self._arg1, ")", self._arg2)
 		return;
 
 	def assign_homes(self, var_env):
-		print("ARG 1 IS ", self._arg1, " ARG 2 IS ", self._arg2)
-		if ( isinstance(self._arg1, xvar) ):
-			self._arg1 = var_env.find_var(self._arg1.interp())
+		#print("\nADDQ BEFORE: ARG 1 IS ", self._arg1, " ARG 2 IS ", self._arg2)
+		#if ( isinstance(self._arg1, xvar) ):
+		#	self._arg1 = var_env.find_var(self._arg1.interp())
 
-		if ( isinstance(self._arg2, xvar) ):
-			self._arg2 = var_env.find_var(self._arg2.interp())
-
+		#if ( isinstance(self._arg2, xvar) ):
+		#	self._arg2 = var_env.find_var(self._arg2.interp())
+		self._arg1 = self._arg1.assign_homes(var_env)
+		self._arg2 = self._arg2.assign_homes(var_env)
+		#print("\nADDQ AFTER: ARG 1 IS ", self._arg1, " ARG 2 IS ", self._arg2)
+		print("ADDQ(", self._arg1.assign_homes(var_env), ",", self._arg2.assign_homes(var_env), ")")
 		return;
 
 ########################## Subq #########################################################
@@ -349,12 +354,14 @@ class subq(xinstr):
 		return;
 
 	def assign_homes(self, var_env):
-		if ( isinstance(self._arg1, xvar) ):
-			self._arg1 = var_env.find_var(self._arg1.interp())
+		#if ( isinstance(self._arg1, xvar) ):
+		#	self._arg1 = var_env.find_var(self._arg1.interp())
 
-		if ( isinstance(self._arg2, xvar) ):
-			self._arg2 = var_env.find_var(self._arg2.interp())
-
+		#if ( isinstance(self._arg2, xvar) ):
+		#	self._arg2 = var_env.find_var(self._arg2.interp())
+		self._arg1 = self._arg1.assign_homes(var_env)
+		self._arg2 = self._arg2.assign_homes(var_env)
+		print("SUBQ(", self._arg1.assign_homes(var_env), ",", self._arg2.assign_homes(var_env), ")")
 		return;
 
 ########################## Movq #########################################################
@@ -380,17 +387,21 @@ class movq(xinstr):
 			value = xprog.ms.find(value)
 
 		xprog.ms.insert(destination, value)
-
+		print("MOVQ(", value, ")", destination)
 		return;
 
 	def assign_homes(self, var_env):
-		if ( isinstance(self._arg1, xvar) ):
-			self._arg1 = var_env.find_var(self._arg1.interp())
+		#print("\nMOVQ BEFORE: ARG1 IS ", self._arg1, " ARG 2 IS ", self._arg2)
+		#if ( isinstance(self._arg1, xvar) ):
+		#	self._arg1 = var_env.find_var(self._arg1.interp())
 
-		if ( isinstance(self._arg2, xvar) ):
-			self._arg2 = var_env.find_var(self._arg2.interp())
+		#if ( isinstance(self._arg2, xvar) ):
+		#	self._arg2 = var_env.find_var(self._arg2.interp())
 
-
+		self._arg1 = self._arg1.assign_homes(var_env)
+		self._arg2 = self._arg2.assign_homes(var_env)
+		print("MOVQ(", self._arg1.assign_homes(var_env), ",", self._arg2.assign_homes(var_env), ")")
+		#print("MOVQ AFTER: ARG1 IS ", self._arg1, " ARG 2 IS ", self._arg2)
 		return;
 
 ########################## Retq #########################################################
@@ -410,7 +421,7 @@ class retq(xinstr):
 		return xprog.ms.find("rax");
 
 	def assign_homes(self, var_env):
-		return;
+		return retq();
 
 ########################## Negq #########################################################
 
@@ -432,9 +443,10 @@ class negq(xinstr):
 		return;
 
 	def assign_homes(self, var_env):
-		if ( isinstance(self._arg1, xvar) ):
-			self._arg = var_env.find_var(self._arg1.interp())
-
+		#if ( isinstance(self._arg1, xvar) ):
+		#	self._arg = var_env.find_var(self._arg1.interp())
+		self._arg = self._arg.assign_homes(var_env)
+		print("NEGQ(", self._arg, ")")
 		return;
 
 ########################## Callq ########################################################
@@ -458,6 +470,7 @@ class callq(xinstr):
 		return;
 
 	def assign_homes(self, var_env):
+		print("CALLQ(", self._label, ")")
 		return;
 
 ########################## Jmp ##########################################################
@@ -475,6 +488,7 @@ class jmp(xinstr):
 		return xblock.interp(self._label);
 
 	def assign_homes(self, var_env):
+		print("JMP(", self._label, ")")
 		return;
 
 ########################## Pushq ########################################################
@@ -493,9 +507,10 @@ class pushq(xinstr):
 		return;
 
 	def assign_homes(self, var_env):
-		if ( isinstance(self._arg, xvar) ):
-			self._arg = var_env.find_var(self._arg.interp())
-
+		#if ( isinstance(self._arg, xvar) ):
+		#	self._arg = var_env.find_var(self._arg.interp())
+		self._arg = self._arg.assign_homes(var_env)
+		print("PUSHQ(", self._arg, ")")
 		return;
 
 ########################## Popq #########################################################
@@ -511,12 +526,14 @@ class popq(xinstr):
 
 	def interp(self):
 		xprog.ms.insert("rsp", self._arg.interp(), 8)
+		print("POPQ(", self._arg.interp(), ")")
 		return;
 
 	def assign_homes(self, var_env):
-		if ( isinstance(self._arg, xvar) ):
-			self._arg = var_env.find_var(self._arg.interp())
-
+		#if ( isinstance(self._arg, xvar) ):
+		#	self._arg = var_env.find_var(self._arg.interp())
+		self._arg = self._arg.assign_homes(var_env)
+		print("POPQ(", self._arg, ")")
 		return;
 
 ########################## Arg ##########################################################
@@ -541,7 +558,8 @@ class xnum(xarg):
 		return self._num;
 
 	def assign_homes(self, var_env):
-		return;
+		#print("ASSIGN HOMES NUM")
+		return xnum(self._num);
 
 ########################## Register #####################################################
 # -- Bad Reg Names: rsp | rbp | rax | rbx | rcx | rdx | rsi | rdi
@@ -558,7 +576,7 @@ class xreg(xarg):
 		return self._reg;
 
 	def assign_homes(self, var_env):
-		return;
+		return xreg(self._reg);
 
 ########################## Memory #######################################################
 
@@ -581,7 +599,7 @@ class xmem(xarg):
 		return address;
 
 	def assign_homes(self, var_env):
-		return;
+		return str(self._reg) + " + " + str(self._offset);
 
 ########################## X0 Var #######################################################
 
@@ -597,4 +615,5 @@ class xvar(xarg):
 		return self._var;
 
 	def assign_homes(self, var_env):
-		return;
+		#print("ASSIGN HOMES VAR IS ", var_env.find_var(self._var))
+		return var_env.find_var(self._var);

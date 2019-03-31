@@ -225,6 +225,9 @@ class xprog:
 
 		return xprog(self._info, self._label_map)
 
+	# Make sure memory references are legal
+	def patch(self):
+
 ########################## Block ########################################################
 
 class xblock:

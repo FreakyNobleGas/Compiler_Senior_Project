@@ -271,17 +271,14 @@ class xblock:
 
 	def patch():
 
+		# Go through each label and remove illegal memory references
 		for labels in xprog.ms._label_map:
 
 			# Update instruction block
 			xprog.ms._block = xprog.ms._label_map[labels]
 
-			# Index for inserting new instructions in list. This needs to be
-			# reinitialized for each block of instructions
-			index = 0
-
-			print("GOING TO LABEL ", labels)
-			xinstr.patch(xprog.ms._block, index)
+			# Patch will return an updated list of instructions
+			xprog.ms._label_map[labels] = xinstr.patch(xprog.ms._block)
 
 		return;
 ########################## Instruction ##################################################
@@ -310,30 +307,27 @@ class xinstr:
 
 		return;
 
-	def patch(instr, index):
-		flag = False
-		offset = 0
+	def patch(instr):
+		# Return an updated list of instructions
+		new_instr = []
+
 		# Go through instructions one by one to remove invalid memory references
 		for i in instr:
-			if ( flag is False ):
-				# If instruction is addq, movq, or subq, then we might need to insert additional
-				# instructions which would offset the index
+				# If instruction is addq, movq, or subq, then check if the first argument is a
+				# memory reference, then create a movq(arg, rax) instruction
 				if( (isinstance(i, addq)) or (isinstance(i, subq)) or (isinstance(i, movq)) ):
-					print("INDEX: ", index, " object == ", i)
-					offset = i.patch(index)
-					if (offset == 1):
-						flag = True
+					next = i.patch()
+					# Next might be a list, so we need to use the + operator
+					if ( isinstance(next, list)):
+						new_instr = new_instr + next
+					else:
+						# We don't actually need patch functions for other instructions, but they
+						# still exist in the case I need to change something and for consistency
+						new_instr.append(i.patch())
 				else:
-					print("INDEX: ", index)
-					i.patch(index)
+					new_instr.append(i)
 
-				index = index + 1 + offset
-
-				if (index > 20):
-					exit(1)
-			else:
-				flag = False
-		return;
+		return new_instr;
 
 ########################## Addq #########################################################
 
@@ -385,14 +379,12 @@ class addq(xinstr):
 		self._arg2 = self._arg2.assign_homes(var_env)
 		return;
 
-	def patch(self, index):
+	def patch(self):
+		# Check if arg1 is a memory reference
 		if( isinstance(self._arg1, xmem) ):
-			xprog.ms._block.insert(index, movq(self._arg1, xreg("rax")))
-			self._arg1 = xreg("rax")
-			print("Addq inserting at ", index, " current is ", index)
-			return 1;
+			return [movq(self._arg1, xreg("rax")), addq(xreg("rax"), self._arg2)];
 
-		return 0;
+		return addq(self._arg1, self._arg2);
 
 ########################## Subq #########################################################
 
@@ -445,13 +437,12 @@ class subq(xinstr):
 		self._arg2 = self._arg2.assign_homes(var_env)
 		return;
 
-	def patch(self, index):
+	def patch(self):
+		# Check if arg1 is a memory reference
 		if( isinstance(self._arg1, xmem) ):
-			xprog.ms._block.insert(index, movq(self._arg1, xreg("rax")))
-			self._arg1 = xreg("rax")
-			return 1;
+			return [movq(self._arg1, xreg("rax")), subq(xreg("rax"), self._arg2)];
 
-		return 0;
+		return subq(self._arg1, self._arg2);
 
 ########################## Movq #########################################################
 
@@ -494,14 +485,12 @@ class movq(xinstr):
 		self._arg2 = self._arg2.assign_homes(var_env)
 		return;
 
-	def patch(self, index):
+	def patch(self):
+		# Check if arg1 is a memory reference
 		if( isinstance(self._arg1, xmem) ):
-			xprog.ms._block.insert(index - 1, movq(self._arg1, xreg("rax")))
-			self._arg1 = xreg("rax")
-			print("movq inserting at ", index, " current is ", index)
-			return 1;
+			return [movq(self._arg1, xreg("rax")), movq(xreg("rax"), self._arg2)];
 
-		return 0;
+		return movq(self._arg1, self._arg2);
 
 ########################## Retq #########################################################
 
@@ -522,7 +511,7 @@ class retq(xinstr):
 	def assign_homes(self, var_env):
 		return;
 
-	def patch(self, index):
+	def patch(self):
 		return;
 
 ########################## Negq #########################################################
@@ -549,7 +538,7 @@ class negq(xinstr):
 		self._arg = self._arg.assign_homes(var_env)
 		return;
 
-	def patch(self, index):
+	def patch(self):
 		return;
 
 ########################## Callq ########################################################
@@ -575,7 +564,7 @@ class callq(xinstr):
 	def assign_homes(self, var_env):
 		return;
 
-	def patch(self, index):
+	def patch(self):
 		return;
 
 ########################## Jmp ##########################################################
@@ -596,7 +585,7 @@ class jmp(xinstr):
 	def assign_homes(self, var_env):
 		return;
 
-	def patch(self, index):
+	def patch(self):
 		return;
 
 ########################## Pushq ########################################################
@@ -620,7 +609,7 @@ class pushq(xinstr):
 		self._arg = self._arg.assign_homes(var_env)
 		return;
 
-	def patch(self, index):
+	def patch(self):
 		return;
 
 ########################## Popq #########################################################
@@ -644,7 +633,7 @@ class popq(xinstr):
 		self._arg = self._arg.assign_homes(var_env)
 		return;
 
-	def patch(self, index):
+	def patch(self):
 		return;
 
 ########################## Arg ##########################################################
@@ -654,7 +643,7 @@ class xarg:
 		return 0;
 	def assign_homes(self, var_env):
 		return;
-	def patch(self, index):
+	def patch(self):
 		return;
 
 ########################## X0 Number ####################################################
@@ -674,7 +663,7 @@ class xnum(xarg):
 		# Return a xnum object
 		return xnum(self._num);
 
-	def patch(self, index):
+	def patch(self):
 		return;
 
 ########################## Register #####################################################
@@ -695,7 +684,7 @@ class xreg(xarg):
 		# Return a xreg object
 		return xreg(self._reg);
 
-	def patch(self, index):
+	def patch(self):
 		return;
 
 ########################## Memory #######################################################
@@ -721,7 +710,7 @@ class xmem(xarg):
 	def assign_homes(self, var_env):
 		return;
 
-	def patch(self, index):
+	def patch(self):
 		return;
 
 ########################## X0 Var #######################################################
@@ -741,5 +730,5 @@ class xvar(xarg):
 		# Return the memory address for the corresponding variable
 		return var_env.find_var(self._var);
 
-	def patch(self, index):
+	def patch(self):
 		return;

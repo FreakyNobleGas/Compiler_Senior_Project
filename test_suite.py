@@ -1169,3 +1169,21 @@ def testing():
 	print("Interp X # 2: ")
 	test.interp()
 	test.emitter()
+
+
+	print("\n\n------------- Testing Main Generation -----------------\n\n")
+
+	print("\n Testing 132 - Answer = 10")
+	test = prog(None, add(num(5), num(5)))
+	print("Interp R # 1: ")
+	test.interp()
+	test = test.rco()
+	test = test.econ()
+	test = test.uncover()
+	test = test.select()
+	test = test.assign_homes()
+	test = test.patch()
+	test = test.main_gen()
+	print("Interp X # 2: ")
+	test.interp()
+	test.emitter()

@@ -156,7 +156,6 @@ class xprog:
             os.mkdir("./test_" + str(xprog.num_of_tests))
 
         os.chdir(cur_path + "/assembly_tests/test_" + str(xprog.num_of_tests))
-        print("cd ", os.path.dirname(os.path.realpath(__file__)))
         # Open assembly source code file
         file = open("x.s", "w+")
         file_name = "x.s"
@@ -168,19 +167,12 @@ class xprog:
 
         # Call emitter on the rest of instructions
         if( "_main" in xprog.ms._label_map):
+            # Go through each label and emit instructions
             xblock.emitter(file, "_main")
             xblock.emitter(file, "begin")
 
-            # Create assembly binary file for execution
-            #subprocess.run(["cc", cur_path + "/runtime.c", file_name, "-o", "x.bin"])
-            os.system("which cc")
+            # Copy runtime.c to assembly file directory
             os.system("cp ../../runtime.c .")
-            #os.system("./run_assembly.sh")
-
-            # Execute file and store output
-            #p = subprocess.Popen("./x.bin", stdout=subprocess.PIPE, shell=True)
-            #(output, err) = p.communicate()
-            #print("Assembly result = ", output)
 
         elif( "begin" in xprog.ms._label_map):
             xblock.emitter(file, "begin")
@@ -189,13 +181,14 @@ class xprog:
 
         # Close file
         file.close()
-        # Go back to original directory
-
 
         if( "_main" in xprog.ms._label_map):
+            # Create assembly binary file for execution
             os.system("cc runtime.c x.s -o x.bin")
+            # Run executable
             os.system("./x.bin")
 
+        # Go back to original directory
         os.chdir(cur_path)
 
         return;
@@ -323,6 +316,7 @@ class xblock:
         # Set block to instruction set
         xprog.ms._block = xprog.ms._label_map[label]
 
+        # Operating system uses "main" for assembly instructions
         if(label == "_main"):
             print("main:")
         else:

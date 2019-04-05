@@ -146,9 +146,20 @@ class xprog:
         xprog.ms = ms(0,0,0,0,0,0, None, "main")
 
     def emitter(self, var = 0):
-        # Open file for writing
-        file = open("assembly_tests/test_" + str(xprog.num_of_tests) + ".asm", "w+")
-        file_name = "assembly_tests/test_" + str(xprog.num_of_tests) + ".asm"
+
+        # Store the original working directory
+        cur_path = os.path.dirname(os.path.realpath(__file__))
+
+        # Change directories to create assembly test folder
+        os.chdir(cur_path + "/assembly_tests")
+        if(os.path.isdir("./test_" + str(xprog.num_of_tests)) is False):
+            os.mkdir("./test_" + str(xprog.num_of_tests))
+
+        os.chdir(cur_path + "/assembly_tests/test_" + str(xprog.num_of_tests))
+        print("cd ", os.path.dirname(os.path.realpath(__file__)))
+        # Open assembly source code file
+        file = open("x.s", "w+")
+        file_name = "x.s"
         xprog.num_of_tests += 1
 
         # Begin program
@@ -159,10 +170,18 @@ class xprog:
         if( "_main" in xprog.ms._label_map):
             xblock.emitter(file, "_main")
             xblock.emitter(file, "begin")
-            subprocess.call(["cc", "runtime.c", file_name, "-o", "x.bin"])
-            p = subprocess.Popen("./x.bin", stdout=subprocess.PIPE, shell=True)
-            (output, err) = p.communicate()
-            print("Assembly result = ", output)
+
+            # Create assembly binary file for execution
+            #subprocess.run(["cc", cur_path + "/runtime.c", file_name, "-o", "x.bin"])
+            os.system("which cc")
+            os.system("cp ../../runtime.c .")
+            #os.system("./run_assembly.sh")
+
+            # Execute file and store output
+            #p = subprocess.Popen("./x.bin", stdout=subprocess.PIPE, shell=True)
+            #(output, err) = p.communicate()
+            #print("Assembly result = ", output)
+
         elif( "begin" in xprog.ms._label_map):
             xblock.emitter(file, "begin")
         else:
@@ -170,6 +189,14 @@ class xprog:
 
         # Close file
         file.close()
+        # Go back to original directory
+
+
+        if( "_main" in xprog.ms._label_map):
+            os.system("cc runtime.c x.s -o x.bin")
+            os.system("./x.bin")
+
+        os.chdir(cur_path)
 
         return;
 
@@ -200,7 +227,7 @@ class xprog:
         [ pushq(xreg("rbp")),\
         movq(xreg("rsp"), xreg("rbp")),\
         addq(xnum(vc), xreg("rsp")),\
-        jmp("main")
+        jmp("next")
         ]
         self._label_map["begin"] = begin_instr
 
@@ -237,6 +264,9 @@ class xprog:
 
         # Update instruction block after call to assign homes
         xprog.ms._label_map["main"] = xprog.ms._block
+
+        self._label_map["next"] = self._label_map["main"]
+        del self._label_map["main"]
 
         return xprog(self._info, self._label_map)
 
@@ -278,7 +308,12 @@ class xblock:
     def emitter(file, label):
         # Set block to instruction set
         xprog.ms._block = xprog.ms._label_map[label]
-        file.write(label + ":\n")
+
+        if(label == "_main"):
+            file.write("main:\n")
+        else:
+            file.write(label + ":\n")
+
         # xprog.ms._block contains a list of instructions
         xinstr.emitter(file, xprog.ms._block)
 
@@ -288,7 +323,10 @@ class xblock:
         # Set block to instruction set
         xprog.ms._block = xprog.ms._label_map[label]
 
-        print(label, ":")
+        if(label == "_main"):
+            print("main:")
+        else:
+            print(label, ":")
 
         # First instruction should be ms0 and label _main
         # xprog.ms._block contains a list of instructions
@@ -581,8 +619,8 @@ class callq(xinstr):
 
     def emitter(self, file):
         # Check if callq is for print int
-        if(self._label == "_print_int"):
-            file.write("callq _print_int")
+        if((self._label == "_print_int") or (self._label == "print_int")):
+            file.write("callq print_int")
         elif(self._label == "begin"):
             file.write("callq begin")
         else:
@@ -593,7 +631,7 @@ class callq(xinstr):
 
     def interp(self):
         # Check if callq is for print int
-        if ((self._label == "_print_int") or (self._label == "begin")):
+        if((self._label == "_print_int") or (self._label == "print_int") or (self._label == "begin")):
             return;
         else:
             src = input("Please enter a numerical value: ")
@@ -736,7 +774,8 @@ class xmem(xarg):
         self._offset = offset
 
     def emitter(self, file):
-        file.write("%" + self._reg + "(" + str(self._offset) + ")");
+        #file.write("%" + self._reg + "(" + str(self._offset) + ")");
+        file.write(str(self._offset) + "(%" + self._reg + ")")
         return;
 
     def interp(self):

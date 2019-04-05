@@ -1174,7 +1174,7 @@ def testing():
 	print("\n\n------------- Testing Main Generation -----------------\n\n")
 
 	print("\n Testing 132 - Answer = 10")
-	test = prog(None, add(num(5), num(5)))
+	test = prog(None, add(num(10), num(5)))
 	print("Interp R # 1: ")
 	test.interp()
 	test = test.rco()

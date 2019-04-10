@@ -10,6 +10,6 @@ int read_int() {
 
 int print_int(int x) {
   printf("%d\n", x);
-  //printf("hello");
+  
   return 0;
 }

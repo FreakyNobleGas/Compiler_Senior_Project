@@ -1280,7 +1280,7 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	#test = test.live_analysis()
+	test = test.live_analysis()
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -1300,7 +1300,7 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	#test = test.live_analysis()
+	test = test.live_analysis()
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -1314,7 +1314,7 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	#test = test.live_analysis()
+	test = test.live_analysis()
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -1329,7 +1329,7 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	#test = test.live_analysis()
+	test = test.live_analysis()
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -1344,7 +1344,7 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	#test = test.live_analysis()
+	test = test.live_analysis()
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -1361,7 +1361,7 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	#test = test.live_analysis()
+	test = test.live_analysis()
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -1377,7 +1377,7 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	#test = test.live_analysis()
+	test = test.live_analysis()
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -1392,7 +1392,7 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	#test = test.live_analysis()
+	test = test.live_analysis()
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -1409,7 +1409,7 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	#test = test.live_analysis()
+	test = test.live_analysis()
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -1424,7 +1424,7 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	#test = test.live_analysis()
+	test = test.live_analysis()
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -1437,7 +1437,7 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	#test = test.live_analysis()
+	test = test.live_analysis()
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -1453,7 +1453,7 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	#test = test.live_analysis()
+	test = test.live_analysis()
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -1470,7 +1470,7 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	#test = test.live_analysis()
+	test = test.live_analysis()
 	test.interp()
 	instr.clear()
 	label_map.clear()

@@ -356,7 +356,7 @@ class xblock:
         live_set[label] = live_var
 
         for vars in live_var:
-            print(vars)
+                print(vars)
 
         return live_set;
 
@@ -415,13 +415,20 @@ class xinstr:
         prev_vars = []
         print("START GOING THROUGH INSTRUCTIONS")
         # Go through instructions in reverse
-        while (index != -1):
+        while (index != -2):
             next_instr = instr[index + 1]
-            live_var[index] = next_instr.live_analysis(prev_vars)
-            print(prev_vars)
+            live_var[index + 1] = next_instr.live_analysis(prev_vars)
+            print("PRINT IN LOOP")
+            print(live_var[index + 1])
             prev_vars = live_var[index]
             index -= 1
         print("END GOING THROUGH INSTRUCTIONS")
+
+        for elem in live_var:
+            print(elem)
+
+        print("END TWO")
+
         return live_var;
 
 

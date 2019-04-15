@@ -209,7 +209,7 @@ class xprog:
             return xblock.interp("main");
 
     # Takes an X program and returns a set of all the variables assigned to registers
-    def live_analysis(self):
+    def live_analysis(self, debug = False):
         # Set Label Map for Machine State Zero
         xprog.ms._label_map = self._label_map
 
@@ -221,7 +221,7 @@ class xprog:
         xprog.reg_set = ["r8", "r9", "r10", "r11", "r12", "r15"]
 
         # Perform analysis on main and any other labels jumped to
-        live_set = xblock.live_analysis("main", live_set)
+        live_set = xblock.live_analysis("main", live_set, debug)
 
         return xprog(live_set, self._label_map);
 
@@ -345,18 +345,20 @@ class xblock:
         # xprog.ms._block contains a list of instructions
         return xinstr.interp(xprog.ms._block);
 
-    def live_analysis(label, live_set):
+    def live_analysis(label, live_set, debug = False):
+        # Set current block
         xprog.ms._block = xprog.ms._label_map[label]
 
         # Holds the list of instructions for this block
         live_var = []
         live_var = xinstr.live_analysis(xprog.ms._block, live_var)
 
+        if (debug):
+            print("LABEL: ", label)
+            print(live_var)
+
         # Assign variables with their registers to this live set block
         live_set[label] = live_var
-
-        for vars in live_var:
-            print(vars)
 
         return live_set;
 
@@ -399,57 +401,89 @@ class xinstr:
         return;
 
     def live_analysis(instr, live_var):
-        # Length of instruction set
+        # Instruction count
         index = 0
+
         # Reverse instruction set
         instr.reverse()
 
-        #live_var = []
         # Holds the previous set of registers and variables
         prev_vars = []
 
-        live_index = 0
+        # Go through each instruction
         while (index < len(instr)):
+            # Assign temp the next instruction
             temp = instr[index]
-            print("TEMP IS", type(temp))
-            print("Live before:", live_var)
-            print("Prev before:", prev_vars)
-            set_of_vars = temp.live_analysis(prev_vars)
-            print("Set:", set_of_vars)
-            print("Live after:", live_var)
-            print("Prev after:", prev_vars)
-            #print("LENGTH OF SET IS ", len(set_of_vars))
 
-            if (set_of_vars == []):
-                live_var.append([])
+            # Instruction is either addq or subq
+            if((isinstance(temp, addq) or (isinstance(temp, subq)))):
+                # Check if no registers are available and arg1 is a var
+                if((len(xprog.reg_set) != 0) and (isinstance(temp._arg1, xvar))):
+                    var = temp._arg1._var
+                    if(var not in prev_vars):
+                        # A register is free, so assign this var to it
+                        prev_vars.append(var)
+                        prev_vars.append(xprog.reg_set[0])
+                        del xprog.reg_set[0]
+
+                # Check if no registers are available and arg2 is a var
+                if((len(xprog.reg_set) != 0) and (isinstance(temp._arg2, xvar))):
+                    var = temp._arg2._var
+                    if(var not in prev_vars):
+                        # A register is free, so assign this var to it
+                        prev_vars.append(var)
+                        prev_vars.append(xprog.reg_set[0])
+                        del xprog.reg_set[0]
+
+            # Instruction is a movq
+            if(isinstance(temp, movq)):
+                # Delete register attached to arg2 if possible first to free up a register
+                if(isinstance(temp._arg2, xvar)):
+                    var = temp._arg2._var
+                    if(var in prev_vars):
+                        xprog.reg_set.append(prev_vars[prev_vars.index(var) + 1])
+                        del prev_vars[prev_vars.index(var) + 1]
+                        del prev_vars[prev_vars.index(var)]
+
+                if((len(xprog.reg_set) != 0) and (isinstance(temp._arg1, xvar))):
+                    var = temp._arg1._var
+                    if(var not in prev_vars):
+                        prev_vars.append(var)
+                        prev_vars.append(xprog.reg_set[0])
+                        del xprog.reg_set[0]
+
+            # Instruction is a negq
+            if(isinstance(temp, negq)):
+                # Add variable to register if there is space
+                if((len(xprog.reg_set) != 0) and (isinstance(temp._arg, xvar))):
+                    var = temp._arg._var
+                    if(var not in prev_vars):
+                        prev_vars.append(var)
+                        prev_vars.append(xprog.reg_set[0])
+                        del xprog.reg_set[0]
+
+
+            # Start appending variables and registers for this instruction
+            if (prev_vars == []):
+                # Check if instruction is first in the list
+                if((index + 1) == len(instr)):
+                    live_var.append(live_var[index-1])
+                else:
+                    live_var.append([])
             else:
-                print("Before append:", live_var)
-                live_var.append(set_of_vars)
-                print("After append:", live_var)
+                # Check if instruction is the first in the list
+                if((index + 1) == len(instr)):
+                    live_var.append(live_var[index-1])
+                else:
+                    live_var.append(prev_vars[:])
 
-            #live_var1.insert(live_index, set_of_vars)
-            #print("LENGTH OF LIVE AT INDEX ", live_index, " IS ", len(live_var1[live_index]))
-            #print(live_var1[live_index], "PRINTING")
-            #print("TYPE OF LIVE IS ", type(live_var1), " TYPE OF SET IS ", type(set_of_vars))
-
-            prev_vars = set_of_vars
-            index += 1
-            live_index += 1
-
-            print("PRINTING FOR THIS ITERATION")
-            for elem in live_var:
-                print (elem)
-            print("ENDING THIS ITERATION \n")
-
-        index = 0
-        for elem in live_var:
-            print("LENGTH OF ELEM IS ", len(elem))
-            print(elem, " --- ", live_var[index])
+            #prev_vars = set_of_vars
             index += 1
 
-        exit(1)
+
+        live_var.reverse()
         instr.reverse()
-        return live_var1;
+        return live_var;
 
 
     def assign_homes(instr, var_env):
@@ -525,60 +559,6 @@ class addq(xinstr):
         xprog.ms.insert(self._arg2.interp(), result)
         return;
 
-    def live_analysis(self, prev_vars):
-        print("Addq prev_vars:", prev_vars)
-        # Check if no registers are available
-        if(len(xprog.reg_set) == 0):
-            print("hi")
-            return prev_vars;
-
-        if(isinstance(self._arg1, xvar)):
-            print("hey")
-            var1 = self._arg1._var
-            print(var1)
-            if(var1 not in prev_vars):
-                # A register is free, so assign this var to it
-                #prev_vars.append(var1)
-                #prev_vars.append(xprog.reg_set[0])
-                temp = [var1]
-                temp.append(xprog.reg_set[0])
-                print(temp)
-                if (prev_vars == []):
-                    prev_vars = temp
-                else:
-                    prev_vars = [temp, prev_vars]
-                print("append ", prev_vars)
-                del xprog.reg_set[0]
-
-        # Check if no registers are available after adding arg1
-        if(len(xprog.reg_set) == 0):
-            print("yo")
-            return prev_vars;
-
-        if(isinstance(self._arg2, xvar)):
-            print("sup")
-            var2 = self._arg2._var
-            if(var2 in prev_vars):
-                # If var is already in a register, then return
-                return prev_vars;
-            else:
-                # A register is free, so assign this var to it
-                #prev_vars.append(var2)
-                #prev_vars.append(xprog.reg_set[0])
-                temp = [var2]
-                temp.append(xprog.reg_set[0])
-                print(temp)
-                if (prev_vars == []):
-                    prev_vars = temp
-                else:
-                    prev_vars = [temp, prev_vars]
-                print("append ", prev_vars)
-
-                del xprog.reg_set[0]
-                return prev_vars;
-
-        return prev_vars;
-
     def assign_homes(self, var_env):
         # Remove Variables
         self._arg1 = self._arg1.assign_homes(var_env)
@@ -637,53 +617,6 @@ class subq(xinstr):
 
         return;
 
-    def live_analysis(self, prev_vars):
-        # Check if no registers are available
-        if(len(xprog.reg_set) == 0):
-                return prev_vars;
-
-        if(isinstance(self._arg1, xvar)):
-            var1 = self._arg1._var
-            if(var1 not in prev_vars):
-                # A register is free, so assign this var to it
-                #prev_vars.append(var1)
-                #prev_vars.append(xprog.reg_set[0])
-                temp = [var1]
-                temp.append(xprog.reg_set[0])
-                print(temp)
-                if (prev_vars == []):
-                    prev_vars = temp
-                else:
-                    prev_vars = [temp, prev_vars]
-                print("append ", prev_vars)
-                del xprog.reg_set[0]
-
-        # Check if no registers are available after adding arg1
-        if(len(xprog.reg_set) == 0):
-                return prev_vars;
-
-        if(isinstance(self._arg2, xvar)):
-            var2 = self._arg2._var
-            if(var2 in prev_vars):
-                # If var is already in a register, then return
-                return prev_vars;
-            else:
-                # A register is free, so assign this var to it
-                #prev_vars.append(var2)
-                #prev_vars.append(xprog.reg_set[0])
-                temp = [var2]
-                temp.append(xprog.reg_set[0])
-                print(temp)
-                if (prev_vars == []):
-                    prev_vars = temp
-                else:
-                    prev_vars = [temp, prev_vars]
-                print("append ", prev_vars)
-                del xprog.reg_set[0]
-                return prev_vars;
-
-        return prev_vars;
-
     def assign_homes(self, var_env):
         # Remove Variables
         self._arg1 = self._arg1.assign_homes(var_env)
@@ -732,64 +665,6 @@ class movq(xinstr):
         xprog.ms.insert(destination, value)
         return;
 
-    def live_analysis(self, prev_vars):
-        # Check if no registers are available
-        if(len(xprog.reg_set) == 0):
-            # See if var is hold a register
-            if(isinstance(self._arg2, xvar)):
-                var2 = self._arg2._var
-                if(var2 in prev_vars):
-                    print("TRYING TO DELETE")
-                    # Add the register back to the reg set
-                    xprog.reg_set.append(prev_vars.index(var2) + 1)
-                    # Delete the var and it's corresponding register
-                    del prev_vars[prev_vars.index(var2) + 1]
-                    del prev_vars[prev_vars.index(var2)]
-                else:
-                    # It's not holding a register so just return
-                    return prev_vars;
-            else:
-                # We can't free up a register so just return
-                return prev_vars;
-
-
-        if(isinstance(self._arg2, xvar)):
-            print("ARG2 IS A , ", type(self._arg2), " ", self._arg2._var)
-            var2 = self._arg2._var
-            temp = prev_vars
-            for vars in temp:
-                if(var2 in vars):
-                    print("TRYING TO DELETE")
-                    # Add the register back to the reg set
-                    xprog.reg_set.append(vars.index(var2) + 1)
-                    # Delete the var and it's corresponding register
-                    #del prev_vars[prev_vars.index(var2) + 1]
-                    #del prev_vars[prev_vars.index(var2)]
-                    del temp[temp.index(vars)]
-                    prev_vars = temp
-
-        if(isinstance(self._arg1, xvar)):
-            var1 = self._arg1._var
-            if(var1 in prev_vars):
-                # If var is already in a register, then return
-                return prev_vars;
-            else:
-                # A register is free, so assign this var to it
-                #prev_vars.append(var1)
-                #prev_vars.append(xprog.reg_set[0])
-                temp = [var1]
-                temp.append(xprog.reg_set[0])
-                print(temp)
-                if (prev_vars == []):
-                    prev_vars = temp
-                else:
-                    prev_vars = [temp, prev_vars]
-                print("append ", prev_vars)
-                del xprog.reg_set[0]
-                return prev_vars;
-
-        return prev_vars;
-
     def assign_homes(self, var_env):
         # Remove Variables
         self._arg1 = self._arg1.assign_homes(var_env)
@@ -819,9 +694,6 @@ class retq(xinstr):
         print("retq(", xprog.ms.find("rax"), ")")
         return xprog.ms.find("rax");
 
-    def live_analysis(self, prev_vars):
-        return prev_vars;
-
     def assign_homes(self, var_env):
         return;
 
@@ -846,29 +718,6 @@ class negq(xinstr):
         xprog.ms.insert(self._arg.interp(), src)
         print("negq(", self._arg.interp(), ")")
         return;
-
-    def live_analysis(self, prev_vars):
-        # Check if no registers are available
-        if(len(xprog.reg_set) == 0):
-                return prev_vars;
-
-        if(isinstance(self._arg, xvar)):
-            var1 = self._arg._var
-            if(var1 not in prev_vars):
-                # A register is free, so assign this var to it
-                #prev_vars.append(var1)
-                #prev_vars.append(xprog.reg_set[0])
-                temp = [var1]
-                temp.append(xprog.reg_set[0])
-                print(temp)
-                if (prev_vars == []):
-                    prev_vars = temp
-                else:
-                    prev_vars = [temp, prev_vars]
-                print("append ", prev_vars)
-                del xprog.reg_set[0]
-
-        return prev_vars;
 
     def assign_homes(self, var_env):
         # Remove Variables
@@ -907,9 +756,6 @@ class callq(xinstr):
             xprog.ms.insert("rax", src)
             return;
 
-    def live_analysis(self, prev_vars):
-        return prev_vars;
-
     def assign_homes(self, var_env):
         return;
 
@@ -930,9 +776,6 @@ class jmp(xinstr):
 
     def interp(self):
         return xblock.interp(self._label);
-
-    def live_analysis(self, prev_vars):
-        return prev_vars;
 
     def assign_homes(self, var_env):
         return;
@@ -955,9 +798,6 @@ class pushq(xinstr):
         xprog.ms.insert("rsp", self._arg.interp(), -8)
         print("pushq(", self._arg.interp(), ")")
         return;
-
-    def live_analysis(self, prev_vars):
-        return prev_vars;
 
     def assign_homes(self, var_env):
         # Remove Variable
@@ -983,9 +823,6 @@ class popq(xinstr):
         print("popq(", self._arg.interp(), ")")
         return;
 
-    def live_analysis(self, prev_vars):
-        return prev_vars;
-
     def assign_homes(self, var_env):
         # Remove Variable
         self._arg = self._arg.assign_homes(var_env)
@@ -999,8 +836,6 @@ class popq(xinstr):
 class xarg:
     def emitter():
         return 0;
-    def live_analysis(self, prev_vars):
-        return prev_vars;
     def assign_homes(self, var_env):
         return;
     def patch(self):
@@ -1018,9 +853,6 @@ class xnum(xarg):
 
     def interp(self):
         return self._num;
-
-    def live_analysis(self, prev_vars):
-        return prev_vars;
 
     def assign_homes(self, var_env):
         # Return a xnum object
@@ -1042,9 +874,6 @@ class xreg(xarg):
 
     def interp(self):
         return self._reg;
-
-    def live_analysis(self, prev_vars):
-        return prev_vars;
 
     def assign_homes(self, var_env):
         # Return a xreg object
@@ -1074,9 +903,6 @@ class xmem(xarg):
 
         return address;
 
-    def live_analysis(self, prev_vars):
-        return prev_vars;
-
     def assign_homes(self, var_env):
         return;
 
@@ -1095,9 +921,6 @@ class xvar(xarg):
 
     def interp(self):
         return self._var;
-
-    def live_analysis(self, prev_vars):
-        return prev_vars;
 
     def assign_homes(self, var_env):
         # Return the memory address for the corresponding variable

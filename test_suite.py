@@ -1280,14 +1280,14 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis()
+	test = test.live_analysis(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 139 - Answer = 33")
-	print("ANSWER: 1. a :: 2. a,b :: 3. b :: 4. None :: 5. None")
-	print("        6. c ::  7. None :: 8. None")
+	print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None")
+	print("        6. c ::  7. c :: 8. None")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xnum(8), xvar("b")),\
@@ -1300,7 +1300,7 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis()
+	test = test.live_analysis(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -1314,13 +1314,13 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis()
+	test = test.live_analysis(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 141 - Answer = 15")
-	print("ANSWER: 1. a :: 2. a :: 3. None :: 4. None")
+	print("ANSWER: 1. a :: 2. a :: 3. a :: 4. None")
 	instr = [\
 		movq(xnum(10), xvar("a")),\
 		movq(xnum(5), xreg("rax")),\
@@ -1329,13 +1329,13 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis()
+	test = test.live_analysis(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 142 - Answer = 40")
-	print("ANSWER: 1. None :: 2. a :: 3. None :: 4. None")
+	print("ANSWER: 1. a :: 2. a :: 3. a :: 4. None")
 	instr = [\
 		movq(xnum(20), xvar("a")),\
 		addq(xnum(20), xvar("a")),
@@ -1344,13 +1344,13 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis()
+	test = test.live_analysis(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 143 - Answer = 20")
-	print("ANSWER: 1. None :: 2. a :: 3. a,b :: 4. a :: 5. None :: 6. None")
+	print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. a,b :: 5. a :: 6. None")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xnum(10), xvar("b")),\
@@ -1361,13 +1361,13 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis()
+	test = test.live_analysis(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 144 - Answer = 5")
-	print("ANSWER: 1. a :: 2. a :: 3. a :: 4. None :: 5. None")
+	print("ANSWER: 1. a :: 2. a :: 3. a :: 4. a :: 5. None")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xvar("a"), xvar("b")),\
@@ -1377,13 +1377,13 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis()
+	test = test.live_analysis(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 145 - Answer = -5")
-	print("ANSWER: 1. a :: 2. a :: 3. None :: 4. None")
+	print("ANSWER: 1. a :: 2. a :: 3. a :: 4. None")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		negq(xvar("a")),\
@@ -1392,13 +1392,13 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis()
+	test = test.live_analysis(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 146 - Answer = -13")
-	print("ANSWER: 1. a :: 2. a,b :: 3. b :: 4. None :: 5. None :: 6. None")
+	print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None :: 6. None")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xnum(8), xvar("b")),\
@@ -1409,13 +1409,13 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis()
+	test = test.live_analysis(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 147 - Answer = -20")
-	print("ANSWER: 1. a,b :: 2. b :: 3. None :: 4. None")
+	print("ANSWER: 1. a :: 2. a :: 3. b :: 4. None")
 	instr = [\
 		movq(xnum(20), xvar("a")),\
 		movq(xvar("a"), xvar("b")),\
@@ -1424,7 +1424,7 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis()
+	test = test.live_analysis(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -1437,13 +1437,13 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis()
+	test = test.live_analysis(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 149 - Answer = 15")
-	print("ANSWER: 1. a :: 2. a,b :: 3. b :: 4. None :: 5. None")
+	print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xnum(20), xvar("b")),\
@@ -1453,13 +1453,13 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis()
+	test = test.live_analysis(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 150 - Answer = -4")
-	print("ANSWER: 1. None :: 2. None :: 3. a :: 4. a :: 5. None :: 6. None")
+	print("ANSWER: 1. None :: 2. None :: 3. None :: 4. a :: 5. a :: 6. None")
 	instr = [\
 		pushq(xnum(4)),\
 		popq(xreg("rax")),\
@@ -1470,7 +1470,7 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis()
+	test = test.live_analysis(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()

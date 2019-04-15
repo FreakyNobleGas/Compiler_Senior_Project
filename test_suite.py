@@ -1270,7 +1270,7 @@ def testing():
 	label_map = {}
 	instr = []
 	print("\n Testing 138 - Answer = 13")
-	print("ANSWER: 1. a :: 2. a,b :: 3. b :: 4. None :: 5. None")
+	print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xnum(8), xvar("b")),\

@@ -356,7 +356,7 @@ class xblock:
         live_set[label] = live_var
 
         for vars in live_var:
-                print(vars)
+            print(vars)
 
         return live_set;
 
@@ -400,36 +400,56 @@ class xinstr:
 
     def live_analysis(instr, live_var):
         # Length of instruction set
-        index = len(instr)
-        index -= 2
+        index = 0
+        # Reverse instruction set
+        instr.reverse()
 
-        i = 0
-        while (i < len(instr)):
-            live_var.insert(i, [])
-            i += 1
-
-        # The last instruction will always be None
-        #live_var[index + 1] = []
-
-        # Holds the vars from the previous set
+        #live_var = []
+        # Holds the previous set of registers and variables
         prev_vars = []
-        print("START GOING THROUGH INSTRUCTIONS")
-        # Go through instructions in reverse
-        while (index != -2):
-            next_instr = instr[index + 1]
-            live_var[index + 1] = next_instr.live_analysis(prev_vars)
-            print("PRINT IN LOOP")
-            print(live_var[index + 1])
-            prev_vars = live_var[index]
-            index -= 1
-        print("END GOING THROUGH INSTRUCTIONS")
 
+        live_index = 0
+        while (index < len(instr)):
+            temp = instr[index]
+            print("TEMP IS", type(temp))
+            print("Live before:", live_var)
+            print("Prev before:", prev_vars)
+            set_of_vars = temp.live_analysis(prev_vars)
+            print("Set:", set_of_vars)
+            print("Live after:", live_var)
+            print("Prev after:", prev_vars)
+            #print("LENGTH OF SET IS ", len(set_of_vars))
+
+            if (set_of_vars == []):
+                live_var.append([])
+            else:
+                print("Before append:", live_var)
+                live_var.append(set_of_vars)
+                print("After append:", live_var)
+
+            #live_var1.insert(live_index, set_of_vars)
+            #print("LENGTH OF LIVE AT INDEX ", live_index, " IS ", len(live_var1[live_index]))
+            #print(live_var1[live_index], "PRINTING")
+            #print("TYPE OF LIVE IS ", type(live_var1), " TYPE OF SET IS ", type(set_of_vars))
+
+            prev_vars = set_of_vars
+            index += 1
+            live_index += 1
+
+            print("PRINTING FOR THIS ITERATION")
+            for elem in live_var:
+                print (elem)
+            print("ENDING THIS ITERATION \n")
+
+        index = 0
         for elem in live_var:
-            print(elem)
+            print("LENGTH OF ELEM IS ", len(elem))
+            print(elem, " --- ", live_var[index])
+            index += 1
 
-        print("END TWO")
-
-        return live_var;
+        exit(1)
+        instr.reverse()
+        return live_var1;
 
 
     def assign_homes(instr, var_env):
@@ -506,31 +526,54 @@ class addq(xinstr):
         return;
 
     def live_analysis(self, prev_vars):
+        print("Addq prev_vars:", prev_vars)
         # Check if no registers are available
         if(len(xprog.reg_set) == 0):
-                return prev_vars;
+            print("hi")
+            return prev_vars;
 
         if(isinstance(self._arg1, xvar)):
+            print("hey")
             var1 = self._arg1._var
+            print(var1)
             if(var1 not in prev_vars):
                 # A register is free, so assign this var to it
-                prev_vars.append(var1)
-                prev_vars.append(xprog.reg_set[0])
+                #prev_vars.append(var1)
+                #prev_vars.append(xprog.reg_set[0])
+                temp = [var1]
+                temp.append(xprog.reg_set[0])
+                print(temp)
+                if (prev_vars == []):
+                    prev_vars = temp
+                else:
+                    prev_vars = [temp, prev_vars]
+                print("append ", prev_vars)
                 del xprog.reg_set[0]
 
         # Check if no registers are available after adding arg1
         if(len(xprog.reg_set) == 0):
-                return prev_vars;
+            print("yo")
+            return prev_vars;
 
         if(isinstance(self._arg2, xvar)):
+            print("sup")
             var2 = self._arg2._var
             if(var2 in prev_vars):
                 # If var is already in a register, then return
                 return prev_vars;
             else:
                 # A register is free, so assign this var to it
-                prev_vars.append(var2)
-                prev_vars.append(xprog.reg_set[0])
+                #prev_vars.append(var2)
+                #prev_vars.append(xprog.reg_set[0])
+                temp = [var2]
+                temp.append(xprog.reg_set[0])
+                print(temp)
+                if (prev_vars == []):
+                    prev_vars = temp
+                else:
+                    prev_vars = [temp, prev_vars]
+                print("append ", prev_vars)
+
                 del xprog.reg_set[0]
                 return prev_vars;
 
@@ -603,8 +646,16 @@ class subq(xinstr):
             var1 = self._arg1._var
             if(var1 not in prev_vars):
                 # A register is free, so assign this var to it
-                prev_vars.append(var1)
-                prev_vars.append(xprog.reg_set[0])
+                #prev_vars.append(var1)
+                #prev_vars.append(xprog.reg_set[0])
+                temp = [var1]
+                temp.append(xprog.reg_set[0])
+                print(temp)
+                if (prev_vars == []):
+                    prev_vars = temp
+                else:
+                    prev_vars = [temp, prev_vars]
+                print("append ", prev_vars)
                 del xprog.reg_set[0]
 
         # Check if no registers are available after adding arg1
@@ -618,8 +669,16 @@ class subq(xinstr):
                 return prev_vars;
             else:
                 # A register is free, so assign this var to it
-                prev_vars.append(var2)
-                prev_vars.append(xprog.reg_set[0])
+                #prev_vars.append(var2)
+                #prev_vars.append(xprog.reg_set[0])
+                temp = [var2]
+                temp.append(xprog.reg_set[0])
+                print(temp)
+                if (prev_vars == []):
+                    prev_vars = temp
+                else:
+                    prev_vars = [temp, prev_vars]
+                print("append ", prev_vars)
                 del xprog.reg_set[0]
                 return prev_vars;
 
@@ -680,6 +739,7 @@ class movq(xinstr):
             if(isinstance(self._arg2, xvar)):
                 var2 = self._arg2._var
                 if(var2 in prev_vars):
+                    print("TRYING TO DELETE")
                     # Add the register back to the reg set
                     xprog.reg_set.append(prev_vars.index(var2) + 1)
                     # Delete the var and it's corresponding register
@@ -692,14 +752,21 @@ class movq(xinstr):
                 # We can't free up a register so just return
                 return prev_vars;
 
+
         if(isinstance(self._arg2, xvar)):
+            print("ARG2 IS A , ", type(self._arg2), " ", self._arg2._var)
             var2 = self._arg2._var
-            if(var2 in prev_vars):
-                # Add the register back to the reg set
-                xprog.reg_set.append(prev_vars.index(var2) + 1)
-                # Delete the var and it's corresponding register
-                del prev_vars[prev_vars.index(var2) + 1]
-                del prev_vars[prev_vars.index(var2)]
+            temp = prev_vars
+            for vars in temp:
+                if(var2 in vars):
+                    print("TRYING TO DELETE")
+                    # Add the register back to the reg set
+                    xprog.reg_set.append(vars.index(var2) + 1)
+                    # Delete the var and it's corresponding register
+                    #del prev_vars[prev_vars.index(var2) + 1]
+                    #del prev_vars[prev_vars.index(var2)]
+                    del temp[temp.index(vars)]
+                    prev_vars = temp
 
         if(isinstance(self._arg1, xvar)):
             var1 = self._arg1._var
@@ -708,8 +775,16 @@ class movq(xinstr):
                 return prev_vars;
             else:
                 # A register is free, so assign this var to it
-                prev_vars.append(var1)
-                prev_vars.append(xprog.reg_set[0])
+                #prev_vars.append(var1)
+                #prev_vars.append(xprog.reg_set[0])
+                temp = [var1]
+                temp.append(xprog.reg_set[0])
+                print(temp)
+                if (prev_vars == []):
+                    prev_vars = temp
+                else:
+                    prev_vars = [temp, prev_vars]
+                print("append ", prev_vars)
                 del xprog.reg_set[0]
                 return prev_vars;
 
@@ -781,8 +856,16 @@ class negq(xinstr):
             var1 = self._arg._var
             if(var1 not in prev_vars):
                 # A register is free, so assign this var to it
-                prev_vars.append(var1)
-                prev_vars.append(xprog.reg_set[0])
+                #prev_vars.append(var1)
+                #prev_vars.append(xprog.reg_set[0])
+                temp = [var1]
+                temp.append(xprog.reg_set[0])
+                print(temp)
+                if (prev_vars == []):
+                    prev_vars = temp
+                else:
+                    prev_vars = [temp, prev_vars]
+                print("append ", prev_vars)
                 del xprog.reg_set[0]
 
         return prev_vars;

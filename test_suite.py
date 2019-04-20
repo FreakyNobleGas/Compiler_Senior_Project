@@ -1482,7 +1482,7 @@ def testing():
 	instr = []
 	print("\n Testing 151 - Answer = 13")
 	#print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None")
-	print("ANSWER: 1. None 2. None 3. a <-> rax : b <-> rax 4. a <-> rax : b <-> rax 5. None")
+	print("ANSWER: a->b,rax :: b->rax")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xnum(8), xvar("b")),\
@@ -1492,8 +1492,8 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis(True)
-	test = test.build_interference()
+	test = test.live_analysis()
+	test = test.build_interference(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -1501,8 +1501,7 @@ def testing():
 	print("\n Testing 152 - Answer = 33")
 	#print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None")
 	#print("        6. c ::  7. c :: 8. None")
-	print("ANSWER: 1. None 2. None 3. a <-> rax : b <-> rax 4. b <-> rax")
-	print("		   5. None 6. None 7. c <-> rax 8. None")
+	print("ANSWER: a->b,rax :: b->rax ")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xnum(8), xvar("b")),\
@@ -1515,15 +1514,15 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis(True)
-	test = test.build_interference()
+	test = test.live_analysis()
+	test = test.build_interference(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 153 - Answer = 5")
 	#print("ANSWER: 1. None :: 2. None :: 3. None")
-	print("ANSWER: 1. None :: 2. None :: 4. None")
+	print("ANSWER: No interference")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xnum(5), xreg("rax")),\
@@ -1531,15 +1530,15 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis(True)
-	test = test.build_interference()
+	test = test.live_analysis()
+	test = test.build_interference(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 154 - Answer = 15")
 	#print("ANSWER: 1. a :: 2. a :: 3. a :: 4. None")
-	print("ANSWER: 1. None :: 2. a <-> rax :: 3. a <-> rax :: 4. None")
+	print("ANSWER: a->rax")
 	instr = [\
 		movq(xnum(10), xvar("a")),\
 		movq(xnum(5), xreg("rax")),\
@@ -1548,15 +1547,15 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis(True)
-	test = test.build_interference()
+	test = test.live_analysis()
+	test = test.build_interference(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 155 - Answer = 40")
 	#print("ANSWER: 1. a :: 2. a :: 3. a :: 4. None")
-	print("ANSWER: 1. None :: 2. None :: 3. None :: 4. None")
+	print("ANSWER: No interference")
 	instr = [\
 		movq(xnum(20), xvar("a")),\
 		addq(xnum(20), xvar("a")),
@@ -1565,15 +1564,15 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis(True)
-	test = test.build_interference()
+	test = test.live_analysis()
+	test = test.build_interference(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 156 - Answer = 20")
 	#print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. a,b :: 5. a :: 6. None")
-	print("ANSWER: 1. None :: 2. a <-> b :: 3. a -> b :: 4. b->a :: 5. None :: 6. None")
+	print("ANSWER: a->b :: b->a")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xnum(10), xvar("b")),\
@@ -1584,15 +1583,15 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis(True)
-	test = test.build_interference()
+	test = test.live_analysis()
+	test = test.build_interference(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 157 - Answer = 5")
 	#print("ANSWER: 1. a :: 2. a :: 3. a :: 4. a :: 5. None")
-	print("ANSWER: 1. None :: 2. None :: 3. None :: 4. None :: 5. None")
+	print("ANSWER: No interference")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xvar("a"), xvar("b")),\
@@ -1602,15 +1601,15 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis(True)
-	test = test.build_interference()
+	test = test.live_analysis()
+	test = test.build_interference(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 158 - Answer = -5")
 	#print("ANSWER: 1. a :: 2. a :: 3. a :: 4. None")
-	print("ANSWER: 1. None :: 2. None :: 3. a -> rax :: 4. None")
+	print("ANSWER: a->rax")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		negq(xvar("a")),\
@@ -1619,16 +1618,15 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis(True)
-	test = test.build_interference()
+	test = test.live_analysis()
+	test = test.build_interference(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 159 - Answer = -13")
 	#print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None :: 6. None")
-	print("ANSWER: 1. None :: 2. a -> b :: 3. a -> rax, b -> rax :: 4. (Same as 3)")
-	print("		   5. None :: 6. None.")
+	print("ANSWER: a->b, rax :: b->rax")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xnum(8), xvar("b")),\
@@ -1639,15 +1637,15 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis(True)
-	test = test.build_interference()
+	test = test.live_analysis()
+	test = test.build_interference(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 160 - Answer = -20")
 	#print("ANSWER: 1. a :: 2. a :: 3. b :: 4. None")
-	print("ANSWER: 1. None :: 2. None :: 3. None :: 4. None")
+	print("ANSWER: No interference")
 	instr = [\
 		movq(xnum(20), xvar("a")),\
 		movq(xvar("a"), xvar("b")),\
@@ -1656,29 +1654,29 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis(True)
-	test = test.build_interference()
+	test = test.live_analysis()
+	test = test.build_interference(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 161 - Answer = 13")
-	print("ANSWER 1. None 2. None")
+	print("ANSWER: No interference")
 	instr = [\
 		movq(xnum(50), xreg("rax")),\
 		retq()
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis(True)
-	test = test.build_interference()
+	test = test.live_analysis()
+	test = test.build_interference(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 162 - Answer = 15")
 	#print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None")
-	print("ANSWER: 1. None :: 2. a -> b :: 3. a -> b :: 4. None 5. None")
+	print("ANSWER: a->b")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xnum(20), xvar("b")),\
@@ -1688,15 +1686,15 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis(True)
-	test = test.build_interference()
+	test = test.live_analysis()
+	test = test.build_interference(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
 
 	print("\n Testing 163 - Answer = -4")
 	#print("ANSWER: 1. None :: 2. None :: 3. None :: 4. a :: 5. a :: 6. None")
-	print("ANSWER: 1. None :: 2. None :: 3. None :: 4. None :: 5. None :: 6. None")
+	print("ANSWER: No interference")
 	instr = [\
 		pushq(xnum(4)),\
 		popq(xreg("rax")),\
@@ -1707,8 +1705,8 @@ def testing():
 	]
 	label_map = {"main": instr}
 	test = xprog(None, label_map)
-	test = test.live_analysis(True)
-	test = test.build_interference()
+	test = test.live_analysis()
+	test = test.build_interference(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()

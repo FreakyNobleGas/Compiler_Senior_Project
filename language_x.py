@@ -208,14 +208,39 @@ class xprog:
         else:
             return xblock.interp("main");
 
+    # Checks for interference between two variables to increase effiency for
+    # register allocation
+    def build_interference(self, debug = False):
+        # Set Label Map for Machine State Zero
+        xprog.ms._label_map = self._label_map
+
+        # Grab instructions from live analysis
+        live_instr = self._info["live"]
+
+        # Holds the graph of build interference for all instructions. Python documentation
+        # recommends using dictionaries to make simple graphs
+        build_graph = {}
+
+        build_graph = xblock.build_interference("main", live_instr, build_graph)
+
+        if ( debug ):
+            print ("ANSWER:")
+            for keys in build_graph:
+                print (keys, "->", build_graph[keys])
+
+        self._info["build_interference"] = build_graph
+
+        return xprog(self._info, self._label_map);
+
     # Takes an X program and returns a set of all the variables assigned to registers
     def live_analysis(self, debug = False):
+
         # Set Label Map for Machine State Zero
         xprog.ms._label_map = self._label_map
 
         # Holds the sets of all of the variables and their correpsonding registers
         # Register can be r8 through r15
-        live_set = {}
+        live_set = []
 
         # Holds all the available registers
         xprog.reg_set = ["r8", "r9", "r10", "r11", "r12", "r15"]
@@ -223,7 +248,12 @@ class xprog:
         # Perform analysis on main and any other labels jumped to
         live_set = xblock.live_analysis("main", live_set, debug)
 
-        return xprog(live_set, self._label_map);
+        if( self._info is None ):
+            self._info = {}
+
+        self._info["live"] = live_set
+
+        return xprog(self._info, self._label_map);
 
     # Takes a X prog w/ vars, and returns a xprog w/o vars
     def assign_homes(self):
@@ -345,20 +375,25 @@ class xblock:
         # xprog.ms._block contains a list of instructions
         return xinstr.interp(xprog.ms._block);
 
+    def build_interference(label, live_instr, build_graph):
+        # Set current block
+        xprog.ms._block = xprog.ms._label_map[label]
+
+        build_graph = xinstr.build_interference(xprog.ms._block, live_instr, build_graph)
+
+        return build_graph;
+
     def live_analysis(label, live_set, debug = False):
         # Set current block
         xprog.ms._block = xprog.ms._label_map[label]
 
         # Holds the list of instructions for this block
         live_var = []
-        live_var = xinstr.live_analysis(xprog.ms._block, live_var)
+        live_set = live_set + xinstr.live_analysis(xprog.ms._block, live_var)
 
         if (debug):
             print("LABEL: ", label)
             print(live_var)
-
-        # Assign variables with their registers to this live set block
-        live_set[label] = live_var
 
         return live_set;
 
@@ -399,6 +434,90 @@ class xinstr:
             i.interp()
 
         return;
+
+    def build_interference(instr, live_instr, build_graph):
+        # Index for current instruction
+        index = 0
+
+        # All special registers
+        special_regs = [xreg("rax"), xreg("rdx"), xreg("rcx"), xreg("rsi"), xreg("rdi"),\
+        xreg("r8"), xreg("r9"), xreg("r10"), xreg("r11")]
+
+        for i in live_instr:
+            curr_instr = instr[index]
+            #Skip instruction if it is empty
+            if(i != []):
+
+                # Check if instruction is addq or subq
+                if((isinstance(curr_instr, addq)) or (isinstance(curr_instr, subq))):
+                    # Go through each variable in current instruction
+                    k = 0
+                    for vars in i:
+                        if ( vars != []):
+                            # Format for live instr is var -> reg -> var -> reg...
+                            if( (k % 2) == 0 ):
+                                # Check to make sure variable isn't destination
+                                if( vars != curr_instr._arg2.interp() ):
+                                    if ( vars not in build_graph ):
+                                        build_graph[vars] = [curr_instr._arg2.interp()]
+                                    else:
+                                        if(curr_instr._arg2.interp() not in build_graph[vars]):
+                                            temp = build_graph[vars]
+                                            build_graph[vars] = temp + [curr_instr._arg2.interp()]
+                        k += 1
+                # Check if instruction is addq or subq
+                if(isinstance(curr_instr, negq)):
+                    k = 0
+                    for vars in i:
+                        if( vars != []):
+                            if( (k % 2) == 0):
+                                # Format for live instr is var -> reg -> var -> reg...
+                                if(vars != curr_instr._arg.interp()):
+                                    if(vars not in build_graph):
+                                        build_graph[vars] = [curr_instr._arg.interp()]
+                                    else:
+                                        if(curr_instr._arg.interp() not in build_graph[vars]):
+                                            temp = build_graph[vars]
+                                            build_graph[vars] = temp + [curr_instr._arg.interp()]
+                        k += 1
+
+                # Check if instruction is movq
+                if(isinstance(curr_instr, movq)):
+                    k = 0
+                    # Go through each variable in current instruction
+                    for vars in i:
+                        if ( vars != []):
+                            if ( (k % 2) == 0 ):
+                                if ((vars != curr_instr._arg1.interp()) and (vars != curr_instr._arg2.interp())):
+                                    if ( vars not in build_graph ):
+                                        build_graph[vars] = [curr_instr._arg2.interp()]
+                                    else:
+                                        if(curr_instr._arg2.interp() not in build_graph[vars]):
+                                            temp = build_graph[vars]
+                                            build_graph[vars] = temp + [curr_instr._arg2.interp()]
+                        k += 1
+
+                # Check if instruction is callq and add caller-saved special registers
+                if((isinstance(curr_instr, callq)) or (isinstance(curr_instr, jmp)) or (isinstance(curr_instr, retq))\
+                or (isinstance(curr_instr, pushq)) or (isinstance(curr_instr, popq))):
+                    k = 0
+                    # Go through each variable in current instruction and attach special registers
+                    for vars in i:
+                        if ( vars != []):
+                            if ((k % 2) == 0):
+                                if ( vars not in build_graph ):
+                                    build_graph[vars] = special_regs
+                                else:
+                                    if(special_regs not in build_graph[vars]):
+                                        temp = build_graph[vars]
+                                        build_graph[vars] = temp + special_regs
+                        k += 1
+
+
+
+            index += 1
+
+        return build_graph;
 
     def live_analysis(instr, live_var):
         # Instruction count

@@ -208,6 +208,21 @@ class xprog:
         else:
             return xblock.interp("main");
 
+    def color_graph(self, debug = False):
+        # Set Label Map for Machine State Zero
+        xprog.ms._label_map = self._label_map
+
+        build_graph = self._info["build_interference"]
+
+        # Holds color graph
+        saturation_graph = {}
+
+        saturation_graph = xblock.color_graph("main", build_graph, saturation_graph)
+
+        self._info["color_graph"] = saturation_graph
+
+        return xprog(self._info, self._label_map);
+
     # Checks for interference between two variables to increase effiency for
     # register allocation
     def build_interference(self, debug = False):
@@ -375,6 +390,14 @@ class xblock:
         # xprog.ms._block contains a list of instructions
         return xinstr.interp(xprog.ms._block);
 
+    def color_graph(label, build_graph, saturation_graph):
+        # Set current block
+        xprog.ms._block = xprog.ms._label_map[label]
+
+        saturation_graph = xinstr.color_graph(xprog.ms._block, build_graph, saturation_graph)
+
+        return saturation_graph;
+
     def build_interference(label, live_instr, build_graph):
         # Set current block
         xprog.ms._block = xprog.ms._label_map[label]
@@ -434,6 +457,30 @@ class xinstr:
             i.interp()
 
         return;
+
+    def color_graph(instr, build_graph, saturation_graph):
+        # Holds a priority queue from the most saturated to the least saturated
+        queue = []
+
+        # Fill out priority queue
+        for keys in build_graph:
+            # Base case
+            if (len(queue) == 0):
+                print("Entering")
+                queue.append(keys)
+            else:
+                i = 0
+                temp = build_graph[keys]
+                next = queue[i]
+                while ( (i < len(queue)) and (len(temp) < len(build_graph[next])) ):
+                    next = queue[i]
+                    i += 1
+
+                queue.insert(i, keys)
+
+        
+
+        return saturation_graph
 
     def build_interference(instr, live_instr, build_graph):
         # Index for current instruction

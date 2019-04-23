@@ -60,9 +60,6 @@ class cprog():
 
         self._info["uncover"] = cprog.info_dict
 
-        for keys in cprog.info_dict:
-            print (keys, " = ", cprog.info_dict[keys])
-
         return cprog(self._info, self._label);
 
     # Takes a C program and returns a X0 program

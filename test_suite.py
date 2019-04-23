@@ -1711,7 +1711,7 @@ def testing():
 	test.interp()
 	instr.clear()
 	label_map.clear()
-	
+
 	print("\n\n------------- Testing Color Graph -----------------\n\n")
 	# Initialize Label Map (Dictionary) & Instruct List
 	label_map = {}
@@ -2026,6 +2026,9 @@ def testing():
 		test = test.econ()
 		test = test.uncover()
 		test = test.select()
+		test = test.live_analysis()
+		test = test.build_interference()
+		test = test.color_graph()
 		test = test.assign_registers()
 		print("Interp X # 2: ")
 		test.interp()

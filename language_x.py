@@ -318,15 +318,19 @@ class xprog:
         # Create a new enviroment that contains the address of each
         # variable on the stack
         var_env = env()
+
+        # Check for color graph pass
         if ("color_graph" in self._info):
             g = self._info["color_graph"]
             r = ["rax", "rdx", "rcx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"]
             byte_count = 8
             for vars in all_vars:
+                # If var exists in graph, and it's a register
                 if((vars in g) and (g[vars] < 13)):
                     # g[vars] is the color assigned, which is a one to one of the list r
                     n = g[vars]
                     var_env.add_var(vars, xreg(r[n]))
+                # If neither condition is met, then add to stack
                 else:
                     var_env.add_var(vars, xmem("rsp", byte_count))
                     byte_count += 8
@@ -439,11 +443,11 @@ class xblock:
         live_var = []
         live_set = live_set + xinstr.live_analysis(xprog.ms._block, live_var)
 
+        # Print out every analysis for each instruction
         if (debug):
             print("LABEL: ", label)
             for l in live_var:
                 print (l)
-            #print(live_var)
 
         return live_set;
 
@@ -485,9 +489,12 @@ class xinstr:
 
         return;
 
+    # Helper function so that if a new color is found, we can look back over the whole list recursively
     def color_graph_helper(colors, known_colors, new_color = 0):
 
+        # For every color adjacent to primary node
         for c in known_colors:
+            # If an adjacent node already has "new_color", then increment, and look back over the list
             if(known_colors[known_colors.index(c)] == new_color):
                 new_color += 1
                 new_color = xinstr.color_graph_helper(colors, known_colors, new_color);
@@ -507,26 +514,23 @@ class xinstr:
                 i = 0
                 temp = build_graph[keys]
                 next = queue[i]
+                # Go through queue, while priority is higher than current key (temp)
+                # Priority == Length of List
                 while ( (i < len(queue)) and (len(temp) < len(build_graph[next])) ):
                     next = queue[i]
                     i += 1
-
+                # Insert key into queue based on priority
                 queue.insert(i, keys)
-
-        #queue.reverse()
 
         # Keeps track of the lowest color used. Registers are by default precolored
         colors = {"rax":0, "rdx":1, "rcx":2, "rsi":3, "rdi":4, "r8":5, "r9":6, "r10":7, "r11":8, "r12":9,\
         "r13":10, "r14":11, "r15":12}
 
+        # From highest priority (saturation) to lowest priority
         for v in queue:
-            print("NODE IS ", v)
+
             # u is a list of nodes attached to v
             u = build_graph[v]
-            print("VERTICES ARE ", u)
-            for vertices in u:
-                if ( vertices in colors):
-                    print(vertices, " = ", colors[vertices])
 
             # Keep track of known colors
             known_colors = []
@@ -536,14 +540,13 @@ class xinstr:
                 if (adj in colors):
                     known_colors.append(colors[adj])
 
+            # Check for adjacent nodes by looking at other nodes that mention this node
             for b in build_graph:
-                #print("b is ", b)
                 temp = build_graph[b]
-                #print("temp is", temp)
                 if ((v in temp) and (b in colors)):
-                    #print("adding")
                     known_colors.append(colors[b])
 
+            # Call helper function to find color for node
             colors[v] = xinstr.color_graph_helper(colors, known_colors)
 
         saturation_graph = colors

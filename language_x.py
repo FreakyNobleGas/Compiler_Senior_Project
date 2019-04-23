@@ -219,6 +219,16 @@ class xprog:
 
         saturation_graph = xblock.color_graph("main", build_graph, saturation_graph)
 
+        if debug:
+            print("ANSWER:")
+            i = 0
+            for n in saturation_graph:
+                # Don't print register values
+                if ( i > 11):
+                    print(n,":",saturation_graph[n], end=" ")
+                i += 1
+            print()
+
         self._info["color_graph"] = saturation_graph
 
         return xprog(self._info, self._label_map);
@@ -458,6 +468,15 @@ class xinstr:
 
         return;
 
+    def color_graph_helper(colors, known_colors, new_color = 0):
+
+        for c in known_colors:
+            if(known_colors[c] == new_color):
+                new_color += 1
+                return xinstr.color_graph_helper(colors, known_colors, new_color);
+
+        return new_color;
+
     def color_graph(instr, build_graph, saturation_graph):
         # Holds a priority queue from the most saturated to the least saturated
         queue = []
@@ -466,7 +485,6 @@ class xinstr:
         for keys in build_graph:
             # Base case
             if (len(queue) == 0):
-                print("Entering")
                 queue.append(keys)
             else:
                 i = 0
@@ -478,9 +496,27 @@ class xinstr:
 
                 queue.insert(i, keys)
 
-        
+        # Keeps track of the lowest color used. Registers are by default precolored
+        colors = {"rax":0, "rdx":1, "rcx":2, "rsi":3, "rdi":4, "r8":5, "r9":6, "r10":7, "r11":8, "r12":9,\
+        "r13":10, "r15":11}
 
-        return saturation_graph
+        for v in queue:
+            # u is a list of nodes attached to v
+            u = build_graph[v]
+
+            # Keep track of known colors
+            known_colors = []
+
+            # adj is the adjacent nodes listed in u
+            for adj in u:
+                if (adj in colors):
+                    known_colors.append(colors[adj])
+
+            colors[v] = xinstr.color_graph_helper(colors, known_colors)
+
+        saturation_graph = colors
+
+        return saturation_graph;
 
     def build_interference(instr, live_instr, build_graph):
         # Index for current instruction
@@ -488,7 +524,7 @@ class xinstr:
 
         # All special registers
         special_regs = [xreg("rax"), xreg("rdx"), xreg("rcx"), xreg("rsi"), xreg("rdi"),\
-        xreg("r8"), xreg("r9"), xreg("r10"), xreg("r11")]
+        xreg("r8"), xreg("r9"), xreg("r10"), xreg("r11"), xreg("r12"), xreg("r13"), xreg("14"), xreg("15")]
 
         for i in live_instr:
             curr_instr = instr[index]

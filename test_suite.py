@@ -1013,7 +1013,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	print("Interp X # 2: ")
 	test.interp()
 	test.emitter()
@@ -1026,7 +1026,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	print("Interp X # 2: ")
 	test.interp()
 	test.emitter()
@@ -1039,7 +1039,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	print("Interp X # 2: ")
 	test.interp()
 	test.emitter()
@@ -1052,7 +1052,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	print("Interp X # 2: ")
 	test.interp()
 	test.emitter()
@@ -1065,7 +1065,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	print("Interp X # 2: ")
 	test.interp()
 	test.emitter()
@@ -1078,7 +1078,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	print("Interp X # 2: ")
 	test.interp()
 	test.emitter()
@@ -1094,7 +1094,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	test = test.patch()
 	print("Interp X # 2: ")
 	test.interp()
@@ -1108,7 +1108,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	test = test.patch()
 	print("Interp X # 2: ")
 	test.interp()
@@ -1122,7 +1122,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	test = test.patch()
 	print("Interp X # 2: ")
 	test.interp()
@@ -1136,7 +1136,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	test = test.patch()
 	print("Interp X # 2: ")
 	test.interp()
@@ -1150,7 +1150,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	test = test.patch()
 	print("Interp X # 2: ")
 	test.interp()
@@ -1164,7 +1164,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	test = test.patch()
 	print("Interp X # 2: ")
 	test.interp()
@@ -1181,7 +1181,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	test = test.patch()
 	test = test.main_gen()
 	print("Interp X # 2: ")
@@ -1197,7 +1197,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	test = test.patch()
 	test = test.main_gen()
 	print("Interp X # 2: ")
@@ -1212,7 +1212,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	test = test.patch()
 	test = test.main_gen()
 	print("Interp X # 2: ")
@@ -1227,7 +1227,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	test = test.patch()
 	test = test.main_gen()
 	print("Interp X # 2: ")
@@ -1242,7 +1242,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	test = test.patch()
 	test = test.main_gen()
 	print("Interp X # 2: ")
@@ -1257,7 +1257,7 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
-	test = test.assign_homes()
+	test = test.assign_registers()
 	test = test.patch()
 	test = test.main_gen()
 	print("Interp X # 2: ")
@@ -1420,6 +1420,7 @@ def testing():
 		movq(xnum(20), xvar("a")),\
 		movq(xvar("a"), xvar("b")),\
 		negq(xvar("b")),\
+		movq(xvar("b"), xreg("rax")),\
 		retq()
 	]
 	label_map = {"main": instr}
@@ -1429,7 +1430,7 @@ def testing():
 	instr.clear()
 	label_map.clear()
 
-	print("\n Testing 148 - Answer = 13")
+	print("\n Testing 148 - Answer = 50")
 	print("ANSWER 1. None 2. None")
 	instr = [\
 		movq(xnum(50), xreg("rax")),\
@@ -1650,6 +1651,7 @@ def testing():
 		movq(xnum(20), xvar("a")),\
 		movq(xvar("a"), xvar("b")),\
 		negq(xvar("b")),\
+		movq(xvar("b"), xreg("rax")),\
 		retq()
 	]
 	label_map = {"main": instr}
@@ -1660,7 +1662,7 @@ def testing():
 	instr.clear()
 	label_map.clear()
 
-	print("\n Testing 161 - Answer = 13")
+	print("\n Testing 161 - Answer = 50")
 	print("ANSWER: No interference")
 	instr = [\
 		movq(xnum(50), xreg("rax")),\
@@ -1904,6 +1906,7 @@ def testing():
 		movq(xnum(20), xvar("a")),\
 		movq(xvar("a"), xvar("b")),\
 		negq(xvar("b")),\
+		movq(xvar("b"), xreg("rax")),\
 		retq()
 	]
 	label_map = {"main": instr}
@@ -1915,7 +1918,7 @@ def testing():
 	instr.clear()
 	label_map.clear()
 
-	print("\n Testing 174 - Answer = 13")
+	print("\n Testing 174 - Answer = 50")
 	#print("ANSWER: 1. None :: 2. None")
 	#print("ANSWER: No interference")
 	print("ANSWER: None")

@@ -281,7 +281,7 @@ class xprog:
         return xprog(self._info, self._label_map);
 
     # Takes a X prog w/ vars, and returns a xprog w/o vars
-    def assign_homes(self):
+    def assign_registers(self):
         # Find number of variables to push to stack and adjust for memory size
         vc = len(self._label_map) * 8
 
@@ -338,7 +338,7 @@ class xprog:
         # Set Label Map for Machine State Zero
         xprog.ms._label_map = self._label_map
 
-        xblock.assign_homes("main", var_env)
+        xblock.assign_registers("main", var_env)
 
         # Update instruction block after call to assign homes
         xprog.ms._label_map["main"] = xprog.ms._block
@@ -441,11 +441,11 @@ class xblock:
 
         return live_set;
 
-    def assign_homes(label, var_env):
+    def assign_registers(label, var_env):
         # Update instruction block
         xprog.ms._block = xprog.ms._label_map[label]
 
-        xinstr.assign_homes(xprog.ms._block, var_env)
+        xinstr.assign_registers(xprog.ms._block, var_env)
         return;
 
     def patch():
@@ -699,10 +699,10 @@ class xinstr:
         return live_var;
 
 
-    def assign_homes(instr, var_env):
+    def assign_registers(instr, var_env):
         # Go through instructions one by one to remove vars
         for i in instr:
-            i.assign_homes(var_env)
+            i.assign_registers(var_env)
 
         return;
 
@@ -772,10 +772,10 @@ class addq(xinstr):
         xprog.ms.insert(self._arg2.interp(), result)
         return;
 
-    def assign_homes(self, var_env):
+    def assign_registers(self, var_env):
         # Remove Variables
-        self._arg1 = self._arg1.assign_homes(var_env)
-        self._arg2 = self._arg2.assign_homes(var_env)
+        self._arg1 = self._arg1.assign_registers(var_env)
+        self._arg2 = self._arg2.assign_registers(var_env)
         return;
 
     def patch(self):
@@ -830,10 +830,10 @@ class subq(xinstr):
 
         return;
 
-    def assign_homes(self, var_env):
+    def assign_registers(self, var_env):
         # Remove Variables
-        self._arg1 = self._arg1.assign_homes(var_env)
-        self._arg2 = self._arg2.assign_homes(var_env)
+        self._arg1 = self._arg1.assign_registers(var_env)
+        self._arg2 = self._arg2.assign_registers(var_env)
         return;
 
     def patch(self):
@@ -878,10 +878,10 @@ class movq(xinstr):
         xprog.ms.insert(destination, value)
         return;
 
-    def assign_homes(self, var_env):
+    def assign_registers(self, var_env):
         # Remove Variables
-        self._arg1 = self._arg1.assign_homes(var_env)
-        self._arg2 = self._arg2.assign_homes(var_env)
+        self._arg1 = self._arg1.assign_registers(var_env)
+        self._arg2 = self._arg2.assign_registers(var_env)
         return;
 
     def patch(self):
@@ -907,7 +907,7 @@ class retq(xinstr):
         print("retq(", xprog.ms.find("rax"), ")")
         return xprog.ms.find("rax");
 
-    def assign_homes(self, var_env):
+    def assign_registers(self, var_env):
         return;
 
     def patch(self):
@@ -932,9 +932,9 @@ class negq(xinstr):
         print("negq(", self._arg.interp(), ")")
         return;
 
-    def assign_homes(self, var_env):
+    def assign_registers(self, var_env):
         # Remove Variables
-        self._arg = self._arg.assign_homes(var_env)
+        self._arg = self._arg.assign_registers(var_env)
         return;
 
     def patch(self):
@@ -969,7 +969,7 @@ class callq(xinstr):
             xprog.ms.insert("rax", src)
             return;
 
-    def assign_homes(self, var_env):
+    def assign_registers(self, var_env):
         return;
 
     def patch(self):
@@ -990,7 +990,7 @@ class jmp(xinstr):
     def interp(self):
         return xblock.interp(self._label);
 
-    def assign_homes(self, var_env):
+    def assign_registers(self, var_env):
         return;
 
     def patch(self):
@@ -1012,9 +1012,9 @@ class pushq(xinstr):
         print("pushq(", self._arg.interp(), ")")
         return;
 
-    def assign_homes(self, var_env):
+    def assign_registers(self, var_env):
         # Remove Variable
-        self._arg = self._arg.assign_homes(var_env)
+        self._arg = self._arg.assign_registers(var_env)
         return;
 
     def patch(self):
@@ -1036,9 +1036,9 @@ class popq(xinstr):
         print("popq(", self._arg.interp(), ")")
         return;
 
-    def assign_homes(self, var_env):
+    def assign_registers(self, var_env):
         # Remove Variable
-        self._arg = self._arg.assign_homes(var_env)
+        self._arg = self._arg.assign_registers(var_env)
         return;
 
     def patch(self):
@@ -1049,7 +1049,7 @@ class popq(xinstr):
 class xarg:
     def emitter():
         return 0;
-    def assign_homes(self, var_env):
+    def assign_registers(self, var_env):
         return;
     def patch(self):
         return;
@@ -1067,7 +1067,7 @@ class xnum(xarg):
     def interp(self):
         return self._num;
 
-    def assign_homes(self, var_env):
+    def assign_registers(self, var_env):
         # Return a xnum object
         return xnum(self._num);
 
@@ -1088,7 +1088,7 @@ class xreg(xarg):
     def interp(self):
         return self._reg;
 
-    def assign_homes(self, var_env):
+    def assign_registers(self, var_env):
         # Return a xreg object
         return xreg(self._reg);
 
@@ -1116,7 +1116,7 @@ class xmem(xarg):
 
         return address;
 
-    def assign_homes(self, var_env):
+    def assign_registers(self, var_env):
         return;
 
     def patch(self):
@@ -1135,7 +1135,7 @@ class xvar(xarg):
     def interp(self):
         return self._var;
 
-    def assign_homes(self, var_env):
+    def assign_registers(self, var_env):
         # Return the memory address for the corresponding variable
         return var_env.find_var(self._var);
 

@@ -224,7 +224,7 @@ class xprog:
             i = 0
             for n in saturation_graph:
                 # Don't print register values
-                if ( i > 11):
+                if ( i > 12):
                     print(n,":",saturation_graph[n], end=" ")
                 i += 1
             print()
@@ -309,8 +309,11 @@ class xprog:
         ]
         self._label_map["end"] = end_instr
 
-        # Contains all variables in program
-        all_vars = self._info["uncover"]
+        if ( "uncover" in self._info):
+            # Contains all variables in program
+            all_vars = self._info["uncover"]
+        else:
+            all_vars = self._info
 
         # Create a new enviroment that contains the address of each
         # variable on the stack
@@ -322,7 +325,8 @@ class xprog:
             for vars in all_vars:
                 if((vars in g) and (g[vars] < 13)):
                     # g[vars] is the color assigned, which is a one to one of the list r
-                    var_env.add_var(vars, r[g[vars]])
+                    n = g[vars]
+                    var_env.add_var(vars, xreg(r[n]))
                 else:
                     var_env.add_var(vars, xmem("rsp", byte_count))
                     byte_count += 8
@@ -437,7 +441,9 @@ class xblock:
 
         if (debug):
             print("LABEL: ", label)
-            print(live_var)
+            for l in live_var:
+                print (l)
+            #print(live_var)
 
         return live_set;
 
@@ -484,7 +490,7 @@ class xinstr:
         for c in known_colors:
             if(known_colors[known_colors.index(c)] == new_color):
                 new_color += 1
-                return xinstr.color_graph_helper(colors, known_colors, new_color);
+                new_color = xinstr.color_graph_helper(colors, known_colors, new_color);
 
         return new_color;
 
@@ -507,13 +513,20 @@ class xinstr:
 
                 queue.insert(i, keys)
 
+        #queue.reverse()
+
         # Keeps track of the lowest color used. Registers are by default precolored
         colors = {"rax":0, "rdx":1, "rcx":2, "rsi":3, "rdi":4, "r8":5, "r9":6, "r10":7, "r11":8, "r12":9,\
-        "r13":10, "r15":11}
+        "r13":10, "r14":11, "r15":12}
 
         for v in queue:
+            print("NODE IS ", v)
             # u is a list of nodes attached to v
             u = build_graph[v]
+            print("VERTICES ARE ", u)
+            for vertices in u:
+                if ( vertices in colors):
+                    print(vertices, " = ", colors[vertices])
 
             # Keep track of known colors
             known_colors = []
@@ -522,6 +535,14 @@ class xinstr:
             for adj in u:
                 if (adj in colors):
                     known_colors.append(colors[adj])
+
+            for b in build_graph:
+                #print("b is ", b)
+                temp = build_graph[b]
+                #print("temp is", temp)
+                if ((v in temp) and (b in colors)):
+                    #print("adding")
+                    known_colors.append(colors[b])
 
             colors[v] = xinstr.color_graph_helper(colors, known_colors)
 
@@ -635,8 +656,8 @@ class xinstr:
                     var = temp._arg1._var
                     if(var not in prev_vars):
                         # A register is free, so assign this var to it
-                        prev_vars.append(var)
-                        prev_vars.append(xprog.reg_set[0])
+                        prev_vars.insert(0, var)
+                        prev_vars.insert(1, xprog.reg_set[0])
                         del xprog.reg_set[0]
 
                 # Check if no registers are available and arg2 is a var
@@ -644,8 +665,8 @@ class xinstr:
                     var = temp._arg2._var
                     if(var not in prev_vars):
                         # A register is free, so assign this var to it
-                        prev_vars.append(var)
-                        prev_vars.append(xprog.reg_set[0])
+                        prev_vars.insert(0, var)
+                        prev_vars.insert(1, xprog.reg_set[0])
                         del xprog.reg_set[0]
 
             # Instruction is a movq
@@ -654,15 +675,15 @@ class xinstr:
                 if(isinstance(temp._arg2, xvar)):
                     var = temp._arg2._var
                     if(var in prev_vars):
-                        xprog.reg_set.append(prev_vars[prev_vars.index(var) + 1])
+                        xprog.reg_set.insert(0, prev_vars[prev_vars.index(var) + 1])
                         del prev_vars[prev_vars.index(var) + 1]
                         del prev_vars[prev_vars.index(var)]
 
                 if((len(xprog.reg_set) != 0) and (isinstance(temp._arg1, xvar))):
                     var = temp._arg1._var
                     if(var not in prev_vars):
-                        prev_vars.append(var)
-                        prev_vars.append(xprog.reg_set[0])
+                        prev_vars.insert(0, var)
+                        prev_vars.insert(1, xprog.reg_set[0])
                         del xprog.reg_set[0]
 
             # Instruction is a negq
@@ -671,8 +692,8 @@ class xinstr:
                 if((len(xprog.reg_set) != 0) and (isinstance(temp._arg, xvar))):
                     var = temp._arg._var
                     if(var not in prev_vars):
-                        prev_vars.append(var)
-                        prev_vars.append(xprog.reg_set[0])
+                        prev_vars.insert(0, var)
+                        prev_vars.insert(1, xprog.reg_set[0])
                         del xprog.reg_set[0]
 
 
@@ -690,9 +711,7 @@ class xinstr:
                 else:
                     live_var.append(prev_vars[:])
 
-            #prev_vars = set_of_vars
             index += 1
-
 
         live_var.reverse()
         instr.reverse()

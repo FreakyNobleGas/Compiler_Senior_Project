@@ -143,7 +143,7 @@ class neg(expr):
         return neg_var;
 
     def econ(self):
-        return cneg(self._arg.econ());
+        return cneg(self._num);
 
 ########################## Add ##########################################################
 # -- Inherited Class for Adding Numbers --

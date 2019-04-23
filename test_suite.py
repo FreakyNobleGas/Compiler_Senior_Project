@@ -1415,7 +1415,7 @@ def testing():
 	label_map.clear()
 
 	print("\n Testing 147 - Answer = -20")
-	print("ANSWER: 1. a :: 2. a :: 3. b :: 4. None")
+	print("ANSWER: 1. a :: 2. a :: 3. b :: 4. b 5. None")
 	instr = [\
 		movq(xnum(20), xvar("a")),\
 		movq(xvar("a"), xvar("b")),\
@@ -1475,7 +1475,6 @@ def testing():
 	test.interp()
 	instr.clear()
 	label_map.clear()
-
 
 	print("\n\n------------- Testing Build-Interference -----------------\n\n")
 	# Initialize Label Map (Dictionary) & Instruct List
@@ -1712,7 +1711,7 @@ def testing():
 	test.interp()
 	instr.clear()
 	label_map.clear()
-
+	
 	print("\n\n------------- Testing Color Graph -----------------\n\n")
 	# Initialize Label Map (Dictionary) & Instruct List
 	label_map = {}
@@ -2003,6 +2002,366 @@ def testing():
 	test = test.build_interference(True)
 	print("COLOR GRAPH ANSWER: ")
 	test = test.color_graph(True)
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n\n------------- Testing Assign Registers -----------------\n\n")
+	# Initialize Label Map (Dictionary) & Instruct List
+	label_map = {}
+	instr = []
+
+	i = 178
+	while i != 190:
+		generate_arry_of_ints(50)
+		# Make random depth anything but 0, so reads don't pop up
+		random_depth = rand_num()
+		while random_depth == 0:
+			random_depth = rand_num()
+		print("\nTesting " + str(i))
+		test = generate_large_program(random_depth, "R1")
+		print("Interp R # 1: ")
+		test.interp()
+		test = test.rco()
+		test = test.econ()
+		test = test.uncover()
+		test = test.select()
+		test = test.assign_registers()
+		print("Interp X # 2: ")
+		test.interp()
+		test.emitter()
+		i += 1
+
+	print("\n Testing 190 - Answer = 13")
+	#print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None")
+	#print("ANSWER: a->b,rax :: b->rax")
+	print("ANSWER: a:1 b:1")
+	instr = [\
+		movq(xnum(5), xvar("a")),\
+		movq(xnum(8), xvar("b")),\
+		addq(xvar("a"), xreg("rax")),\
+		addq(xvar("b"), xreg("rax")),\
+		retq()
+	]
+	label_map = {"main": instr}
+	uncover_dict = {"a":0, "b":0}
+	test_dict = {"uncover": uncover_dict}
+	test = xprog(test_dict, label_map)
+	test = test.live_analysis()
+	test = test.build_interference()
+	test = test.color_graph(True)
+	test = test.assign_registers()
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 191 - Answer = 33")
+	#print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None")
+	#print("        6. c ::  7. c :: 8. None")
+	#print("ANSWER: a->b,rax :: b->rax ")
+	print("ANSWER: a:1 b:1")
+	instr = [\
+		movq(xnum(5), xvar("a")),\
+		movq(xnum(8), xvar("b")),\
+		addq(xvar("a"), xreg("rax")),\
+		addq(xvar("b"), xreg("rax")),\
+		movq(xnum(20), xvar("c")),\
+		addq(xreg("rax"), xvar("c")),\
+		movq(xvar("c"), xreg("rax")),\
+		retq()
+	]
+	label_map = {"main": instr}
+	uncover_dict = {"a":0, "b":0, "c":0}
+	test_dict = {"uncover": uncover_dict}
+	test = xprog(test_dict, label_map)
+	test = test.live_analysis()
+	test = test.build_interference()
+	test = test.color_graph(True)
+	test = test.assign_registers()
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 192 - Answer = 5")
+	#print("ANSWER: 1. None :: 2. None :: 3. None")
+	#print("ANSWER: No interference")
+	print("ANSWER: None")
+	instr = [\
+		movq(xnum(5), xvar("a")),\
+		movq(xnum(5), xreg("rax")),\
+		retq()
+	]
+	label_map = {"main": instr}
+	uncover_dict = {"a":0}
+	test_dict = {"uncover": uncover_dict}
+	test = xprog(test_dict, label_map)
+	test = test.live_analysis()
+	test = test.build_interference()
+	test = test.color_graph(True)
+	test = test.assign_registers()
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 193 - Answer = 15")
+	#print("ANSWER: 1. a :: 2. a :: 3. a :: 4. None")
+	#print("ANSWER: a->rax")
+	print("ANSWER: a:1")
+	instr = [\
+		movq(xnum(10), xvar("a")),\
+		movq(xnum(5), xreg("rax")),\
+		addq(xvar("a"), xreg("rax")),\
+		retq()
+	]
+	label_map = {"main": instr}
+	uncover_dict = {"a":0}
+	test_dict = {"uncover": uncover_dict}
+	test = xprog(test_dict, label_map)
+	test = test.live_analysis()
+	test = test.build_interference()
+	test = test.color_graph(True)
+	test = test.assign_registers()
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 194 - Answer = 40")
+	#print("ANSWER: 1. a :: 2. a :: 3. a :: 4. None")
+	#print("ANSWER: No interference")
+	print("ANSWER: None")
+	instr = [\
+		movq(xnum(20), xvar("a")),\
+		addq(xnum(20), xvar("a")),
+		movq(xvar("a"), xreg("rax")),\
+		retq()
+	]
+	label_map = {"main": instr}
+	uncover_dict = {"a":0}
+	test_dict = {"uncover": uncover_dict}
+	test = xprog(test_dict, label_map)
+	test = test.live_analysis()
+	test = test.build_interference()
+	test = test.color_graph(True)
+	test = test.assign_registers()
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 195 - Answer = 20")
+	#print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. a,b :: 5. a :: 6. None")
+	#print("ANSWER: a->b :: b->a")
+	print("ANSWER: a:0 b:1")
+	instr = [\
+		movq(xnum(5), xvar("a")),\
+		movq(xnum(10), xvar("b")),\
+		addq(xvar("a"), xvar("b")),\
+		addq(xvar("b"), xvar("a")),\
+		movq(xvar("a"), xreg("rax")),\
+		retq()
+	]
+	label_map = {"main": instr}
+	uncover_dict = {"a":0, "b":0}
+	test_dict = {"uncover": uncover_dict}
+	test = xprog(test_dict, label_map)
+	test = test.live_analysis()
+	test = test.build_interference()
+	test = test.color_graph(True)
+	test = test.assign_registers()
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 196 - Answer = 5")
+	#print("ANSWER: 1. a :: 2. a :: 3. a :: 4. a :: 5. None")
+	#print("ANSWER: No interference")
+	print("ANSWER: None")
+	instr = [\
+		movq(xnum(5), xvar("a")),\
+		movq(xvar("a"), xvar("b")),\
+		movq(xvar("a"), xvar("c")),\
+		movq(xvar("a"), xreg("rax")),\
+		retq()
+	]
+	label_map = {"main": instr}
+	uncover_dict = {"a":0, "b":0, "c":0}
+	test_dict = {"uncover": uncover_dict}
+	test = xprog(test_dict, label_map)
+	test = test.live_analysis()
+	test = test.build_interference()
+	test = test.color_graph(True)
+	test = test.assign_registers()
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 197 - Answer = -5")
+	#print("ANSWER: 1. a :: 2. a :: 3. a :: 4. None")
+	#print("ANSWER: a->rax")
+	print("a:1")
+	instr = [\
+		movq(xnum(5), xvar("a")),\
+		negq(xvar("a")),\
+		addq(xvar("a"), xreg("rax")),\
+		retq()
+	]
+	label_map = {"main": instr}
+	uncover_dict = {"a":0}
+	test_dict = {"uncover": uncover_dict}
+	test = xprog(test_dict, label_map)
+	test = test.live_analysis()
+	test = test.build_interference()
+	test = test.color_graph(True)
+	test = test.assign_registers()
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 198 - Answer = -13")
+	#print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None :: 6. None")
+	#print("ANSWER: a->b, rax :: b->rax")
+	print("ANSWER: a:1 b:1")
+	instr = [\
+		movq(xnum(5), xvar("a")),\
+		movq(xnum(8), xvar("b")),\
+		addq(xvar("a"), xreg("rax")),\
+		addq(xvar("b"), xreg("rax")),\
+		negq(xreg("rax")),\
+		retq()
+	]
+	label_map = {"main": instr}
+	uncover_dict = {"a":0, "b":0}
+	test_dict = {"uncover": uncover_dict}
+	test = xprog(test_dict, label_map)
+	test = test.live_analysis()
+	test = test.build_interference()
+	test = test.color_graph(True)
+	test = test.assign_registers()
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 199 - Answer = -20")
+	#print("ANSWER: 1. a :: 2. a :: 3. b :: 4. None")
+	#print("ANSWER: No interference")
+	print("ANSWER: None")
+	instr = [\
+		movq(xnum(20), xvar("a")),\
+		movq(xvar("a"), xvar("b")),\
+		negq(xvar("b")),\
+		movq(xvar("b"), xreg("rax")),\
+		retq()
+	]
+	label_map = {"main": instr}
+	uncover_dict = {"a":0, "b":0}
+	test_dict = {"uncover": uncover_dict}
+	test = xprog(test_dict, label_map)
+	test = test.live_analysis()
+	test = test.build_interference()
+	test = test.color_graph(True)
+	test = test.assign_registers()
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 200 - Answer = 50")
+	#print("ANSWER: 1. None :: 2. None")
+	#print("ANSWER: No interference")
+	print("ANSWER: None")
+	instr = [\
+		movq(xnum(50), xreg("rax")),\
+		retq()
+	]
+	label_map = {"main": instr}
+	uncover_dict = {}
+	test_dict = {"uncover": uncover_dict}
+	test = xprog(test_dict, label_map)
+	test = test.live_analysis()
+	test = test.build_interference()
+	test = test.color_graph(True)
+	test = test.assign_registers()
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 201 - Answer = 15")
+	#print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None")
+	#print("ANSWER: a->b")
+	print("ANSWER: a:0")
+	instr = [\
+		movq(xnum(5), xvar("a")),\
+		movq(xnum(20), xvar("b")),\
+		subq(xvar("a"), xvar("b")),\
+		movq(xvar("b"), xreg("rax")),\
+		retq()
+	]
+	label_map = {"main": instr}
+	uncover_dict = {"a":0, "b":0}
+	test_dict = {"uncover": uncover_dict}
+	test = xprog(test_dict, label_map)
+	test = test.live_analysis()
+	test = test.build_interference()
+	test = test.color_graph(True)
+	test = test.assign_registers()
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 202 - Answer = -4")
+	#print("ANSWER: 1. None :: 2. None :: 3. None :: 4. a :: 5. a :: 6. None")
+	#print("ANSWER: No interference")
+	print("ANSWER: None")
+	instr = [\
+		pushq(xnum(4)),\
+		popq(xreg("rax")),\
+		movq(xreg("rax"), xvar("a")),\
+		negq(xvar("a")),\
+		movq(xvar("a"), xreg("rax")),\
+		retq()
+	]
+	label_map = {"main": instr}
+	uncover_dict = {"a":0}
+	test_dict = {"uncover": uncover_dict}
+	test = xprog(test_dict, label_map)
+	test = test.live_analysis()
+	test = test.build_interference()
+	test = test.color_graph(True)
+	test = test.assign_registers()
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	# This test is the one we used in class. The answers can be referenced on pdf 5 & 6
+	print("\n Testing 203 - Answer = 42")
+
+	instr = [\
+		movq(xnum(1), xvar("v")),\
+		movq(xnum(46), xvar("w")),\
+		movq(xvar("v"), xvar("x")),\
+		addq(xnum(7), xvar("x")),\
+		movq(xvar("x"), xvar("y")),\
+		addq(xnum(4), xvar("y")),\
+		movq(xvar("x"), xvar("z")),\
+		addq(xvar("w"), xvar("z")),\
+		movq(xvar("y"), xvar("t")),\
+		negq(xvar("t")),\
+		movq(xvar("z"), xreg("rax")),\
+		addq(xvar("t"), xreg("rax")),\
+		retq()
+	]
+
+	label_map = {"main": instr}
+	uncover_dict = {"v":0, "w":0, "x":0, "y":0, "z":0, "t":0}
+	test_dict = {"uncover": uncover_dict}
+	test = xprog(test_dict, label_map)
+	print("X INTERP: ", end = " ")
+	test.interp()
+	print("LIVE ANSWER: ")
+	test = test.live_analysis(True)
+	print("BUILD INTERFERENCE ANSWER: ")
+	test = test.build_interference(True)
+	print("COLOR GRAPH ANSWER: ")
+	test = test.color_graph(True)
+	test = test.assign_registers()
 	test.interp()
 	instr.clear()
 	label_map.clear()

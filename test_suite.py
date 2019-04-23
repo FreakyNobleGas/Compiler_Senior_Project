@@ -1973,9 +1973,33 @@ def testing():
 	instr.clear()
 	label_map.clear()
 
-	#print("\n Testing 177 - Answer = ")
-	#print("ANSWER: ")
+	# This test is the one we used in class. The answers can be referenced on pdf 5 & 6
+	print("\n Testing 177 - Answer = 42")
 
-	#instr = [\
-	#
-	#]
+	instr = [\
+		movq(xnum(1), xvar("v")),\
+		movq(xnum(46), xvar("w")),\
+		movq(xvar("v"), xvar("x")),\
+		addq(xnum(7), xvar("x")),\
+		movq(xvar("x"), xvar("y")),\
+		addq(xnum(4), xvar("y")),\
+		movq(xvar("x"), xvar("z")),\
+		addq(xvar("w"), xvar("z")),\
+		movq(xvar("y"), xvar("t")),\
+		negq(xvar("t")),\
+		movq(xvar("z"), xreg("rax")),\
+		addq(xvar("t"), xreg("rax")),\
+		retq()
+	]
+
+	label_map = {"main": instr}
+	test = xprog(None, label_map)
+	print("LIVE ANSWER: ")
+	test = test.live_analysis(True)
+	print("BUILD INTERFERENCE: ")
+	test = test.build_interference(True)
+	print("COLOR GRAPH")
+	test = test.color_graph(True)
+	test.interp()
+	instr.clear()
+	label_map.clear()

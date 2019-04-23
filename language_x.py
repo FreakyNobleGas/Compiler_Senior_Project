@@ -471,7 +471,7 @@ class xinstr:
     def color_graph_helper(colors, known_colors, new_color = 0):
 
         for c in known_colors:
-            if(known_colors[c] == new_color):
+            if(known_colors[known_colors.index(c)] == new_color):
                 new_color += 1
                 return xinstr.color_graph_helper(colors, known_colors, new_color);
 

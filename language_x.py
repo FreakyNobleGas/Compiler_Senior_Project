@@ -310,19 +310,30 @@ class xprog:
         self._label_map["end"] = end_instr
 
         # Contains all variables in program
-        all_vars = self._info
+        all_vars = self._info["uncover"]
 
         # Create a new enviroment that contains the address of each
         # variable on the stack
         var_env = env()
+        if ("color_graph" in self._info):
+            g = self._info["color_graph"]
+            r = ["rax", "rdx", "rcx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"]
+            byte_count = 8
+            for vars in all_vars:
+                if((vars in g) and (g[vars] < 13)):
+                    # g[vars] is the color assigned, which is a one to one of the list r
+                    var_env.add_var(vars, r[g[vars]])
+                else:
+                    var_env.add_var(vars, xmem("rsp", byte_count))
+                    byte_count += 8
 
-        # ** Does byte count need to be negative? **
-        byte_count = 8
-        list_of_vars = []
-        for vars in all_vars:
-            # Add memory address on the stack for current var
-            var_env.add_var(vars, xmem("rsp", byte_count))
-            byte_count += 8
+        # Still support legacy code
+        else:
+            byte_count = 8
+            for vars in all_vars:
+                # Add memory address on the stack for current var
+                var_env.add_var(vars, xmem("rsp", byte_count))
+                byte_count += 8
 
         # Set Label Map for Machine State Zero
         xprog.ms._label_map = self._label_map

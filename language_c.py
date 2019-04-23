@@ -54,7 +54,12 @@ class cprog():
         instr = self._label["middle"]
 
         ctail.uncover(cenv, instr)
-        return cprog(cprog.info_dict, self._label);
+
+        if ( self._info is None ):
+            self._info = {}
+            
+        self._info["uncover"] = cprog.info_dict
+        return cprog(self._info, self._label);
 
     # Takes a C program and returns a X0 program
     def select(self):

@@ -7,6 +7,10 @@ retq
 begin:
 pushq %rbp
 movq %rsp, %rbp
+pushq %r12
+pushq %r13
+pushq %r14
+pushq %r15
 addq $16, %rsp
 jmp next
 next:
@@ -25,6 +29,10 @@ movq %rax, %rax
 jmp end
 end:
 subq $16, %rsp
+popq %r15
+popq %r14
+popq %r13
+popq %r12
 popq %rbp
 retq
 

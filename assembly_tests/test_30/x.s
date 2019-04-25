@@ -7,20 +7,19 @@ retq
 begin:
 pushq %rbp
 movq %rsp, %rbp
-addq $16, %rsp
+addq $24, %rsp
 jmp next
 next:
+movq $5, %rax
 movq $5, 8(%rsp)
-movq $5, 16(%rsp)
-movq 16(%rsp), %rax
-movq %rax, 24(%rsp)
 movq 8(%rsp), %rax
-addq %rax, 24(%rsp)
-movq 24(%rsp), %rax
+movq %rax, 16(%rsp)
+addq %rax, 16(%rsp)
+movq 16(%rsp), %rax
 movq %rax, %rax
 jmp end
 end:
-subq $16, %rsp
+subq $24, %rsp
 popq %rbp
 retq
 

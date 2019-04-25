@@ -282,12 +282,56 @@ class xprog:
 
     # Takes a X prog w/ vars, and returns a xprog w/o vars
     def assign_registers(self):
-        # Find number of variables to push to stack and adjust for memory size
-        vc = len(self._label_map) * 8
 
-        # Make sure memory size for variables is divisible by 16
-        if (vc % 16 != 0):
-            vc = (len(self._label_map) + 1) * 8
+        if ( "uncover" in self._info):
+            # Contains all variables in program
+            all_vars = self._info["uncover"]
+        else:
+            all_vars = self._info
+
+        # Create a new enviroment that contains the address of each
+        # variable on the stack
+        var_env = env()
+
+        # Holds Variable Count
+        vc = 0
+
+        # Check for color graph pass
+        if ("color_graph" in self._info):
+            g = self._info["color_graph"]
+            r = ["rax", "rdx", "rcx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"]
+            byte_count = 8
+            for vars in all_vars:
+                # If var exists in graph, and it's a register
+                if((vars in g) and (g[vars] < 13)):
+                    # g[vars] is the color assigned, which is a one to one of the list r
+                    n = g[vars]
+                    var_env.add_var(vars, xreg(r[n]))
+                # If neither condition is met, then add to stack
+                else:
+                    var_env.add_var(vars, xmem("rsp", byte_count))
+                    byte_count += 8
+                    vc += 1
+
+            # Make sure memory size for variables is divisible by 16
+            if (vc % 16 != 0):
+                vc = ((vc) + 1) * 8
+
+        # Still support legacy code
+        else:
+            byte_count = 8
+            for vars in all_vars:
+                # Add memory address on the stack for current var
+                var_env.add_var(vars, xmem("rsp", byte_count))
+                byte_count += 8
+
+            # Find number of variables to push to stack and adjust for memory size
+            vc = len(self._label_map) * 8
+
+            # Make sure memory size for variables is divisible by 16
+            if (vc % 16 != 0):
+                vc = (len(self._label_map) + 1) * 8
+
 
         # Instructions to start program
         begin_instr =\
@@ -309,39 +353,7 @@ class xprog:
         ]
         self._label_map["end"] = end_instr
 
-        if ( "uncover" in self._info):
-            # Contains all variables in program
-            all_vars = self._info["uncover"]
-        else:
-            all_vars = self._info
 
-        # Create a new enviroment that contains the address of each
-        # variable on the stack
-        var_env = env()
-
-        # Check for color graph pass
-        if ("color_graph" in self._info):
-            g = self._info["color_graph"]
-            r = ["rax", "rdx", "rcx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"]
-            byte_count = 8
-            for vars in all_vars:
-                # If var exists in graph, and it's a register
-                if((vars in g) and (g[vars] < 13)):
-                    # g[vars] is the color assigned, which is a one to one of the list r
-                    n = g[vars]
-                    var_env.add_var(vars, xreg(r[n]))
-                # If neither condition is met, then add to stack
-                else:
-                    var_env.add_var(vars, xmem("rsp", byte_count))
-                    byte_count += 8
-
-        # Still support legacy code
-        else:
-            byte_count = 8
-            for vars in all_vars:
-                # Add memory address on the stack for current var
-                var_env.add_var(vars, xmem("rsp", byte_count))
-                byte_count += 8
 
         # Set Label Map for Machine State Zero
         xprog.ms._label_map = self._label_map

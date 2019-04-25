@@ -1181,6 +1181,9 @@ def testing():
 	test = test.econ()
 	test = test.uncover()
 	test = test.select()
+	test = test.live_analysis()
+	test = test.build_interference()
+	test = test.color_graph()
 	test = test.assign_registers()
 	test = test.patch()
 	test = test.main_gen()
@@ -1188,7 +1191,7 @@ def testing():
 	test.interp()
 	test.emitter()
 
-
+	exit(1)
 	print("\n Testing 133 - Answer = 15")
 	test = prog(None, add(num(5), add(num(5), num(5))))
 	print("Interp R # 1: ")

@@ -154,10 +154,11 @@ class xprog:
 
         # Change directories to create assembly test folder
         os.chdir(cur_path + "/assembly_tests")
-        if(os.path.isdir("./test_" + str(xprog.num_of_tests)) is False):
-            os.mkdir("./test_" + str(xprog.num_of_tests))
+        file_name = "NOW" # str(xprog.num_of_tests)
+        if(os.path.isdir("./test_" + file_name) is False):
+            os.mkdir("./test_" + file_name)
 
-        os.chdir(cur_path + "/assembly_tests/test_" + str(xprog.num_of_tests))
+        os.chdir(cur_path + "/assembly_tests/test_" + file_name)
         # Open assembly source code file
         file = open("x.s", "w+")
         file_name = "x.s"
@@ -299,11 +300,11 @@ class xprog:
         # Check for color graph pass
         if ("color_graph" in self._info):
             g = self._info["color_graph"]
-            r = ["rax", "rdx", "rcx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"]
+            r = ["rdx", "rcx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"]
             byte_count = 8
             for vars in all_vars:
                 # If var exists in graph, and it's a register
-                if((vars in g) and (g[vars] < 13)):
+                if((vars in g) and (g[vars] < 12)):
                     # g[vars] is the color assigned, which is a one to one of the list r
                     n = g[vars]
                     var_env.add_var(vars, xreg(r[n]))
@@ -763,7 +764,7 @@ class xinstr:
                     else:
                         # We don't actually need patch functions for other instructions, but they
                         # still exist in the case I need to change something and for consistency
-                        new_instr.append(i.patch())
+                        new_instr.append(next)
                 else:
                     new_instr.append(i)
 
@@ -821,8 +822,8 @@ class addq(xinstr):
 
     def patch(self):
         # Check if arg1 is a memory reference
-        if( isinstance(self._arg1, xmem) ):
-            return [movq(self._arg1, xreg("rax")), addq(xreg("rax"), self._arg2)];
+        if( isinstance(self._arg1, xmem) and isinstance(self._arg2, xmem) ):
+            return [movq(self._arg2, xreg("rax")), addq(self._arg1, xreg("rax"))];
 
         return addq(self._arg1, self._arg2);
 
@@ -879,8 +880,8 @@ class subq(xinstr):
 
     def patch(self):
         # Check if arg1 is a memory reference
-        if( isinstance(self._arg1, xmem) ):
-            return [movq(self._arg1, xreg("rax")), subq(xreg("rax"), self._arg2)];
+        if( isinstance(self._arg1, xmem) and isinstance(self._arg2, xmem) ):
+            return [movq(self._arg2, xreg("rax")), subq(self._arg1, xreg("rax"))];
 
         return subq(self._arg1, self._arg2);
 
@@ -927,7 +928,7 @@ class movq(xinstr):
 
     def patch(self):
         # Check if arg1 is a memory reference
-        if( isinstance(self._arg1, xmem) ):
+        if( isinstance(self._arg1, xmem) and isinstance(self._arg2, xmem) ):
             return [movq(self._arg1, xreg("rax")), movq(xreg("rax"), self._arg2)];
 
         return movq(self._arg1, self._arg2);

@@ -1264,6 +1264,7 @@ def testing():
 	test.interp()
 	test.emitter()
 	exit(1)
+
 	print("\n Testing 137 - Answer = 60")
 	test = prog(None, let(y, num(30), add(var(y), let(y, num(10), add( var(y), let(y, add(num(5),num(5)), add(var(y), var(y))))))))
 	print("Interp R # 1: ")
@@ -1276,8 +1277,8 @@ def testing():
 	test = test.build_interference()
 	test = test.color_graph()
 	test = test.assign_registers()
-	test = test.patch()
-	test = test.main_gen()
+	#test = test.patch()
+	#test = test.main_gen()
 	print("Interp X # 2: ")
 	test.interp()
 	test.emitter()

@@ -24,7 +24,6 @@ movq 16(%rsp), %rax
 movq %rax, 24(%rsp)
 addq %rax, 24(%rsp)
 movq 24(%rsp), %rax
-movq %rax, %rax
 jmp end
 end:
 addq $32, %rsp

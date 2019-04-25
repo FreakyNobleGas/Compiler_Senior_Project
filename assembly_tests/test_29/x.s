@@ -23,8 +23,8 @@ movq $5, 56(%rsp)
 movq $5, 64(%rsp)
 movq 64(%rsp), %rax
 movq %rax, 72(%rsp)
-movq 56(%rsp), %rax
-addq %rax, 72(%rsp)
+movq 72(%rsp), %rax
+addq 56(%rsp), %rax
 movq 72(%rsp), %rax
 movq %rax, 80(%rsp)
 movq 80(%rsp), %rax
@@ -33,18 +33,17 @@ movq 80(%rsp), %rax
 movq %rax, 96(%rsp)
 movq 96(%rsp), %rax
 movq %rax, 104(%rsp)
-movq 88(%rsp), %rax
-addq %rax, 104(%rsp)
+movq 104(%rsp), %rax
+addq 88(%rsp), %rax
 movq 104(%rsp), %rax
 movq %rax, 112(%rsp)
-movq 48(%rsp), %rax
-addq %rax, 112(%rsp)
+movq 112(%rsp), %rax
+addq 48(%rsp), %rax
 movq 112(%rsp), %rax
 movq %rax, 120(%rsp)
-movq 24(%rsp), %rax
-addq %rax, 120(%rsp)
 movq 120(%rsp), %rax
-movq %rax, %rax
+addq 24(%rsp), %rax
+movq 120(%rsp), %rax
 jmp end
 end:
 addq $16, %rsp

@@ -1,9 +1,4 @@
 .globl main
-main:
-callq begin
-movq %rax, %rdi
-callq print_int
-retq
 begin:
 pushq %rbp
 movq %rsp, %rbp
@@ -11,39 +6,36 @@ pushq %r12
 pushq %r13
 pushq %r14
 pushq %r15
-addq $16, %rsp
+subq $72, %rsp
 jmp next
 next:
 movq $5, 8(%rsp)
 movq 8(%rsp), %rax
 movq %rax, 16(%rsp)
 movq 16(%rsp), %rax
-movq %rax, 24(%rsp)
-movq $5, 32(%rsp)
-movq $5, 40(%rsp)
+movq %rax, %rax
+movq $5, %rdx
+movq $5, 24(%rsp)
+movq 24(%rsp), %rax
+movq %rax, 32(%rsp)
+addq %rdx, 32(%rsp)
+movq 32(%rsp), %rax
+movq %rax, 40(%rsp)
+movq 40(%rsp), %rax
+movq %rax, %rdx
 movq 40(%rsp), %rax
 movq %rax, 48(%rsp)
-movq 32(%rsp), %rax
-addq %rax, 48(%rsp)
 movq 48(%rsp), %rax
 movq %rax, 56(%rsp)
+addq %rdx, 56(%rsp)
 movq 56(%rsp), %rax
 movq %rax, 64(%rsp)
-movq 56(%rsp), %rax
-movq %rax, 72(%rsp)
-movq 72(%rsp), %rax
-movq %rax, 80(%rsp)
+addq %rax, 64(%rsp)
 movq 64(%rsp), %rax
-addq %rax, 80(%rsp)
-movq 80(%rsp), %rax
-movq %rax, 88(%rsp)
-movq 24(%rsp), %rax
-addq %rax, 88(%rsp)
-movq 88(%rsp), %rax
 movq %rax, %rax
 jmp end
 end:
-subq $16, %rsp
+addq $72, %rsp
 popq %r15
 popq %r14
 popq %r13

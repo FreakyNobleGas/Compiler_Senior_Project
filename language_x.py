@@ -332,12 +332,15 @@ class xprog:
             if (vc % 16 != 0):
                 vc = (len(self._label_map) + 1) * 8
 
-
         # Instructions to start program
         begin_instr =\
         [ pushq(xreg("rbp")),\
         movq(xreg("rsp"), xreg("rbp")),\
-        addq(xnum(vc), xreg("rsp")),\
+        pushq(xreg("r12")),\
+        pushq(xreg("r13")),\
+        pushq(xreg("r14")),\
+        pushq(xreg("r15")),\
+        subq(xnum(vc), xreg("rsp")),\
         jmp("next")
         ]
         self._label_map["begin"] = begin_instr
@@ -347,7 +350,11 @@ class xprog:
 
         # Instructions to end program
         end_instr =\
-        [ subq(xnum(vc), xreg("rsp")),\
+        [ addq(xnum(vc), xreg("rsp")),\
+        popq(xreg("r15")),\
+        popq(xreg("r14")),\
+        popq(xreg("r13")),\
+        popq(xreg("r12")),\
         popq(xreg("rbp")),\
         retq()
         ]

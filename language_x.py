@@ -17,6 +17,7 @@
 from support import *
 import os
 import subprocess
+import shutil
 
 #########################################################################################
 ##########################        X0 Language           #################################
@@ -154,11 +155,15 @@ class xprog:
 
         # Change directories to create assembly test folder
         os.chdir(cur_path + "/assembly_tests")
-        file_name = "NOW" # str(xprog.num_of_tests)
-        if(os.path.isdir("./test_" + file_name) is False):
-            os.mkdir("./test_" + file_name)
 
-        os.chdir(cur_path + "/assembly_tests/test_" + file_name)
+        file_name = "test_" + str(xprog.num_of_tests)
+        if(os.path.isdir(file_name) is False):
+            os.mkdir(file_name)
+        else:
+            shutil.rmtree(file_name)
+            os.mkdir(file_name)
+
+        os.chdir(cur_path + "/assembly_tests/" + file_name)
         # Open assembly source code file
         file = open("x.s", "w+")
         file_name = "x.s"
@@ -304,7 +309,7 @@ class xprog:
             byte_count = 8
             for vars in all_vars:
                 # If var exists in graph, and it's a register
-                if((vars in g) and (g[vars] < 12)):
+                if((vars in g) and (g[vars] < len(r))):
                     # g[vars] is the color assigned, which is a one to one of the list r
                     n = g[vars]
                     var_env.add_var(vars, xreg(r[n]))
@@ -314,6 +319,7 @@ class xprog:
                     byte_count += 8
                     vc += 1
 
+            vc = vc * 8
             # Make sure memory size for variables is divisible by 16
             if (vc % 16 != 0):
                 vc = ((vc) + 1) * 8
@@ -360,8 +366,6 @@ class xprog:
         retq()
         ]
         self._label_map["end"] = end_instr
-
-
 
         # Set Label Map for Machine State Zero
         xprog.ms._label_map = self._label_map
@@ -482,7 +486,7 @@ class xblock:
 
         # Go through each label and remove illegal memory references
         for labels in xprog.ms._label_map:
-
+            print("LABELS IS ", labels)
             # Update instruction block
             xprog.ms._block = xprog.ms._label_map[labels]
 
@@ -543,8 +547,11 @@ class xinstr:
                 queue.insert(i, keys)
 
         # Keeps track of the lowest color used. Registers are by default precolored
-        colors = {"rax":0, "rdx":1, "rcx":2, "rsi":3, "rdi":4, "r8":5, "r9":6, "r10":7, "r11":8, "r12":9,\
-        "r13":10, "r14":11, "r15":12}
+        #colors = {"rax":0, "rdx":1, "rcx":2, "rsi":3, "rdi":4, "r8":5, "r9":6, "r10":7, "r11":8, "r12":9,\
+        #"r13":10, "r14":11, "r15":12}
+
+        colors = {"rdx":0, "rcx":1, "rsi":2, "rdi":3, "r8":4, "r9":5, "r10":6, "r11":7, "r12":8,\
+        "r13":9, "r14":10, "r15":11}
 
         # From highest priority (saturation) to lowest priority
         for v in queue:
@@ -578,7 +585,7 @@ class xinstr:
         index = 0
 
         # All special registers
-        special_regs = [xreg("rax"), xreg("rdx"), xreg("rcx"), xreg("rsi"), xreg("rdi"),\
+        special_regs = [xreg("rdx"), xreg("rcx"), xreg("rsi"), xreg("rdi"),\
         xreg("r8"), xreg("r9"), xreg("r10"), xreg("r11"), xreg("r12"), xreg("r13"), xreg("14"), xreg("15")]
 
         for i in live_instr:
@@ -822,7 +829,7 @@ class addq(xinstr):
 
     def patch(self):
         # Check if arg1 is a memory reference
-        if( isinstance(self._arg1, xmem) and isinstance(self._arg2, xmem) ):
+        if( (isinstance(self._arg1, xmem)) and (isinstance(self._arg2, xmem)) ):
             return [movq(self._arg2, xreg("rax")), addq(self._arg1, xreg("rax"))];
 
         return addq(self._arg1, self._arg2);
@@ -880,7 +887,7 @@ class subq(xinstr):
 
     def patch(self):
         # Check if arg1 is a memory reference
-        if( isinstance(self._arg1, xmem) and isinstance(self._arg2, xmem) ):
+        if( (isinstance(self._arg1, xmem)) and (isinstance(self._arg2, xmem)) ):
             return [movq(self._arg2, xreg("rax")), subq(self._arg1, xreg("rax"))];
 
         return subq(self._arg1, self._arg2);
@@ -928,7 +935,7 @@ class movq(xinstr):
 
     def patch(self):
         # Check if arg1 is a memory reference
-        if( isinstance(self._arg1, xmem) and isinstance(self._arg2, xmem) ):
+        if( (isinstance(self._arg1, xmem)) and (isinstance(self._arg2, xmem)) ):
             return [movq(self._arg1, xreg("rax")), movq(xreg("rax"), self._arg2)];
 
         return movq(self._arg1, self._arg2);
@@ -1002,8 +1009,10 @@ class callq(xinstr):
 
     def interp(self):
         # Check if callq is for print int
-        if((self._label == "_print_int") or (self._label == "print_int") or (self._label == "begin")):
+        if((self._label == "_print_int") or (self._label == "print_int")):
             return;
+        elif (self._label == "begin"):
+            return xblock.interp(self._label)
         else:
             src = input("Please enter a numerical value: ")
             src = int(src)

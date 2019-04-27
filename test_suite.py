@@ -1263,7 +1263,6 @@ def testing():
 	print("Interp X # 2: ")
 	test.interp()
 	test.emitter()
-	exit(1)
 
 	print("\n Testing 137 - Answer = 60")
 	test = prog(None, let(y, num(30), add(var(y), let(y, num(10), add( var(y), let(y, add(num(5),num(5)), add(var(y), var(y))))))))
@@ -1277,8 +1276,8 @@ def testing():
 	test = test.build_interference()
 	test = test.color_graph()
 	test = test.assign_registers()
-	#test = test.patch()
-	#test = test.main_gen()
+	test = test.patch()
+	test = test.main_gen()
 	print("Interp X # 2: ")
 	test.interp()
 	test.emitter()
@@ -2048,11 +2047,14 @@ def testing():
 		test = test.build_interference()
 		test = test.color_graph()
 		test = test.assign_registers()
+		test = test.patch()
+		#test = test.main_gen()
 		print("Interp X # 2: ")
 		test.interp()
 		test.emitter()
 		i += 1
 
+	exit(1)
 	print("\n Testing 190 - Answer = 13")
 	#print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None")
 	#print("ANSWER: a->b,rax :: b->rax")

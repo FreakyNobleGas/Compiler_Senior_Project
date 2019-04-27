@@ -11,18 +11,18 @@ pushq %r12
 pushq %r13
 pushq %r14
 pushq %r15
-subq $24, %rsp
+subq $16, %rsp
 jmp next
 next:
-movq $5, %rax
+movq $5, %rdx
 movq $5, 8(%rsp)
 movq 8(%rsp), %rax
 movq %rax, 16(%rsp)
-addq %rax, 16(%rsp)
+addq %rdx, 16(%rsp)
 movq 16(%rsp), %rax
 jmp end
 end:
-addq $24, %rsp
+addq $16, %rsp
 popq %r15
 popq %r14
 popq %r13

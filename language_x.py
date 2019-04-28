@@ -18,6 +18,7 @@ from support import *
 import os
 import subprocess
 import shutil
+import copy
 
 #########################################################################################
 ##########################        X0 Language           #################################
@@ -214,16 +215,17 @@ class xprog:
         else:
             return xblock.interp("main");
 
-    def color_graph(self, debug = False):
+    def color_graph(self, debug = False, move_flag = False):
         # Set Label Map for Machine State Zero
         xprog.ms._label_map = self._label_map
 
         build_graph = self._info["build_interference"]
+        move_graph = self._info["move_graph"]
 
         # Holds color graph
         saturation_graph = {}
 
-        saturation_graph = xblock.color_graph("main", build_graph, saturation_graph)
+        saturation_graph = xblock.color_graph("main", build_graph, saturation_graph, move_graph, move_flag)
 
         if debug:
             print("ANSWER:")
@@ -452,11 +454,11 @@ class xblock:
         # xprog.ms._block contains a list of instructions
         return xinstr.interp(xprog.ms._block);
 
-    def color_graph(label, build_graph, saturation_graph):
+    def color_graph(label, build_graph, saturation_graph, move_graph, move_flag = False):
         # Set current block
         xprog.ms._block = xprog.ms._label_map[label]
 
-        saturation_graph = xinstr.color_graph(xprog.ms._block, build_graph, saturation_graph)
+        saturation_graph = xinstr.color_graph(xprog.ms._block, build_graph, saturation_graph, move_graph, move_flag)
 
         return saturation_graph;
 
@@ -503,6 +505,7 @@ class xblock:
             xprog.ms._label_map[labels] = xinstr.patch(xprog.ms._block)
 
         return;
+
 ########################## Instruction ##################################################
 
 class xinstr:
@@ -523,18 +526,22 @@ class xinstr:
         return;
 
     # Helper function so that if a new color is found, we can look back over the whole list recursively
+    # ** Temp Graph is a Dictionary & Known Colors is a List **
+    # Helper function so that if a new color is found, we can look back over the whole list recursively
     def color_graph_helper(colors, known_colors, new_color = 0):
 
         # For every color adjacent to primary node
         for c in known_colors:
             # If an adjacent node already has "new_color", then increment, and look back over the list
             if(known_colors[known_colors.index(c)] == new_color):
+                print("THIS VALUE IS ", known_colors[known_colors.index(c)])
                 new_color += 1
                 new_color = xinstr.color_graph_helper(colors, known_colors, new_color);
 
         return new_color;
 
-    def color_graph(instr, build_graph, saturation_graph):
+
+    def color_graph(instr, build_graph, saturation_graph, move_graph, move_flag = False):
         # Holds a priority queue from the most saturated to the least saturated
         queue = []
 
@@ -556,9 +563,6 @@ class xinstr:
                 queue.insert(i, keys)
 
         # Keeps track of the lowest color used. Registers are by default precolored
-        #colors = {"rax":0, "rdx":1, "rcx":2, "rsi":3, "rdi":4, "r8":5, "r9":6, "r10":7, "r11":8, "r12":9,\
-        #"r13":10, "r14":11, "r15":12}
-
         colors = {"rdx":0, "rcx":1, "rsi":2, "rdi":3, "r8":4, "r9":5, "r10":6, "r11":7, "r12":8,\
         "r13":9, "r14":10, "r15":11}
 
@@ -582,8 +586,31 @@ class xinstr:
                 if ((v in temp) and (b in colors)):
                     known_colors.append(colors[b])
 
-            # Call helper function to find color for node
-            colors[v] = xinstr.color_graph_helper(colors, known_colors)
+            # Create a deep copy of move graph so we can avoid data being manipulated by pointers
+            if((move_flag) and (v in move_graph)):
+
+                # Create a list based off of new move graph
+                move_list =[]
+                temp_graph = move_graph[v]
+                highest_color = 0
+                print("ALL IN MOVE ", temp_graph)
+                print("ALL IN U ", u)
+                exit(1)
+                for m in temp_graph:
+                    if(m not in u):
+                        move_list.append(m)
+                        if ( (m in colors) and (colors[m] > highest_color)):
+                            highest_color = colors[m]
+                        print("APPENDING ", m)
+
+                colors[v] = xinstr.color_graph_helper(colors, move_list)
+                print("COLOR WITH BIASE IS ", colors[v])
+                if(colors[v] > highest_color):
+                    color[v] = xinstr.color_graph_helper(colors, known_colors)
+            else:
+                # Call helper function to find color for node
+                colors[v] = xinstr.color_graph_helper(colors, known_colors)
+                print("COLOR WITHOUT BIASE IS ", colors[v])
 
         saturation_graph = colors
 

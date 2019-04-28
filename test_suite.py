@@ -1737,7 +1737,7 @@ def testing():
 	print("\n Testing 164 - Answer = 13")
 	#print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None")
 	#print("ANSWER: a->b,rax :: b->rax")
-	print("ANSWER: a:1 b:1")
+	print("ANSWER: b:1")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xnum(8), xvar("b")),\
@@ -1758,7 +1758,7 @@ def testing():
 	#print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None")
 	#print("        6. c ::  7. c :: 8. None")
 	#print("ANSWER: a->b,rax :: b->rax ")
-	print("ANSWER: a:1 b:1")
+	print("ANSWER: b:1")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xnum(8), xvar("b")),\
@@ -1799,7 +1799,7 @@ def testing():
 	print("\n Testing 167 - Answer = 15")
 	#print("ANSWER: 1. a :: 2. a :: 3. a :: 4. None")
 	#print("ANSWER: a->rax")
-	print("ANSWER: a:1")
+	print("ANSWER: None")
 	instr = [\
 		movq(xnum(10), xvar("a")),\
 		movq(xnum(5), xreg("rax")),\
@@ -1837,7 +1837,7 @@ def testing():
 	print("\n Testing 169 - Answer = 20")
 	#print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. a,b :: 5. a :: 6. None")
 	#print("ANSWER: a->b :: b->a")
-	print("ANSWER: a:0 b:1")
+	print("ANSWER: a:1")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xnum(10), xvar("b")),\
@@ -1878,7 +1878,7 @@ def testing():
 	print("\n Testing 171 - Answer = -5")
 	#print("ANSWER: 1. a :: 2. a :: 3. a :: 4. None")
 	#print("ANSWER: a->rax")
-	print("a:1")
+	print("ANSWER: None")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		negq(xvar("a")),\
@@ -1897,7 +1897,7 @@ def testing():
 	print("\n Testing 172 - Answer = -13")
 	#print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None :: 6. None")
 	#print("ANSWER: a->b, rax :: b->rax")
-	print("ANSWER: a:1 b:1")
+	print("ANSWER: b:1")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xnum(8), xvar("b")),\
@@ -1955,7 +1955,7 @@ def testing():
 	print("\n Testing 175 - Answer = 15")
 	#print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None")
 	#print("ANSWER: a->b")
-	print("ANSWER: a:0")
+	print("ANSWER: None")
 	instr = [\
 		movq(xnum(5), xvar("a")),\
 		movq(xnum(20), xvar("b")),\
@@ -1995,7 +1995,7 @@ def testing():
 
 	# This test is the one we used in class. The answers can be referenced on pdf 5 & 6
 	print("\n Testing 177 - Answer = 42")
-
+	print("ANSWER: v:1 t:0 z:1 y:2 x:1")
 	instr = [\
 		movq(xnum(1), xvar("v")),\
 		movq(xnum(46), xvar("w")),\
@@ -2417,7 +2417,7 @@ def testing():
 	test = xprog(None, label_map)
 	test = test.live_analysis()
 	test = test.build_interference(True)
-	test = test.color_graph()
+	test = test.color_graph(True, True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -2439,7 +2439,7 @@ def testing():
 	test = xprog(None, label_map)
 	test = test.live_analysis()
 	test = test.build_interference(True)
-	test = test.color_graph()
+	test = test.color_graph(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -2463,7 +2463,7 @@ def testing():
 	test = xprog(None, label_map)
 	test = test.live_analysis()
 	test = test.build_interference(True)
-	test = test.color_graph()
+	test = test.color_graph(True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -2481,7 +2481,11 @@ def testing():
 	test = test.select()
 	test = test.live_analysis()
 	test = test.build_interference(True)
-	test = test.color_graph()
+	test = test.color_graph(True, True)
+	test = test.assign_registers()
+	test = test.patch()
+	test = test.main_gen()
 	test.interp()
+	test.emitter()
 	instr.clear()
 	label_map.clear()

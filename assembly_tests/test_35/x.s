@@ -11,7 +11,7 @@ pushq %r12
 pushq %r13
 pushq %r14
 pushq %r15
-subq $712, %rsp
+subq $96, %rsp
 jmp next
 next:
 movq $30, 8(%rsp)
@@ -44,7 +44,7 @@ addq %rdx, 88(%rsp)
 movq 88(%rsp), %rax
 jmp end
 end:
-addq $712, %rsp
+addq $96, %rsp
 popq %r15
 popq %r14
 popq %r13

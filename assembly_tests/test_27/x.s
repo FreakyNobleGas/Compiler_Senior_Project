@@ -21,8 +21,8 @@ movq 40(%rsp), %rax
 movq %rax, 48(%rsp)
 movq 48(%rsp), %rax
 movq %rax, 56(%rsp)
-movq 56(%rsp), %rax
-addq 24(%rsp), %rax
+movq 24(%rsp), %rax
+addq %rax, 56(%rsp)
 movq 56(%rsp), %rax
 jmp end
 end:

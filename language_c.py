@@ -149,10 +149,11 @@ class cstmt():
         cprog.info_dict[self._var] = self._expr
 
         # Call to uncover from here is strictly for pretty print feature
-        if(self._var.startswith("_")):
-            print(self._var, " = ", self._expr.uncover(cenv))
-        else:
-            print(" " + self._var, " = ", self._expr.uncover(cenv))
+        #if(self._var.startswith("_")):
+        #    print(self._var, " = ", self._expr.uncover(cenv))
+        #else:
+        #    print(" " + self._var, " = ", self._expr.uncover(cenv))
+        
         return;
 
     def select(self, cenv, c_instr, x_instr):

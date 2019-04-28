@@ -60,6 +60,7 @@ def generate_large_program(n, language = None):
 					generate = add(generate, generate)
 				else:
 					print("Something very wrong happened")
+
 	elif(language == "R1"):
 		# Unused vars waiting to be used at random
 		input_array = ["b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"]
@@ -2048,13 +2049,12 @@ def testing():
 		test = test.color_graph()
 		test = test.assign_registers()
 		test = test.patch()
-		#test = test.main_gen()
+		test = test.main_gen()
 		print("Interp X # 2: ")
 		test.interp()
 		test.emitter()
 		i += 1
 
-	exit(1)
 	print("\n Testing 190 - Answer = 13")
 	#print("ANSWER: 1. a :: 2. a :: 3. a,b :: 4. b :: 5. None")
 	#print("ANSWER: a->b,rax :: b->rax")

@@ -313,16 +313,18 @@ class xprog:
                     # g[vars] is the color assigned, which is a one to one of the list r
                     n = g[vars]
                     var_env.add_var(vars, xreg(r[n]))
+
                 # If neither condition is met, then add to stack
                 else:
                     var_env.add_var(vars, xmem("rsp", byte_count))
                     byte_count += 8
                     vc += 1
 
+            old_vc = vc
             vc = vc * 8
             # Make sure memory size for variables is divisible by 16
             if (vc % 16 != 0):
-                vc = ((vc) + 1) * 8
+                vc = ((old_vc) + 1) * 8
 
         # Still support legacy code
         else:
@@ -486,7 +488,7 @@ class xblock:
 
         # Go through each label and remove illegal memory references
         for labels in xprog.ms._label_map:
-            print("LABELS IS ", labels)
+
             # Update instruction block
             xprog.ms._block = xprog.ms._label_map[labels]
 
@@ -658,8 +660,6 @@ class xinstr:
                                         build_graph[vars] = temp + special_regs
                         k += 1
 
-
-
             index += 1
 
         return build_graph;
@@ -830,7 +830,7 @@ class addq(xinstr):
     def patch(self):
         # Check if arg1 is a memory reference
         if( (isinstance(self._arg1, xmem)) and (isinstance(self._arg2, xmem)) ):
-            return [movq(self._arg2, xreg("rax")), addq(self._arg1, xreg("rax"))];
+            return [movq(self._arg1, xreg("rax")), addq(xreg("rax"), self._arg2)];
 
         return addq(self._arg1, self._arg2);
 
@@ -888,7 +888,7 @@ class subq(xinstr):
     def patch(self):
         # Check if arg1 is a memory reference
         if( (isinstance(self._arg1, xmem)) and (isinstance(self._arg2, xmem)) ):
-            return [movq(self._arg2, xreg("rax")), subq(self._arg1, xreg("rax"))];
+            return [movq(self._arg1, xreg("rax")), subq(xreg("rax"), self._arg2)];
 
         return subq(self._arg1, self._arg2);
 

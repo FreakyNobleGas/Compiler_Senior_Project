@@ -252,14 +252,21 @@ class xprog:
         # recommends using dictionaries to make simple graphs
         build_graph = {}
 
-        build_graph = xblock.build_interference("main", live_instr, build_graph)
+        # Holds graph for Move Biasing
+        move_graph = {}
+
+        build_graph = xblock.build_interference("main", live_instr, build_graph, move_graph)
 
         if ( debug ):
-            print ("ANSWER:")
+            print ("BUILD INTERFERENCE:")
             for keys in build_graph:
                 print (keys, "->", build_graph[keys])
+            print ("MOVE GRAPH:")
+            for keys in move_graph:
+                print (keys, "->", move_graph[keys])
 
         self._info["build_interference"] = build_graph
+        self._info["move_graph"] = move_graph
 
         return xprog(self._info, self._label_map);
 
@@ -453,11 +460,11 @@ class xblock:
 
         return saturation_graph;
 
-    def build_interference(label, live_instr, build_graph):
+    def build_interference(label, live_instr, build_graph, move_graph):
         # Set current block
         xprog.ms._block = xprog.ms._label_map[label]
 
-        build_graph = xinstr.build_interference(xprog.ms._block, live_instr, build_graph)
+        build_graph = xinstr.build_interference(xprog.ms._block, live_instr, build_graph, move_graph)
 
         return build_graph;
 
@@ -582,7 +589,7 @@ class xinstr:
 
         return saturation_graph;
 
-    def build_interference(instr, live_instr, build_graph):
+    def build_interference(instr, live_instr, build_graph, move_graph):
         # Index for current instruction
         index = 0
 
@@ -636,12 +643,16 @@ class xinstr:
                         if ( vars != []):
                             if ( (k % 2) == 0 ):
                                 if ((vars != curr_instr._arg1.interp()) and (vars != curr_instr._arg2.interp())):
+                                    # Check if vars has already been added to build graph
                                     if ( vars not in build_graph ):
                                         build_graph[vars] = [curr_instr._arg2.interp()]
+                                        move_graph[vars] = [curr_instr._arg2.interp()]
                                     else:
                                         if(curr_instr._arg2.interp() not in build_graph[vars]):
-                                            temp = build_graph[vars]
-                                            build_graph[vars] = temp + [curr_instr._arg2.interp()]
+                                            build_temp = build_graph[vars]
+                                            build_graph[vars] = build_temp + [curr_instr._arg2.interp()]
+                                            move_temp = move_graph[vars]
+                                            move_graph[vars] = move_temp + [curr_instr._arg2.interp()]
                         k += 1
 
                 # Check if instruction is callq and add caller-saved special registers

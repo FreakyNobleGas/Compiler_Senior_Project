@@ -2388,3 +2388,100 @@ def testing():
 	test.interp()
 	instr.clear()
 	label_map.clear()
+
+	print("\n\n------------- Testing Move Biasing -----------------\n\n")
+	# Initialize Label Map (Dictionary) & Instruct List
+	label_map = {}
+	instr = []
+
+	print("\n Testing 204 - Answer = 42")
+	print("ANSWER: v -> w :: w -> x, y, z :: x -> y :: y -> z :: z -> t_1 :: t_1 -> rax")
+	# Problem from the book, this one is used repeatingly through the text in
+	# register allocation
+	instr = [\
+		movq (xnum(1), xvar("v")),\
+		movq (xnum(46), xvar("w")),\
+		movq (xvar("v"), xvar("x")),\
+		addq (xnum(7), xvar("x")),\
+		movq (xvar("x"), xvar("y")),\
+		addq (xnum(4), xvar("y")),\
+		movq (xvar("x"), xvar("z")),\
+		addq (xvar("w"), xvar("z")),\
+		movq (xvar("y"), xvar("t_1")),\
+		negq (xvar("t_1")),\
+		movq (xvar( "z"), xreg("rax")),\
+		addq (xvar("t_1"), xreg("rax")),\
+		retq()
+	]
+	label_map = {"main": instr}
+	test = xprog(None, label_map)
+	test = test.live_analysis()
+	test = test.build_interference(True)
+	test = test.color_graph()
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 205 - Answer = 80")
+	print("ANSWER: a -> b,c,d :: b -> c, b :: c -> d")
+	instr = [\
+		movq(xnum(20), xvar("a")),\
+		movq(xnum(40), xvar("b")),\
+		movq(xnum(80), xvar("c")),\
+		movq(xnum(160), xvar("d")),\
+		movq(xvar("a"), xvar("d")),\
+		movq(xvar("b"), xvar("d")),\
+		movq(xvar("c"), xvar("d")),\
+		movq(xvar("d"), xreg("rax")),\
+		retq()
+	]
+	label_map = {"main": instr}
+	test = xprog(None, label_map)
+	test = test.live_analysis()
+	test = test.build_interference(True)
+	test = test.color_graph()
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+	print("\n Testing 206 - Answer = -300")
+	print("ANSWER: a -> b,c,d :: b -> c,d :: c -> d")
+	instr = [\
+		movq(xnum(20), xvar("a")),\
+		movq(xnum(40), xvar("b")),\
+		movq(xnum(80), xvar("c")),\
+		movq(xnum(160), xvar("d")),\
+		addq(xvar("a"), xvar("b")),\
+		addq(xvar("b"), xvar("c")),\
+		addq(xvar("c"), xvar("d")),\
+		movq(xvar("d"), xvar("a")),\
+		movq(xvar("a"), xreg("rax")),\
+		negq(xreg("rax")),\
+		retq()
+	]
+	label_map = {"main": instr}
+	test = xprog(None, label_map)
+	test = test.live_analysis()
+	test = test.build_interference(True)
+	test = test.color_graph()
+	test.interp()
+	instr.clear()
+	label_map.clear()
+
+
+	print("\n Testing 207 - Answer = 60")
+	print("This is a very long answer")
+	# This R language program will generate enough moves to make move baising useful
+	test = prog(None, let(y, num(30), add(var(y), let(y, num(10), add( var(y), let(y, add(num(5),num(5)), add(var(y), var(y))))))))
+	print("Interp R # 1: ")
+	test.interp()
+	test = test.rco()
+	test = test.econ()
+	test = test.uncover()
+	test = test.select()
+	test = test.live_analysis()
+	test = test.build_interference(True)
+	test = test.color_graph()
+	test.interp()
+	instr.clear()
+	label_map.clear()

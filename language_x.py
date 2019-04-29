@@ -534,7 +534,6 @@ class xinstr:
         for c in known_colors:
             # If an adjacent node already has "new_color", then increment, and look back over the list
             if(known_colors[known_colors.index(c)] == new_color):
-                print("THIS VALUE IS ", known_colors[known_colors.index(c)])
                 new_color += 1
                 new_color = xinstr.color_graph_helper(colors, known_colors, new_color);
 
@@ -592,26 +591,29 @@ class xinstr:
                 # Create a list based off of new move graph
                 move_list =[]
                 temp_graph = move_graph[v]
-                highest_color = 0
-                print("ALL IN MOVE ", temp_graph)
-                print("ALL IN U ", u)
-                exit(1)
+                highest_color = -1
+
                 for m in temp_graph:
-                    if(m not in u):
-                        move_list.append(m)
+                    if((m not in u) and (m in colors)):
+                        move_list.append(colors[m])
                         if ( (m in colors) and (colors[m] > highest_color)):
                             highest_color = colors[m]
-                        print("APPENDING ", m)
 
+                # Get color for current variable with move biasing
                 colors[v] = xinstr.color_graph_helper(colors, move_list)
-                print("COLOR WITH BIASE IS ", colors[v])
-                if(colors[v] > highest_color):
-                    color[v] = xinstr.color_graph_helper(colors, known_colors)
+
+                # Check if there were any registers open in the move graph. I do this by checking if the
+                # color selected is higher than any color in the move graph. If so, then that must mean there
+                # were no open registers, and we need to proceed without move biasing.
+                if(((highest_color != -1) and (colors[v] > highest_color)) or (move_list == [])):
+                    colors[v] = xinstr.color_graph_helper(colors, known_colors)
+
             else:
                 # Call helper function to find color for node
                 colors[v] = xinstr.color_graph_helper(colors, known_colors)
-                print("COLOR WITHOUT BIASE IS ", colors[v])
-
+                #print("COLOR WITHOUT BIASE IS ", colors[v])
+                #if(v is "w"):
+                #    exit(1)
         saturation_graph = colors
 
         return saturation_graph;
@@ -669,17 +671,23 @@ class xinstr:
                     for vars in i:
                         if ( vars != []):
                             if ( (k % 2) == 0 ):
+                                if(vars in move_graph):
+                                    move_temp = move_graph[vars]
+                                    move_graph[vars] = move_temp + [curr_instr._arg2.interp()]
+                                else:
+                                    move_graph[vars] = [curr_instr._arg2.interp()]
+
                                 if ((vars != curr_instr._arg1.interp()) and (vars != curr_instr._arg2.interp())):
                                     # Check if vars has already been added to build graph
                                     if ( vars not in build_graph ):
                                         build_graph[vars] = [curr_instr._arg2.interp()]
-                                        move_graph[vars] = [curr_instr._arg2.interp()]
+                                        #move_graph[vars] = [curr_instr._arg2.interp()]
                                     else:
                                         if(curr_instr._arg2.interp() not in build_graph[vars]):
                                             build_temp = build_graph[vars]
                                             build_graph[vars] = build_temp + [curr_instr._arg2.interp()]
-                                            move_temp = move_graph[vars]
-                                            move_graph[vars] = move_temp + [curr_instr._arg2.interp()]
+                                            #move_temp = move_graph[vars]
+                                            #move_graph[vars] = move_temp + [curr_instr._arg2.interp()]
                         k += 1
 
                 # Check if instruction is callq and add caller-saved special registers

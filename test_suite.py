@@ -2395,7 +2395,8 @@ def testing():
 	instr = []
 
 	print("\n Testing 204 - Answer = 42")
-	print("ANSWER: v -> w :: w -> x, y, z :: x -> y :: y -> z :: z -> t_1 :: t_1 -> rax")
+	#print("ANSWER: v -> w :: w -> x, y, z :: x -> y :: y -> z :: z -> t_1 :: t_1 -> rax")
+	print("ANSWER: v:1  t_1:0 z:1 y:2 x:0 ") # X will be 1 without move biasing 
 	# Problem from the book, this one is used repeatingly through the text in
 	# register allocation
 	instr = [\
@@ -2439,7 +2440,7 @@ def testing():
 	test = xprog(None, label_map)
 	test = test.live_analysis()
 	test = test.build_interference(True)
-	test = test.color_graph(True)
+	test = test.color_graph(True, True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -2463,7 +2464,7 @@ def testing():
 	test = xprog(None, label_map)
 	test = test.live_analysis()
 	test = test.build_interference(True)
-	test = test.color_graph(True)
+	test = test.color_graph(True, True)
 	test.interp()
 	instr.clear()
 	label_map.clear()
@@ -2489,3 +2490,21 @@ def testing():
 	test.emitter()
 	instr.clear()
 	label_map.clear()
+
+	print("\n Testing 208 - Answer = Random Function")
+	test = generate_large_program(7, "R1")
+	print("Interp R # 1: ")
+	test.interp()
+	test = test.rco()
+	test = test.econ()
+	test = test.uncover()
+	test = test.select()
+	test = test.live_analysis()
+	test = test.build_interference(True)
+	test = test.color_graph(True, True)
+	test = test.assign_registers()
+	test = test.patch()
+	test = test.main_gen()
+	print("Interp X # 2: ")
+	test.interp()
+	test.emitter()

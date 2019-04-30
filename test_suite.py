@@ -2570,3 +2570,55 @@ def testing():
 	test = prog(None, let("z", num(5), sub(add(num(10), num(15)), var("z"))))
 	test.interp()
 	print("\n")
+
+	print("\n\n------------- Testing R2 Type Checker -----------------\n\n")
+
+	print("\n Testing 221 - Answer = FAILED")
+	test = prog(None, add(false(), num(5)))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 222 - Answer = FAILED")
+	test = prog(None, sub(num(15), true()))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 223 - Answer = FAILED")
+	test = prog(None, neg(true()))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 224 - Answer = FAILED")
+	test = prog(None, cmp(num(15), "=<", false()))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 225 - Answer = FAILED")
+	test = prog(None, cmp(let("x", false(), x), "<", true()))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 226 - Answer = FAILED")
+	test = prog(None, rnot(num(18)))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 227 - Answer = FAILED")
+	test = prog(None, rif(true(), num(15), false()))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 228 - Answer = FAILED")
+	test = prog(None, rif(num(15), num(15), num(15)))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 229 - Answer = FAILED")
+	test = prog(None, let("y", false(), add(true(), num(10))))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 230 - Answer = FAILED")
+	test = prog(None, let("y", num(5), false()))
+	test.interp()
+	print("\n")

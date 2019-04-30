@@ -71,6 +71,9 @@ class true(expr):
     def interp(self):
         return True;
 
+    def type_check(self):
+        return True;
+
 ########################## False ########################################################
 class false(expr):
     def __init__(self):
@@ -80,6 +83,9 @@ class false(expr):
         return "False";
 
     def interp(self):
+        return False;
+
+    def type_check(self):
         return False;
 
 ########################## Num ##########################################################
@@ -120,6 +126,9 @@ class num(expr):
 
     def econ(self):
         return carg(self._num);
+
+    def type_check(self):
+        return self._num;
 
 ########################## Neg ##########################################################
 # -- Inherited Class for Negating Numbers --
@@ -171,6 +180,12 @@ class neg(expr):
 
     def econ(self):
         return cneg(self._num);
+
+    def type_check(self):
+        if(isinstance(self._num.interp(), int)):
+            return;
+        else:
+            raise TypeCheckError("Error: Negation argument was not of type S64.")
 
 ########################## Add ##########################################################
 # -- Inherited Class for Adding Numbers --
@@ -263,6 +278,11 @@ class add(expr):
     def econ(self):
         return cadd(self._lhs.econ(), self._rhs.econ());
 
+    def type_check(self):
+        if(isinstance(self._lhs.interp(), int) and isinstance(self._rhs.interp(), int)):
+            return;
+        else:
+            raise TypeCheckError("Error: Addition arguments are not of type S64.")
 
 ########################## Read #########################################################
 # -- Inherited Class for Adding Numbers --
@@ -320,6 +340,10 @@ class read(expr):
 
     def econ(self):
         return cread();
+
+    def type_check(self):
+        # Return an int so other type check tests know that read returns an int
+        return 5;
 
 ########################## Let ##########################################################
 # -- Inherited Class for the Let --
@@ -498,6 +522,29 @@ class let(expr):
         expr.body_list.append(cstmt(self._x, self._xe.econ()))
         return self._xb.econ();
 
+    def type_check(self):
+        # Check if self._x is accidently a var. If so, return to string.
+        if(isinstance(self._x, var)):
+            self._x = self._x._var
+
+        # Immediately call Uniquify to avoid duplicate variables in env
+        old_var = self._x
+        self._x = uniquify(self._x, prog.type_env)
+        self._xb.uniq(self._x, old_var)
+
+        check_xe = self._xe.interp()
+        print("CHECK XE IS ", check_xe)
+        prog.type_env.add_var(self._x, check_xe)
+        check_xb = self._xb.type_check()
+        print("CHECK XB IS ", check_xb)
+
+        if(isinstance(check_xe, int) and isinstance(check_xb, int)):
+            return;
+        elif(((check_xe is False) or (check_xe is True)) and ((check_xb is False) or (check_xb is True))):
+            return;
+        else:
+            raise TypeCheckError("Error: Let variable expression and variable body was not both of type bool or S64.")
+
 ########################## Var ##########################################################
 # -- Inherited Class for Var --
 
@@ -552,6 +599,8 @@ class var(expr):
         # Return the name of the variable
         return carg(self._var);
 
+    def type_check(self):
+        return prog.type_env.find_var(self._var);
 
 
 ########################## Sub ##########################################################
@@ -567,6 +616,12 @@ class sub(expr):
     def interp(self):
         result = add(self._lhs, neg(self._rhs))
         return result.interp()
+
+    def type_check(self):
+        if(isinstance(self._lhs.interp(), int) and isinstance(self._rhs.interp(), int)):
+            return;
+        else:
+            raise TypeCheckError("Error: Subtraction arguments are not of type S64.")
 
 ########################## If ###########################################################
 class rif(expr):
@@ -590,6 +645,21 @@ class rif(expr):
             print("Error: If statement was neither true or false.")
             exit(1);
 
+    def type_check(self, func_call = "If"):
+        check = self._c.interp()
+        t_check = self._t.interp()
+        f_check = self._f.interp()
+
+        if((check is True) or (check is False)):
+            if(isinstance(t_check, int) and isinstance(f_check, int)):
+                return;
+            elif(((t_check is False) or (t_check is True)) and ((f_check is False) or (f_check is True))):
+                return;
+            else:
+                raise TypeCheckError("Error: " + func_call + " True and False arguments were not both of type bool or int.")
+        else:
+            raise TypeCheckError("Error: " + func_call + " condition argument was not of type bool.")
+
 ########################## Or ###########################################################
 class ror(expr):
     def __init__(self, lhs, rhs):
@@ -602,6 +672,11 @@ class ror(expr):
     def interp(self):
         return rif(self._lhs, true(), self._rhs).interp();
 
+    def type_check(self):
+        check = rif(self._lhs, true(), self._rhs)
+        check.type_check("Or")
+        return;
+
 ########################## And ##########################################################
 class rand(expr):
     def __init__(self, lhs, rhs):
@@ -613,6 +688,11 @@ class rand(expr):
 
     def interp(self):
         return rif(self._lhs, self._rhs, false()).interp()
+
+    def type_check(self):
+        check = rif(self._lhs, self._rhs, false())
+        check.type_check("And")
+        return;
 
 ########################## Not ##########################################################
 class rnot(expr):
@@ -632,6 +712,13 @@ class rnot(expr):
         else:
             print("Error: _not was neither true or false.")
             exit(1);
+
+    def type_check(self):
+        check = self._arg.interp()
+        if((check is True) or (check is False)):
+            return;
+        else:
+            raise TypeCheckError("Error: Not argument was not of type bool.")
 
 ########################## Comparision ##################################################
 class cmp(expr):
@@ -662,13 +749,22 @@ class cmp(expr):
             print("Error: Relation Operator Not Found.")
             exit(1)
 
+    def type_check(self):
+        if(isinstance(self._lhs.interp(), int) and isinstance(self._rhs.interp(), int)):
+            return;
+        else:
+            raise TypeCheckError("Error: Comparision arguments are not of type S64.")
+
+
 ########################## Prog #########################################################
 # -- Inherited Class for the Program "Container" --
 
 class prog(expr):
     # Global variable that holds the linked list that maps var->num
     map_env = env()
+    type_env = env()
     debugger = ""
+
     def __init__(self, info, e):
         self._info = info
         self._e = e
@@ -676,6 +772,12 @@ class prog(expr):
     def interp(self):
         # Reinitialize Enviroment Mapping
         prog.map_env = env()
+
+        # Reinitialize Type Mapping
+        prog.type_env = env()
+
+        # Type Check Program
+        self._e.type_check()
 
         # Index is used for optomization tests so that the default test has the same
         # random read values as the optomized test
@@ -743,6 +845,7 @@ class prog(expr):
         # Descends down program and determines lets by appending the names of
         # vars to list of lets
         self._e.rco()
+
         # Initialize first let, and then recursively enter lets using helper function
         #index = len(expr.list_of_lets) - 1
         vars = expr.list_of_lets[0]

@@ -251,7 +251,7 @@ def testing():
 
 	y = "y"
 	print ("Test 36: Answer = 5")
-	test = prog(None, let(y, num(5), (var(y))))
+	test = prog(None, let(y, num(5), var(y)))
 	test.interp()
 	print("\n")
 

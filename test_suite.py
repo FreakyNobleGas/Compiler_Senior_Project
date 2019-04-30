@@ -2527,17 +2527,17 @@ def testing():
 	print("\n")
 
 	print("\n Testing 212 - Answer = true")
-	test = prog(None, _and(true(), true()))
+	test = prog(None, rand(true(), true()))
 	test.interp()
 	print("\n")
 
 	print("\n Testing 213 - Answer = true")
-	test = prog(None, _or(false(), true()))
+	test = prog(None, ror(false(), true()))
 	test.interp()
 	print("\n")
 
 	print("\n Testing 214 - Answer = false")
-	test = prog(None, _not(true()))
+	test = prog(None, rnot(true()))
 	test.interp()
 	print("\n")
 
@@ -2547,7 +2547,7 @@ def testing():
 	print("\n")
 
 	print("\n Testing 216 - Answer = 8")
-	test = prog(None, _if(cmp(num(8), "==", num(2)), num(4), num(8)))
+	test = prog(None, rif(cmp(num(8), "==", num(2)), num(4), num(8)))
 	test.interp()
 	print("\n")
 
@@ -2557,7 +2557,7 @@ def testing():
 	print("\n")
 
 	print("\n Testing 218 - Answer = false")
-	test = prog(None, _not(let("y", false(), _not(var("y")))))
+	test = prog(None, rnot(let("y", false(), rnot(var("y")))))
 	test.interp()
 	print("\n")
 

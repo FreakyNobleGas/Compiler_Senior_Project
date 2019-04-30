@@ -60,6 +60,27 @@ class expr:
     def econ(self):
         return 0;
 
+########################## True #########################################################
+class true(expr):
+    def __init__(self):
+        pass
+
+    def pretty_print(self):
+        return "True";
+
+    def interp(self):
+        return True;
+
+########################## False ########################################################
+class false(expr):
+    def __init__(self):
+        pass
+
+    def pretty_print(self):
+        return "False";
+
+    def interp(self):
+        return False;
 
 ########################## Num ##########################################################
 # -- Inherited Class for Number Values --
@@ -531,21 +552,7 @@ class var(expr):
         # Return the name of the variable
         return carg(self._var);
 
-########################## True #########################################################
-class true(expr):
-    def __init__(self):
-        pass
 
-    def pretty_print(self):
-        return "True";
-
-########################## False ########################################################
-class false(expr):
-    def __init__(self):
-        pass
-
-    def pretty_print(self):
-        return "False";
 
 ########################## Sub ##########################################################
 class sub(expr):
@@ -557,10 +564,34 @@ class sub(expr):
         return "(" + str(self._lhs.pretty_print()) + "-" + str(self._rhs.pretty_print()) + ")";
 
     # Use syntatic sugar - (+lhs (-rhs))
-    #def interp(self):
+    def interp(self):
+        result = add(self._lhs, neg(self._rhs))
+        return result.interp()
+
+########################## If ###########################################################
+class rif(expr):
+    # c = condition, t = true side, f = false side
+    def __init__(self, c, t, f):
+        self._c = c
+        self._t = t
+        self._f = f
+
+    def pretty_print(self):
+        return "( if " + str(self._c.pretty_print()) + " then " + str(self._t.pretty_print()) + " else " +\
+               str(self._f.pretty_print()) + ")";
+
+    def interp(self):
+        result = self._c.interp()
+        if(result == True):
+            return self._t.interp()
+        elif(result == False):
+            return self._f.interp()
+        else:
+            print("Error: If statement was neither true or false.")
+            exit(1);
 
 ########################## Or ###########################################################
-class _or(expr):
+class ror(expr):
     def __init__(self, lhs, rhs):
         self._lhs = lhs
         self._rhs = rhs
@@ -568,8 +599,11 @@ class _or(expr):
     def pretty_print(self):
         return "(" + str(self._lhs.pretty_print()) + " || " +  str(self._rhs.pretty_print()) + ")";
 
+    def interp(self):
+        return rif(self._lhs, true(), self._rhs).interp();
+
 ########################## And ##########################################################
-class _and(expr):
+class rand(expr):
     def __init__(self, lhs, rhs):
         self._lhs = lhs
         self._rhs = rhs
@@ -577,8 +611,11 @@ class _and(expr):
     def pretty_print(self):
         return "(" + str(self._lhs.pretty_print()) + " && " +  str(self._rhs.pretty_print()) + ")";
 
+    def interp(self):
+        return rif(self._lhs, self._rhs, false()).interp()
+
 ########################## Not ##########################################################
-class _not(expr):
+class rnot(expr):
     def __init__(self, arg):
         self._arg = arg
 
@@ -586,7 +623,15 @@ class _not(expr):
         return "(!" + str(self._arg.pretty_print()) + ")";
 
     # Not recommended to use syntatic sugar
-    #def interp(self):
+    def interp(self):
+        result = self._arg.interp()
+        if(result == True):
+            return False;
+        elif(result == False):
+            return True;
+        else:
+            print("Error: _not was neither true or false.")
+            exit(1);
 
 ########################## Comparision ##################################################
 class cmp(expr):
@@ -599,19 +644,23 @@ class cmp(expr):
     def pretty_print(self):
         return "(" + str(self._lhs.pretty_print()) + str(self._comp) + str(self._rhs.pretty_print()) + ")";
 
-########################## If ###########################################################
-class _if(expr):
-    # c = condition, t = true side, f = false side
-    def __init__(self, c, t, f):
-        self._c = c
-        self._t = t
-        self._f = f
+    def interp(self):
+        lhs_result = self._lhs.interp()
+        rhs_result = self._rhs.interp()
 
-    def pretty_print(self):
-        return "( if " + str(self._c.pretty_print()) + " then " + str(self._t.pretty_print()) + " else " +\
-               str(self._f.pretty_print()) + ")";
-
-    #def interp(self):
+        if(self._comp == "=="):
+            return lhs_result == rhs_result;
+        elif(self._comp == "<"):
+            return lhs_result < rhs_result;
+        elif(self._comp == "<="):
+            return lhs_result <= rhs_result;
+        elif(self._comp == ">"):
+            return lhs_result > rhs_result;
+        elif(self._comp == ">="):
+            return lhs_result >= rhs_result;
+        else:
+            print("Error: Relation Operator Not Found.")
+            exit(1)
 
 ########################## Prog #########################################################
 # -- Inherited Class for the Program "Container" --

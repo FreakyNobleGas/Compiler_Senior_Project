@@ -530,22 +530,32 @@ class var(expr):
     def econ(self):
         # Return the name of the variable
         return carg(self._var);
-        
+
 ########################## True #########################################################
 class true(expr):
     def __init__(self):
         pass
+
+    def pretty_print(self):
+        return "True";
 
 ########################## False ########################################################
 class false(expr):
     def __init__(self):
         pass
 
+    def pretty_print(self):
+        return "False";
+
 ########################## Sub ##########################################################
 class sub(expr):
     def __init__(self, lhs, rhs):
         self._lhs = lhs
         self._rhs = rhs
+
+    def pretty_print(self):
+        return "(" + str(self._lhs.pretty_print()) + "-" + str(self._rhs.pretty_print()) + ")";
+
     # Use syntatic sugar - (+lhs (-rhs))
     #def interp(self):
 
@@ -555,25 +565,39 @@ class _or(expr):
         self._lhs = lhs
         self._rhs = rhs
 
+    def pretty_print(self):
+        return "(" + str(self._lhs.pretty_print()) + " || " +  str(self._rhs.pretty_print()) + ")";
+
 ########################## And ##########################################################
 class _and(expr):
     def __init__(self, lhs, rhs):
         self._lhs = lhs
         self._rhs = rhs
 
+    def pretty_print(self):
+        return "(" + str(self._lhs.pretty_print()) + " && " +  str(self._rhs.pretty_print()) + ")";
+
 ########################## Not ##########################################################
 class _not(expr):
     def __init__(self, arg):
         self._arg = arg
+
+    def pretty_print(self):
+        return "(!" + str(self._arg.pretty_print()) + ")";
 
     # Not recommended to use syntatic sugar
     #def interp(self):
 
 ########################## Comparision ##################################################
 class cmp(expr):
-    def __init__(self, lhs, rhs):
+    def __init__(self, lhs, comp, rhs):
         self._lhs = lhs
         self._rhs = rhs
+        # == | < | <= | > | >=
+        self._comp = comp
+
+    def pretty_print(self):
+        return "(" + str(self._lhs.pretty_print()) + str(self._comp) + str(self._rhs.pretty_print()) + ")";
 
 ########################## If ###########################################################
 class _if(expr):
@@ -583,6 +607,10 @@ class _if(expr):
         self._t = t
         self._f = f
 
+    def pretty_print(self):
+        return "( if " + str(self._c.pretty_print()) + " then " + str(self._t.pretty_print()) + " else " +\
+               str(self._f.pretty_print()) + ")";
+               
     #def interp(self):
 
 ########################## Prog #########################################################

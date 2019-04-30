@@ -610,7 +610,7 @@ class _if(expr):
     def pretty_print(self):
         return "( if " + str(self._c.pretty_print()) + " then " + str(self._t.pretty_print()) + " else " +\
                str(self._f.pretty_print()) + ")";
-               
+
     #def interp(self):
 
 ########################## Prog #########################################################

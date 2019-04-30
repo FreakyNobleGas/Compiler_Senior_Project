@@ -2396,7 +2396,7 @@ def testing():
 
 	print("\n Testing 204 - Answer = 42")
 	#print("ANSWER: v -> w :: w -> x, y, z :: x -> y :: y -> z :: z -> t_1 :: t_1 -> rax")
-	print("ANSWER: v:1  t_1:0 z:1 y:2 x:0 ") # X will be 1 without move biasing 
+	print("ANSWER: v:1  t_1:0 z:1 y:2 x:0 ") # X will be 1 without move biasing
 	# Problem from the book, this one is used repeatingly through the text in
 	# register allocation
 	instr = [\
@@ -2508,3 +2508,65 @@ def testing():
 	print("Interp X # 2: ")
 	test.interp()
 	test.emitter()
+
+	print("\n\n------------- Testing R2 Language -----------------\n\n")
+
+	print("\n Testing 209 - Answer = true")
+	test = prog(None, true())
+	test.interp()
+	print("\n")
+
+	print("\n Testing 210 - Answer = false")
+	test = prog(None, false())
+	test.interp()
+	print("\n")
+
+	print("\n Testing 211 - Answer = 7")
+	test = prog(None, sub(num(20), num(13)))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 212 - Answer = true")
+	test = prog(None, _and(true(), true()))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 213 - Answer = true")
+	test = prog(None, _or(false(), true()))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 214 - Answer = false")
+	test = prog(None, _not(true()))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 215 - Answer = true")
+	test = prog(None, cmp(num(5), "<", num(10)))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 216 - Answer = 8")
+	test = prog(None, _if(cmp(num(8), "==", num(2)), num(4), num(8)))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 217 - Answer = true")
+	test = prog(None, let("x", num(5), cmp(var("x"), ">=", num(1))))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 218 - Answer = false")
+	test = prog(None, _not(let("y", false(), _not(var("y")))))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 219 - Answer = 2")
+	test = prog(None, sub(num(5), sub(num(10), num(7))))
+	test.interp()
+	print("\n")
+
+	print("\n Testing 220 - Answer = 20")
+	test = prog(None, let("z", num(5), sub(add(num(10), num(15)), var("z"))))
+	test.interp()
+	print("\n")

@@ -13,6 +13,11 @@
 # e ::= ... | var | let var:= e in e
 # var ::= variable-not-otherwise-mentioned
 #
+# Language R2:
+#
+# e ::= ... | true | false | (and ee) | (or ee)
+#       (not e) | (cmp ee) | (if e e e) | (- ee)
+#
 # Resolve Complex (RCO)
 # p ::= (program info e)
 # e ::= arg | (let x = c in e)
@@ -54,6 +59,7 @@ class expr:
         return 0;
     def econ(self):
         return 0;
+
 
 ########################## Num ##########################################################
 # -- Inherited Class for Number Values --
@@ -524,6 +530,60 @@ class var(expr):
     def econ(self):
         # Return the name of the variable
         return carg(self._var);
+        
+########################## True #########################################################
+class true(expr):
+    def __init__(self):
+        pass
+
+########################## False ########################################################
+class false(expr):
+    def __init__(self):
+        pass
+
+########################## Sub ##########################################################
+class sub(expr):
+    def __init__(self, lhs, rhs):
+        self._lhs = lhs
+        self._rhs = rhs
+    # Use syntatic sugar - (+lhs (-rhs))
+    #def interp(self):
+
+########################## Or ###########################################################
+class _or(expr):
+    def __init__(self, lhs, rhs):
+        self._lhs = lhs
+        self._rhs = rhs
+
+########################## And ##########################################################
+class _and(expr):
+    def __init__(self, lhs, rhs):
+        self._lhs = lhs
+        self._rhs = rhs
+
+########################## Not ##########################################################
+class _not(expr):
+    def __init__(self, arg):
+        self._arg = arg
+
+    # Not recommended to use syntatic sugar
+    #def interp(self):
+
+########################## Comparision ##################################################
+class cmp(expr):
+    def __init__(self, lhs, rhs):
+        self._lhs = lhs
+        self._rhs = rhs
+
+########################## If ###########################################################
+class _if(expr):
+    # c = condition, t = true side, f = false side
+    def __init__(self, c, t, f):
+        self._c = c
+        self._t = t
+        self._f = f
+
+    #def interp(self):
 
 ########################## Prog #########################################################
 # -- Inherited Class for the Program "Container" --

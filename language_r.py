@@ -382,6 +382,7 @@ class read(expr):
             self._num = int(num)
             self._debug_mode = True
         else:
+            self._num = int(num)
             self._debug_mode = False
 
     def interp(self, num = 0, debug_mode = False):
@@ -1020,18 +1021,19 @@ class prog(expr):
 
         expr.arry_of_reads.clear()
         result = self._e.opt()
+
         expr.neg_count = 0
         generate = num(result)
 
         # Insert a read into the program based on if the read was intended to be negative or not
         for reads in expr.arry_of_reads:
             if (reads == -1):
-                if (isinstance(result, int)) and (result == 0):
+                if (isinstance(generate, int)) and (generate == 0):
                     generate = neg(read())
                 else:
                     generate = add(neg(read()), generate)
             elif (reads == 1):
-                if (isinstance(result, int)) and (result == 0):
+                if (isinstance(generate, int)) and (generate == 0):
                     generate = read()
                 else:
                     generate = add(read(), generate)

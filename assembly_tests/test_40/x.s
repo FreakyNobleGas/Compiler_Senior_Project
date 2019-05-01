@@ -14,8 +14,8 @@ pushq %r15
 subq $400, %rsp
 jmp next
 next:
-movq $4, %rdx
-movq $5, 8(%rsp)
+movq $5, %rdx
+movq $4, 8(%rsp)
 movq 8(%rsp), %rax
 movq %rax, 16(%rsp)
 addq %rdx, 16(%rsp)
@@ -23,7 +23,7 @@ movq 16(%rsp), %rax
 movq %rax, 24(%rsp)
 movq 24(%rsp), %rdx
 movq 24(%rsp), %rcx
-movq $0, 32(%rsp)
+movq $10, 32(%rsp)
 movq 32(%rsp), %rax
 movq %rax, 40(%rsp)
 addq %rcx, 40(%rsp)
@@ -31,7 +31,7 @@ movq 40(%rsp), %rax
 movq %rax, 48(%rsp)
 movq 48(%rsp), %r9
 movq 48(%rsp), %rcx
-movq $0, 56(%rsp)
+movq $5, 56(%rsp)
 movq 56(%rsp), %rax
 movq %rax, 64(%rsp)
 addq %rcx, 64(%rsp)
@@ -39,7 +39,7 @@ movq 64(%rsp), %rax
 movq %rax, 72(%rsp)
 movq 72(%rsp), %r8
 movq 72(%rsp), %rcx
-movq $5, 80(%rsp)
+movq $0, 80(%rsp)
 movq 80(%rsp), %rax
 movq %rax, 88(%rsp)
 addq %rcx, 88(%rsp)
@@ -47,7 +47,7 @@ movq 88(%rsp), %rax
 movq %rax, 96(%rsp)
 movq 96(%rsp), %rdi
 movq 96(%rsp), %rcx
-movq $1, 104(%rsp)
+movq $8, 104(%rsp)
 movq 104(%rsp), %rax
 movq %rax, 112(%rsp)
 addq %rcx, 112(%rsp)
@@ -56,7 +56,7 @@ movq %rax, 120(%rsp)
 movq 120(%rsp), %rsi
 movq 120(%rsp), %rax
 movq %rax, 128(%rsp)
-movq $8, 136(%rsp)
+movq $0, 136(%rsp)
 movq 136(%rsp), %rax
 movq %rax, 144(%rsp)
 movq 128(%rsp), %rax
@@ -67,7 +67,7 @@ movq 152(%rsp), %rax
 movq %rax, 160(%rsp)
 movq 152(%rsp), %rax
 movq %rax, 168(%rsp)
-movq $3, 176(%rsp)
+movq $2, 176(%rsp)
 movq 176(%rsp), %rax
 movq %rax, 184(%rsp)
 movq 168(%rsp), %rax
@@ -78,7 +78,7 @@ movq 192(%rsp), %rax
 movq %rax, 200(%rsp)
 movq 192(%rsp), %rax
 movq %rax, 208(%rsp)
-movq $10, 216(%rsp)
+movq $5, 216(%rsp)
 movq 216(%rsp), %rax
 movq %rax, 224(%rsp)
 movq 208(%rsp), %rax
@@ -89,7 +89,7 @@ movq 232(%rsp), %rax
 movq %rax, 240(%rsp)
 movq 232(%rsp), %rax
 movq %rax, 248(%rsp)
-movq $8, 256(%rsp)
+movq $10, 256(%rsp)
 movq 256(%rsp), %rax
 movq %rax, 264(%rsp)
 movq 248(%rsp), %rax
@@ -97,7 +97,7 @@ addq %rax, 264(%rsp)
 movq 264(%rsp), %rcx
 movq %rcx, 272(%rsp)
 movq %rcx, 280(%rsp)
-movq $8, 288(%rsp)
+movq $4, 288(%rsp)
 movq 288(%rsp), %rax
 movq %rax, 296(%rsp)
 movq 280(%rsp), %rax

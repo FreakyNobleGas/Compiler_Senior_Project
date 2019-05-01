@@ -387,16 +387,13 @@ def testing():
 	while i <= 35:
 		generate_arry_of_ints(50)
 		print("Test " + str(i) + ": Optimizer")
-		test1 = generate_large_program(0)
-		test = test1
+		test = generate_large_program(0)
 		test.interp()
-		opt_test = test1
-		test2 = opt_test.opt()
-		test2.interp()
+		test = test.opt()
+		test.interp()
 		print("\n")
 		i += 1
 	expr.opt_flag = 0
-
 
 	print("\n\n------------- Testing R1 Programs -------------\n\n")
 
@@ -2864,32 +2861,36 @@ def testing():
 		i += 1
 
 	print("\n\n------------- Testing R2 Optimizer -----------------\n\n")
-
+	expr.opt_flag = 1
+	print("\n Testing 242 - Answer = 2")
 	test = prog(None, sub(num(5), num(3)))
 	test.interp()
 	test = test.opt()
 	test.interp()
 	print("\n")
 
+	print("\n Testing 243 - Answer = 13")
 	test = prog(None, add(sub(num(8), num(5)), add(num(5), num(5))))
 	test.interp()
 	test = test.opt()
 	test.interp()
 	print("\n")
 
+	print("\n Testing 244 - Answer = 16")
 	test = prog(None, add(sub(num(8), read()), add(num(5), num(5))))
 	test.interp()
 	test = test.opt()
 	test.interp()
 	print("\n")
 
-	i = 242
-	while i <= 252:
+	i = 245
+	while i <= 255:
 		print("\n Testing ", i ," - Answer = Randomly Generated")
-		test = generate_large_program(rand_num() % 2, "R2")
+		test = generate_large_program(rand_num() % 5, "R2")
 		print("Unoptimized:")
 		test.interp()
 		print("Optimized:")
 		test = test.opt()
 		test.interp()
 		i += 1
+	expr.opt_flag = 0

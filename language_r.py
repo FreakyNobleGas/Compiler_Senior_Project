@@ -166,7 +166,7 @@ class neg(expr):
                 result = var(result)
 
             result_var = create_unique_var(prog.map_env)
-            xprog.map_env.add_var(result_var, result)
+            prog.map_env.add_var(result_var, result)
             expr.list_of_lets.append(result_var)
         # If not just a num or a var, get the var from calling rco, all other functions
         # will return a var name
@@ -182,9 +182,10 @@ class neg(expr):
         return neg_var;
 
     def econ(self):
-        return cneg(self._num);
+        return cneg(self._num.econ());
 
     def type_check(self):
+        # Make sure argument is an int
         check = self._num.type_check()
         if(isinstance(check, bool)):
             raise TypeCheckError("Error: Negation argument was not of type S64.")
@@ -288,6 +289,7 @@ class add(expr):
         lcheck = self._lhs.type_check()
         rcheck = self._rhs.type_check()
 
+        # Make sure both lhs and rhs are ints
         if(isinstance(lcheck, bool) or isinstance(rcheck, bool)):
             raise TypeCheckError("Error: Addition arguments are not of type S64.")
         elif(isinstance(lcheck, int) and isinstance(rcheck, int)):
@@ -543,10 +545,13 @@ class let(expr):
         self._x = uniquify(self._x, prog.type_env)
         self._xb.uniq(self._x, old_var)
 
+        # Calculate xe, and add to enviroment so we can reference it's type later
         check_xe = self._xe.type_check()
         prog.type_env.add_var(self._x, check_xe)
+
         check_xb = self._xb.type_check()
 
+        # Make sure xe and xb are of the same type, either bool or int
         if(isinstance(check_xe, bool) and isinstance(check_xb, bool)):
             return True;
         elif((isinstance(check_xe, bool) and isinstance(check_xb, int)) or (isinstance(check_xe, int) and isinstance(check_xb, bool))):
@@ -611,6 +616,7 @@ class var(expr):
         return carg(self._var);
 
     def type_check(self):
+        # Return the variables type
         return prog.type_env.find_var(self._var);
 
 
@@ -629,9 +635,13 @@ class sub(expr):
         return result.interp()
 
     def type_check(self):
-        if(isinstance(self._lhs.type_check(), bool) or isinstance(self._rhs.type_check(), bool)):
+        lcheck = self._lhs.type_check()
+        rcheck = self._rhs.type_check()
+
+        # Make sure lhs and rhs are both ints
+        if(isinstance(lcheck, bool) or isinstance(rcheck, bool)):
             raise TypeCheckError("Error: Subtraction arguments are not of type S64.")
-        elif(isinstance(self._lhs.type_check(), int) and isinstance(self._rhs.type_check(), int)):
+        elif(isinstance(lcheck, int) and isinstance(rcheck, int)):
             return 1;
         else:
             raise TypeCheckError("Error: Subtraction arguments are not of type S64.")
@@ -663,7 +673,9 @@ class rif(expr):
         t_check = self._t.interp()
         f_check = self._f.interp()
 
+        # Check first if condition is of type bool
         if(isinstance(check, bool)):
+            # Check if true and false sections are either both int or bool
             if(isinstance(t_check, bool) and isinstance(f_check, bool)):
                 return True;
             elif((isinstance(t_check, bool) and isinstance(f_check, int)) or (isinstance(t_check, int) and isinstance(f_check, bool))):
@@ -688,6 +700,7 @@ class ror(expr):
         return rif(self._lhs, true(), self._rhs).interp();
 
     def type_check(self):
+        # Use if to check type
         check = rif(self._lhs, true(), self._rhs)
         result = check.type_check("Or")
         return result;
@@ -705,6 +718,7 @@ class rand(expr):
         return rif(self._lhs, self._rhs, false()).interp()
 
     def type_check(self):
+        # Use if to check type
         check = rif(self._lhs, self._rhs, false())
         result = check.type_check("And")
         return result;
@@ -731,6 +745,7 @@ class rnot(expr):
     def type_check(self):
         check = self._arg.type_check()
 
+        # Check if arg is type bool
         if(isinstance(check, bool)):
             return True;
         else:
@@ -768,6 +783,8 @@ class cmp(expr):
     def type_check(self):
         lcheck = self._lhs.type_check()
         rcheck = self._rhs.type_check()
+
+        # Check if lhs and rhs are check 
         if(isinstance(lcheck, bool) or isinstance(rcheck, bool)):
             raise TypeCheckError("Error: Comparision arguments are not of type S64.")
         if(isinstance(lcheck, int) and isinstance(rcheck, int)):

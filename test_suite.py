@@ -14,6 +14,7 @@ from language_r import *
 from support import *
 import random
 import sys
+import copy
 
 ########################## Random Number ################################################
 # -- Return a random number --
@@ -71,8 +72,9 @@ def generate_random_objects(generate, type, map = None):
 		if(map is None):
 			x = rand_num() % 6
 		else:
-			v = create_unique_var(map)
-			x = rand_num() % 6
+			vi = create_unique_var(map)
+			v = copy.deepcopy(vi)
+			x = rand_num() % 8
 
 		# Create new objects to create more depth to program
 		if(x == 0):
@@ -89,10 +91,10 @@ def generate_random_objects(generate, type, map = None):
 			return rand(generate, true());
 		if(x == 6):
 			map.add_var(v, false())
-			return let(v, false(), ror(generate, var(v)));
+			return let(v, false(), rand(generate, var(v)))
 		if(x == 7):
 			map.add_var(v, true())
-			return let(v, rnot(generate), rand(var(v), generate));
+			return let(v, rnot(generate), rand(generate, generate));
 
 
 ########################## Generate Boolean Program #####################################
@@ -2701,7 +2703,7 @@ def testing():
 	print("\n")
 
 	print("\n Testing 217 - Answer = true")
-	test = prog(None, let("x", num(5), cmp(var("x"), ">=", num(1))))
+	test = prog(None, let("x", false(), ror(var(x) , cmp(num(5), ">=", num(1)))))
 	test.interp()
 	print("\n")
 
@@ -2855,7 +2857,7 @@ def testing():
 	print("\n\n------------- Testing R2 Random Program Generator -----------------\n\n")
 
 	i = 231
-	while i <= 1241:
+	while i <= 241:
 		print("\n Testing ", i ," - Answer = Randomly Generated")
 		test = generate_large_program(rand_num() % 2, "R2")
 		test.interp()

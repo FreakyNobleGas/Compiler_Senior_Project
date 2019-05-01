@@ -381,6 +381,7 @@ class let(expr):
         self._xb.uniq(self._x, old_var)
 
         prog.map_env.add_var(self._x, self._xe.interp())
+        print("x = ", self._x, " ", "xe = ", self._xe)
         return self._xb.interp()
 
     def opt(self):
@@ -548,7 +549,6 @@ class let(expr):
         # Calculate xe, and add to enviroment so we can reference it's type later
         check_xe = self._xe.type_check()
         prog.type_env.add_var(self._x, check_xe)
-
         check_xb = self._xb.type_check()
 
         # Make sure xe and xb are of the same type, either bool or int
@@ -669,9 +669,9 @@ class rif(expr):
             exit(1);
 
     def type_check(self, func_call = "If"):
-        check = self._c.interp()
-        t_check = self._t.interp()
-        f_check = self._f.interp()
+        check = self._c.type_check()
+        t_check = self._t.type_check()
+        f_check = self._f.type_check()
 
         # Check first if condition is of type bool
         if(isinstance(check, bool)):
@@ -784,11 +784,11 @@ class cmp(expr):
         lcheck = self._lhs.type_check()
         rcheck = self._rhs.type_check()
 
-        # Check if lhs and rhs are check 
+        # Check if lhs and rhs are check
         if(isinstance(lcheck, bool) or isinstance(rcheck, bool)):
             raise TypeCheckError("Error: Comparision arguments are not of type S64.")
         if(isinstance(lcheck, int) and isinstance(rcheck, int)):
-            return 1;
+            return True;
         else:
             raise TypeCheckError("Error: Comparision arguments are not of type S64.")
 

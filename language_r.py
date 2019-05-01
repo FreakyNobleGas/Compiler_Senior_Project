@@ -26,6 +26,7 @@
 
 from language_c import *
 from support import *
+import copy
 
 #########################################################################################
 ##########################     R0 & R1 Languages     ####################################
@@ -50,6 +51,8 @@ class expr:
     def interp(self):
         return 0;
     def pretty_print(self):
+        return 0;
+    def type_check(self):
         return 0;
     def opt(self):
         return 0;
@@ -112,7 +115,7 @@ class num(expr):
     # The neg count is a way of "checking parentheses" to tell if the value should
     # be negative or not
     def opt(self):
-        if expr.neg_count % 2 == 0:
+        if (expr.neg_count % 2 == 0):
             return self._num;
         else:
             return self._num * -1;
@@ -128,7 +131,7 @@ class num(expr):
         return carg(self._num);
 
     def type_check(self):
-        return self._num;
+        return self._num
 
 ########################## Neg ##########################################################
 # -- Inherited Class for Negating Numbers --
@@ -182,8 +185,11 @@ class neg(expr):
         return cneg(self._num);
 
     def type_check(self):
-        if(isinstance(self._num.interp(), int)):
-            return;
+        check = self._num.type_check()
+        if(isinstance(check, bool)):
+            raise TypeCheckError("Error: Negation argument was not of type S64.")
+        elif(isinstance(check, int)):
+            return 1;
         else:
             raise TypeCheckError("Error: Negation argument was not of type S64.")
 
@@ -279,8 +285,13 @@ class add(expr):
         return cadd(self._lhs.econ(), self._rhs.econ());
 
     def type_check(self):
-        if(isinstance(self._lhs.interp(), int) and isinstance(self._rhs.interp(), int)):
-            return;
+        lcheck = self._lhs.type_check()
+        rcheck = self._rhs.type_check()
+
+        if(isinstance(lcheck, bool) or isinstance(rcheck, bool)):
+            raise TypeCheckError("Error: Addition arguments are not of type S64.")
+        elif(isinstance(lcheck, int) and isinstance(rcheck, int)):
+            return 1;
         else:
             raise TypeCheckError("Error: Addition arguments are not of type S64.")
 
@@ -343,7 +354,7 @@ class read(expr):
 
     def type_check(self):
         # Return an int so other type check tests know that read returns an int
-        return 5;
+        return 1;
 
 ########################## Let ##########################################################
 # -- Inherited Class for the Let --
@@ -532,16 +543,16 @@ class let(expr):
         self._x = uniquify(self._x, prog.type_env)
         self._xb.uniq(self._x, old_var)
 
-        check_xe = self._xe.interp()
-        print("CHECK XE IS ", check_xe)
+        check_xe = self._xe.type_check()
         prog.type_env.add_var(self._x, check_xe)
         check_xb = self._xb.type_check()
-        print("CHECK XB IS ", check_xb)
 
-        if(isinstance(check_xe, int) and isinstance(check_xb, int)):
-            return;
-        elif(((check_xe is False) or (check_xe is True)) and ((check_xb is False) or (check_xb is True))):
-            return;
+        if(isinstance(check_xe, bool) and isinstance(check_xb, bool)):
+            return True;
+        elif((isinstance(check_xe, bool) and isinstance(check_xb, int)) or (isinstance(check_xe, int) and isinstance(check_xb, bool))):
+            raise TypeCheckError("Error: Let variable expression and variable body was not both of type bool or S64.")
+        elif(isinstance(check_xe, int) and isinstance(check_xb, int)):
+            return 1;
         else:
             raise TypeCheckError("Error: Let variable expression and variable body was not both of type bool or S64.")
 
@@ -618,8 +629,10 @@ class sub(expr):
         return result.interp()
 
     def type_check(self):
-        if(isinstance(self._lhs.interp(), int) and isinstance(self._rhs.interp(), int)):
-            return;
+        if(isinstance(self._lhs.type_check(), bool) or isinstance(self._rhs.type_check(), bool)):
+            raise TypeCheckError("Error: Subtraction arguments are not of type S64.")
+        elif(isinstance(self._lhs.type_check(), int) and isinstance(self._rhs.type_check(), int)):
+            return 1;
         else:
             raise TypeCheckError("Error: Subtraction arguments are not of type S64.")
 
@@ -650,11 +663,13 @@ class rif(expr):
         t_check = self._t.interp()
         f_check = self._f.interp()
 
-        if((check is True) or (check is False)):
-            if(isinstance(t_check, int) and isinstance(f_check, int)):
-                return;
-            elif(((t_check is False) or (t_check is True)) and ((f_check is False) or (f_check is True))):
-                return;
+        if(isinstance(check, bool)):
+            if(isinstance(t_check, bool) and isinstance(f_check, bool)):
+                return True;
+            elif((isinstance(t_check, bool) and isinstance(f_check, int)) or (isinstance(t_check, int) and isinstance(f_check, bool))):
+                raise TypeCheckError("Error: " + func_call + " True and False arguments were not both of type bool or int.")
+            elif(isinstance(t_check, int) and isinstance(f_check, int)):
+                return 1;
             else:
                 raise TypeCheckError("Error: " + func_call + " True and False arguments were not both of type bool or int.")
         else:
@@ -674,8 +689,8 @@ class ror(expr):
 
     def type_check(self):
         check = rif(self._lhs, true(), self._rhs)
-        check.type_check("Or")
-        return;
+        result = check.type_check("Or")
+        return result;
 
 ########################## And ##########################################################
 class rand(expr):
@@ -691,8 +706,8 @@ class rand(expr):
 
     def type_check(self):
         check = rif(self._lhs, self._rhs, false())
-        check.type_check("And")
-        return;
+        result = check.type_check("And")
+        return result;
 
 ########################## Not ##########################################################
 class rnot(expr):
@@ -714,9 +729,10 @@ class rnot(expr):
             exit(1);
 
     def type_check(self):
-        check = self._arg.interp()
-        if((check is True) or (check is False)):
-            return;
+        check = self._arg.type_check()
+
+        if(isinstance(check, bool)):
+            return True;
         else:
             raise TypeCheckError("Error: Not argument was not of type bool.")
 
@@ -750,8 +766,12 @@ class cmp(expr):
             exit(1)
 
     def type_check(self):
-        if(isinstance(self._lhs.interp(), int) and isinstance(self._rhs.interp(), int)):
-            return;
+        lcheck = self._lhs.type_check()
+        rcheck = self._rhs.type_check()
+        if(isinstance(lcheck, bool) or isinstance(rcheck, bool)):
+            raise TypeCheckError("Error: Comparision arguments are not of type S64.")
+        if(isinstance(lcheck, int) and isinstance(rcheck, int)):
+            return 1;
         else:
             raise TypeCheckError("Error: Comparision arguments are not of type S64.")
 
@@ -776,8 +796,11 @@ class prog(expr):
         # Reinitialize Type Mapping
         prog.type_env = env()
 
+        # Copy program for type checking
+        check = copy.deepcopy(self._e)
+
         # Type Check Program
-        self._e.type_check()
+        check.type_check()
 
         # Index is used for optomization tests so that the default test has the same
         # random read values as the optomized test

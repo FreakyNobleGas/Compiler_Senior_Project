@@ -9,6 +9,12 @@
 ########################## Node #########################################################
 # -- Node Class for Linked List in Env (Enviroment) --
 
+class TypeCheckError(Exception):
+	pass
+
+########################## Node #########################################################
+# -- Node Class for Linked List in Env (Enviroment) --
+
 class node():
 	def __init__(self, var, num):
 		self._var = var

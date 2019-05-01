@@ -4,7 +4,7 @@
 #	This file is the testing suite, and is primarily used to make
 #	sure there are no bugs in the compiler and everything is
 #	functioning as expected. This file will also contain other function
-#	definitions such as generate large program that is exclusively used for
+#	definitions such as generate large program that are exclusively used for
 #	testing.
 
 # Imports all the data type definitions
@@ -31,6 +31,147 @@ def generate_arry_of_ints(n):
 		i += 1
 		expr.random_arry_of_ints.append(rand_num())
 	return;
+
+########################## Generate Boolean Program #####################################
+# -- Helper function for all Generate Large Program functions --
+def generate_random_objects(generate, type, map = None):
+	# Dictinary for all equality operators so we can chose them at random
+	equality_op = {0:"==", 1:"<", 2:"<=", 3:">", 4:">="}
+
+	if(type is "int"):
+		# Check if enviroment exists so we can add lets
+		if(map is None):
+			x = rand_num() % 6
+		else:
+			v = create_unique_var(map)
+			x = rand_num() % 8
+
+		# Create new objects to create more depth to program
+		if(x == 0):
+			return add(generate, num(rand_num()));
+		elif(x == 1):
+			return add(num(rand_num()), generate);
+		elif(x == 2):
+			return sub(generate, num(rand_num()));
+		elif(x == 3):
+			return sub(num(rand_num()), generate);
+		elif(x == 4):
+			return neg(generate);
+		elif(x == 5):
+			return add(generate, read(rand_num(), True));
+		elif(x == 6):
+			map.add_var(v, num(5))
+			return let(v, add(num(rand_num()), num(rand_num())), sub(generate, var(v)));
+		elif(x == 7):
+			map.add_var(v, num(5))
+			return let(v, sub(num(rand_num()), num(rand_num())), add(generate, var(v)));
+
+	if(type is "bool"):
+		# Check if enviroment exists so we can add lets
+		if(map is None):
+			x = rand_num() % 6
+		else:
+			v = create_unique_var(map)
+			x = rand_num() % 6
+
+		# Create new objects to create more depth to program
+		if(x == 0):
+			return rif(cmp(num(rand_num()), equality_op[rand_num() % 5], num(rand_num())), generate, generate)
+		if(x == 1):
+			return rnot(generate);
+		if(x == 2):
+			return ror(true(), generate);
+		if(x == 3):
+			return ror(generate, false());
+		if(x == 4):
+			return rand(false(), generate);
+		if(x == 5):
+			return rand(generate, true());
+		if(x == 6):
+			map.add_var(v, false())
+			return let(v, false(), ror(generate, var(v)));
+		if(x == 7):
+			map.add_var(v, true())
+			return let(v, rnot(generate), rand(var(v), generate));
+
+
+########################## Generate Boolean Program #####################################
+# -- Helper function for Generate Large Program --
+def generate_boolean_program(n):
+	case = rand_num() % 3
+	equality_op = {0:"==", 1:"<", 2:"<=", 3:">", 4:">="}
+
+	# Generate random comparison expression
+	if(case == 0):
+		i = 0
+		lhs = num(rand_num())
+		rhs = num(rand_num())
+		while i < n:
+			lhs = generate_random_objects(lhs, "int")
+			rhs = generate_random_objects(rhs, "int")
+			i += 1
+
+		return cmp(lhs, equality_op[rand_num() % 5], rhs);
+
+	# Generate Random Let Expression
+	elif(case == 1):
+		map = env()
+		i = 0
+		xe = false()
+		xb = false()
+		while i < n:
+			xe = generate_random_objects(xe, "bool", map)
+			xb = generate_random_objects(xb, "bool", map)
+			i += 1
+
+		v = create_unique_var(map)
+		return let(v, xe, xb);
+
+	# Generate Random If Expression
+	elif(case == 2):
+		c = true()
+		t = true()
+		f = false()
+		i = 0
+		while i < n:
+			c = generate_random_objects(c, "bool")
+			t = generate_random_objects(t, "bool")
+			f = generate_random_objects(f, "bool")
+			i += 1
+
+		return rif(c, t, f);
+
+########################## Generate Int Program #########################################
+# -- Helper function for Generate Large Program
+def generate_int_program(n):
+	case = rand_num() % 2
+
+	if(case == 0):
+		map = env()
+		i = 0
+		xe = num(rand_num())
+		xb = num(rand_num())
+		while i < n:
+			xe = generate_random_objects(xe, "int", map)
+			xb = generate_random_objects(xb, "int", map)
+			i += 1
+
+		v = create_unique_var(map)
+		return let(v, xe, xb);
+
+	elif(case == 1):
+		c = true()
+		t = num(rand_num())
+		f = num(rand_num())
+		i = 0
+		while i < n:
+			c = generate_random_objects(c, "bool")
+			t = generate_random_objects(t, "int")
+			f = generate_random_objects(f, "int")
+			i += 1
+
+		return rif(c, t, f);
+
 
 ########################## Generate Large Program #######################################
 # -- Returns a program of n depth --
@@ -106,6 +247,14 @@ def generate_large_program(n, language = None):
 					generate = let(next_var, add(var(input_array[i + 1]), num(rand_num())), add(var(next_var), generate))
 
 				i += 1
+
+	elif (language == "R2"):
+		# Pick random type ( 0 is bool and 1 is int)
+		rand_type = rand_num() % 2
+		if(rand_type == 0):
+			generate = generate_boolean_program(n)
+		else:
+			generate = generate_int_program(n)
 
 	return prog(None, generate);
 
@@ -2702,3 +2851,12 @@ def testing():
 	else:
 		print("Failed")
 		exit(1)
+
+	print("\n\n------------- Testing R2 Random Program Generator -----------------\n\n")
+
+	i = 231
+	while i <= 1241:
+		print("\n Testing ", i ," - Answer = Randomly Generated")
+		test = generate_large_program(rand_num() % 2, "R2")
+		test.interp()
+		i += 1

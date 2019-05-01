@@ -14,15 +14,15 @@ pushq %r15
 subq $64, %rsp
 jmp next
 next:
-movq $6, %rdx
-movq $0, 8(%rsp)
+movq $8, %rdx
+movq $1, 8(%rsp)
 movq 8(%rsp), %rax
 movq %rax, 16(%rsp)
 addq %rdx, 16(%rsp)
 movq 16(%rsp), %rdx
 movq %rdx, %rdx
 movq %rdx, %rcx
-movq $6, 24(%rsp)
+movq $3, 24(%rsp)
 movq 24(%rsp), %rax
 movq %rax, 32(%rsp)
 addq %rcx, 32(%rsp)

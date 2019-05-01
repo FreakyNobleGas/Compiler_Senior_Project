@@ -14,8 +14,8 @@ pushq %r15
 subq $352, %rsp
 jmp next
 next:
-movq $9, %rdx
-movq $8, 8(%rsp)
+movq $1, %rdx
+movq $7, 8(%rsp)
 movq 8(%rsp), %rax
 movq %rax, 16(%rsp)
 addq %rdx, 16(%rsp)
@@ -23,7 +23,7 @@ movq 16(%rsp), %rax
 movq %rax, 24(%rsp)
 movq 24(%rsp), %rdx
 movq 24(%rsp), %rcx
-movq $1, 32(%rsp)
+movq $5, 32(%rsp)
 movq 32(%rsp), %rax
 movq %rax, 40(%rsp)
 addq %rcx, 40(%rsp)
@@ -31,7 +31,7 @@ movq 40(%rsp), %rax
 movq %rax, 48(%rsp)
 movq 48(%rsp), %r9
 movq 48(%rsp), %rcx
-movq $8, 56(%rsp)
+movq $5, 56(%rsp)
 movq 56(%rsp), %rax
 movq %rax, 64(%rsp)
 addq %rcx, 64(%rsp)
@@ -39,7 +39,7 @@ movq 64(%rsp), %rax
 movq %rax, 72(%rsp)
 movq 72(%rsp), %r8
 movq 72(%rsp), %rcx
-movq $10, 80(%rsp)
+movq $2, 80(%rsp)
 movq 80(%rsp), %rax
 movq %rax, 88(%rsp)
 addq %rcx, 88(%rsp)
@@ -47,7 +47,7 @@ movq 88(%rsp), %rax
 movq %rax, 96(%rsp)
 movq 96(%rsp), %rdi
 movq 96(%rsp), %rcx
-movq $8, 104(%rsp)
+movq $5, 104(%rsp)
 movq 104(%rsp), %rax
 movq %rax, 112(%rsp)
 addq %rcx, 112(%rsp)
@@ -56,7 +56,7 @@ movq %rax, 120(%rsp)
 movq 120(%rsp), %rsi
 movq 120(%rsp), %rax
 movq %rax, 128(%rsp)
-movq $4, 136(%rsp)
+movq $0, 136(%rsp)
 movq 136(%rsp), %rax
 movq %rax, 144(%rsp)
 movq 128(%rsp), %rax
@@ -67,7 +67,7 @@ movq 152(%rsp), %rax
 movq %rax, 160(%rsp)
 movq 152(%rsp), %rax
 movq %rax, 168(%rsp)
-movq $0, 176(%rsp)
+movq $1, 176(%rsp)
 movq 176(%rsp), %rax
 movq %rax, 184(%rsp)
 movq 168(%rsp), %rax
@@ -78,7 +78,7 @@ movq 192(%rsp), %rax
 movq %rax, 200(%rsp)
 movq 192(%rsp), %rax
 movq %rax, 208(%rsp)
-movq $0, 216(%rsp)
+movq $3, 216(%rsp)
 movq 216(%rsp), %rax
 movq %rax, 224(%rsp)
 movq 208(%rsp), %rax
@@ -86,7 +86,7 @@ addq %rax, 224(%rsp)
 movq 224(%rsp), %rcx
 movq %rcx, 232(%rsp)
 movq %rcx, 240(%rsp)
-movq $7, 248(%rsp)
+movq $9, 248(%rsp)
 movq 248(%rsp), %rax
 movq %rax, 256(%rsp)
 movq 240(%rsp), %rax

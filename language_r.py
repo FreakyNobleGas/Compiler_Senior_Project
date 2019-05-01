@@ -29,6 +29,74 @@ from support import *
 import copy
 
 #########################################################################################
+##########################     R Support Functions     ##################################
+#########################################################################################
+
+########################## Optimize Helper ##############################################
+# -- Helper function for R2 optimizer functions so that reads can be added for --
+# -- every boolean program that uses S64                                       --
+def opt_helper(opt_var):
+    # Begin working on opt_var
+    num_of_reads = len(expr.arry_of_reads)
+    num_of_vars = expr.num_of_vars
+
+    # This will always be an integer since read returns 0
+    temp_var = opt_var.opt()
+    result = num(temp_var)
+    result_temp = result
+
+    # Number of Reads counted after optomizing xe
+    diff_of_reads = (len(expr.arry_of_reads) - num_of_reads)
+    diff_of_vars = expr.num_of_vars - num_of_vars
+
+    # For each read, insert a read() into opt_var
+    i = 0
+    while i < diff_of_reads:
+        if (expr.arry_of_reads[i] == -1):
+            if (result_temp == result) and (temp_var == 0):
+                result = neg(read())
+            else:
+                result = add(neg(read()), result)
+        elif (expr.arry_of_reads[i]):
+            if (result_temp == result) and (temp_var == 0):
+                result = read()
+            else:
+                result = add(read(), result)
+        else:
+            print("Something went wrong. Neither 1 or -1 in let opt")
+        i += 1
+
+    # Delete reads from array since we do not know if they are positive or negative
+    i = 0
+    while i < diff_of_reads:
+        del expr.arry_of_reads[0]
+        i += 1
+
+    # For each var, insert vars into result. Var can either be a number or an expression with reads
+    i = 0
+    while i < diff_of_vars:
+        if (expr.arry_of_vars[i][0] == "+"):
+            if (result_temp == result) and (temp_var == 0):
+                result = var(expr.arry_of_vars[i][1])
+            else:
+                result = add(var(expr.arry_of_vars[i][1]), result)
+        else:
+            if (result_temp == result) and (temp_var == 0):
+                result = neg(var(expr.arry_of_vars[i][1]))
+            else:
+                result = add(neg(var(expr.arry_of_vars[i][1])), result)
+        i += 1
+
+    # Delete var from array
+    i = 0
+    while i < diff_of_vars:
+        del expr.arry_of_vars[0]
+        expr.num_of_vars -= 1
+        i += 1
+
+    return result;
+
+#########################################################################################
 ##########################     R0 & R1 Languages     ####################################
 #########################################################################################
 
@@ -47,6 +115,8 @@ class expr:
     neg_count = 0
     opt_flag = 0
     opt_index = 0
+
+    purity = True
 
     def interp(self):
         return 0;
@@ -77,6 +147,9 @@ class true(expr):
     def type_check(self):
         return True;
 
+    def opt(self):
+        return True;
+
 ########################## False ########################################################
 class false(expr):
     def __init__(self):
@@ -89,6 +162,9 @@ class false(expr):
         return False;
 
     def type_check(self):
+        return False;
+
+    def opt(self):
         return False;
 
 ########################## Num ##########################################################
@@ -131,7 +207,7 @@ class num(expr):
         return carg(self._num);
 
     def type_check(self):
-        return self._num
+        return self._num;
 
 ########################## Neg ##########################################################
 # -- Inherited Class for Negating Numbers --
@@ -329,6 +405,9 @@ class read(expr):
         return "Read(" + str(self._num) + ")";
 
     def opt(self, num = 0, debug_mode = False):
+        # Set purity to false since this program contains a read
+        expr.purity = False
+
         # Check whether neg has been called an even or odd amount of times. This
         # is to prevent a triple negative from creating false positive values
         if expr.neg_count % 2 == 0:
@@ -647,6 +726,42 @@ class sub(expr):
         else:
             raise TypeCheckError("Error: Subtraction arguments are not of type S64.")
 
+    def opt(self):
+        if(isinstance(self._lhs, read)):
+            self._lhs = neg(self._lhs)
+
+        if(isinstance(self._rhs, read)):
+            self._rhs = neg(self._rhs)
+
+        right_opt = self._rhs.opt()
+        left_opt = self._lhs.opt()
+
+        # Check whether either expression is a let
+        if (type(right_opt) is let) or (type(left_opt) is let):
+            # Check if either side is a integer
+            if isinstance(right_opt, int):
+                right_opt = num(right_opt)
+
+            if isinstance(left_opt, int):
+                left_opt = num(left_opt)
+
+            # Check if either side is a zero so it can be removed
+            if (isinstance(right_opt, num) and (right_opt.opt() == 0)):
+                return left_opt;
+
+            if (isinstance(left_opt, num) and (left_opt.opt() == 0)):
+                return right_opt;
+
+            return add(left_opt, neg(right_opt));
+        else:
+            if (isinstance(right_opt, num) and (right_opt.opt() == 0)):
+                return left_opt;
+
+            if (isinstance(left_opt, num) and (left_opt.opt() == 0)):
+                return right_opt;
+
+            return ((left_opt) + (-1 * right_opt));
+
 ########################## If ###########################################################
 class rif(expr):
     # c = condition, t = true side, f = false side
@@ -688,6 +803,31 @@ class rif(expr):
         else:
             raise TypeCheckError("Error: " + func_call + " condition argument was not of type bool.")
 
+    def opt(self):
+        if ((isinstance(self._c, true)) or (isinstance(self._c, false))):
+            opt_c = self._c
+        else:
+            opt_c = self._c.opt()
+
+        opt_t = opt_helper(self._t)
+        opt_f = opt_helper(self._f)
+
+        if(opt_c is true()):
+            # Set false condition to false, since we won't use it anyway
+            opt_f = false()
+
+        if(opt_c is false()):
+            # Set true condition to false, since we won't be using it
+            opt_t = false()
+
+        # If condition is a not, reverse conditions
+        if(isinstance(opt_c, rnot)):
+            temp = opt_t
+            opt_t = opt_f
+            opt_f = temp
+
+        return rif(opt_c, opt_t, opt_f);
+
 ########################## Or ###########################################################
 class ror(expr):
     def __init__(self, lhs, rhs):
@@ -706,6 +846,15 @@ class ror(expr):
         result = check.type_check("Or")
         return result;
 
+    def opt(self):
+        lhs = self._lhs.opt()
+        rhs = self._rhs.opt()
+
+        if (lhs is True or rhs is True):
+            return true()
+        else:
+            return false()
+
 ########################## And ##########################################################
 class rand(expr):
     def __init__(self, lhs, rhs):
@@ -723,6 +872,15 @@ class rand(expr):
         check = rif(self._lhs, self._rhs, false())
         result = check.type_check("And")
         return result;
+
+    def opt(self):
+        lhs = self._lhs.opt()
+        rhs = self._rhs.opt()
+
+        if (lhs is True and rhs is True):
+            return true()
+        else:
+            return false()
 
 ########################## Not ##########################################################
 class rnot(expr):
@@ -751,6 +909,14 @@ class rnot(expr):
             return True;
         else:
             raise TypeCheckError("Error: Not argument was not of type bool.")
+
+    def opt(self):
+        # Remove the nested not
+        if(isinstance(self._arg, rnot)):
+            # not(not(e)) = e
+            self._arg = self._arg._arg
+
+        return rnot(self._arg);
 
 ########################## Comparision ##################################################
 class cmp(expr):
@@ -793,6 +959,22 @@ class cmp(expr):
         else:
             raise TypeCheckError("Error: Comparision arguments are not of type S64.")
 
+    def opt(self):
+        lhs = opt_helper(self._lhs)
+        rhs = opt_helper(self._rhs)
+
+        # Check if read is in program, and if each side is the equal
+        if(expr.purity is True):
+            if ((self._lhs == self._rhs) or (lhs == rhs)):
+                if((self._comp is "==") or (self._comp is "<=") or (self._comp is ">=")):
+                    return true()
+                else:
+                    # If equality is "<" or ">", then we know it must be false
+                    return false()
+            else:
+                return cmp(lhs, self._comp, rhs).interp()
+        return cmp(lhs, self._comp, rhs)
+
 
 ########################## Prog #########################################################
 # -- Inherited Class for the Program "Container" --
@@ -806,6 +988,7 @@ class prog(expr):
     def __init__(self, info, e):
         self._info = info
         self._e = e
+        self._type = None
 
     def interp(self):
         # Reinitialize Enviroment Mapping
@@ -817,8 +1000,8 @@ class prog(expr):
         # Copy program for type checking
         check = copy.deepcopy(self._e)
 
-        # Type Check Program
-        check.type_check()
+        # Type Check Program and save type for later
+        self._type = check.type_check()
 
         # Index is used for optomization tests so that the default test has the same
         # random read values as the optomized test
@@ -839,6 +1022,7 @@ class prog(expr):
         result = self._e.opt()
         expr.neg_count = 0
         generate = num(result)
+
         # Insert a read into the program based on if the read was intended to be negative or not
         for reads in expr.arry_of_reads:
             if (reads == -1):

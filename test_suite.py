@@ -2865,10 +2865,28 @@ def testing():
 
 	print("\n\n------------- Testing R2 Optimizer -----------------\n\n")
 
+	test = prog(None, sub(num(5), num(3)))
+	test.interp()
+	test = test.opt()
+	test.interp()
+	print("\n")
+
+	test = prog(None, add(sub(num(8), num(5)), add(num(5), num(5))))
+	test.interp()
+	test = test.opt()
+	test.interp()
+	print("\n")
+
+	test = prog(None, add(sub(num(8), read()), add(num(5), num(5))))
+	test.interp()
+	test = test.opt()
+	test.interp()
+	print("\n")
+
 	i = 242
 	while i <= 252:
 		print("\n Testing ", i ," - Answer = Randomly Generated")
-		test = generate_large_program(rand_num() % 5, "R2")
+		test = generate_large_program(rand_num() % 2, "R2")
 		print("Unoptimized:")
 		test.interp()
 		print("Optimized:")

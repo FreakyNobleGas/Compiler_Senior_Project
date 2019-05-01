@@ -381,7 +381,6 @@ class let(expr):
         self._xb.uniq(self._x, old_var)
 
         prog.map_env.add_var(self._x, self._xe.interp())
-        print("x = ", self._x, " ", "xe = ", self._xe)
         return self._xb.interp()
 
     def opt(self):
@@ -575,8 +574,10 @@ class var(expr):
 
         if isinstance(value, int):
             return str(self._var) + "(" + str(value) + ")";
-
-        return str(self._var) + "(" + str(value.pretty_print()) + ")";
+        elif(isinstance(value, str)):
+            return str(self._var) + "(" + str(value) + ")";
+        else:
+            return str(self._var) + "(" + str(value.pretty_print()) + ")";
 
     def interp(self):
         return prog.map_env.find_var(self._var);

@@ -14,8 +14,8 @@ pushq %r15
 subq $96, %rsp
 jmp next
 next:
-movq $3, %rdx
-movq $4, 8(%rsp)
+movq $1, %rdx
+movq $5, 8(%rsp)
 movq 8(%rsp), %rax
 movq %rax, 16(%rsp)
 addq %rdx, 16(%rsp)
@@ -23,7 +23,7 @@ movq 16(%rsp), %rax
 movq %rax, 24(%rsp)
 movq 24(%rsp), %rdx
 movq 24(%rsp), %rcx
-movq $10, 32(%rsp)
+movq $7, 32(%rsp)
 movq 32(%rsp), %rax
 movq %rax, 40(%rsp)
 addq %rcx, 40(%rsp)

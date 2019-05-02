@@ -89,7 +89,8 @@ class cprog():
 
 ########################## C Tail ########################################################
 class ctail():
-    # tail = (return arg) | (sequence statement tail)
+    # tail = (return arg) | (sequence statement tail) | go-to |
+    #        go-to if cmp(arg arg) label1 label2
     def __init__(self, info):
         self._info = info
 
@@ -153,7 +154,7 @@ class cstmt():
         #    print(self._var, " = ", self._expr.uncover(cenv))
         #else:
         #    print(" " + self._var, " = ", self._expr.uncover(cenv))
-        
+
         return;
 
     def select(self, cenv, c_instr, x_instr):
@@ -163,7 +164,7 @@ class cstmt():
 
 ########################## C Expression #################################################
 class cexpr():
-    # Expression = arg | (read) | (-arg) | (+ arg arg)
+    # Expression = arg | (read) | (-arg) | (+ arg arg) | !(arg) | ccmp(arg, arg)
     def __init__(self, arg):
         self._arg = arg
 
@@ -265,9 +266,15 @@ class cadd():
 
         return x_instr;
 
+########################## C Compare ###################################################
+class ccmp():
+    # ccmp = == | < | <= | > | >=
+    def __init__(self, arg):
+        self._arg = arg
+
 ########################## C Argument ###################################################
 class carg():
-    # arg = number | var
+    # arg = number | var | true | false
     def __init__(self, arg):
         self._arg = arg
 

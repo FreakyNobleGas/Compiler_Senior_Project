@@ -59,7 +59,7 @@ def generate_random_objects(generate, type, map = None):
 		elif(x == 4):
 			return neg(generate);
 		elif(x == 5):
-			return add(generate, read(rand_num(), True));
+			return add(generate, read());
 		elif(x == 6):
 			map.add_var(v, num(5))
 			return let(v, add(num(rand_num()), num(rand_num())), sub(generate, var(v)));
@@ -2862,6 +2862,7 @@ def testing():
 
 	print("\n\n------------- Testing R2 Optimizer -----------------\n\n")
 	expr.opt_flag = 1
+
 	print("\n Testing 242 - Answer = 2")
 	test = prog(None, sub(num(5), num(3)))
 	test.interp()
@@ -2886,11 +2887,38 @@ def testing():
 	i = 245
 	while i <= 255:
 		print("\n Testing ", i ," - Answer = Randomly Generated")
-		test = generate_large_program(rand_num() % 5, "R2")
+		generate_arry_of_ints(100)
+		test = generate_large_program(rand_num() % 3, "R2")
 		print("Unoptimized:")
 		test.interp()
 		print("Optimized:")
 		test = test.opt()
 		test.interp()
 		i += 1
+	expr.opt_flag = 0
+
+	print("\n\n------------- Testing R2 Uniquify -----------------\n\n")
+	expr.opt_flag = 1
+
+	print("\n Testing 256 - Answer = 15")
+	test = prog(None, let("x", sub(num(5), num(3)), add(var("x"), let("x", add(num(5), num(8)), var("x")))))
+	test.interp()
+
+	print("\n Testing 257 - Answer = True")
+	test = prog(None, let("x", true(), ror(var("x"), let("x", false(), var("x")))))
+	test.interp()
+
+	print("\n Testing 258 - Answer = False")
+	test = prog(None, let("x", true(), rand(var("x"), let("x", false(), var("x")))))
+	test.interp()
+
+	print("\n Testing 259 - Answer = False")
+	test = prog(None, let("x", cmp(num(4), "<", num(2)), rand(var("x"), let("x", rif(true(), true(), false()), var("x")))))
+	test.interp()
+
+	print("\n Testing 260 - Answer = False")
+	test = prog(None, let("x", rnot(true()), rand(var("x"), let("x", rif(true(), true(), false()), var("x")))))
+	test.interp()
+
+
 	expr.opt_flag = 0

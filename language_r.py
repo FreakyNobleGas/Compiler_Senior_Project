@@ -150,6 +150,9 @@ class true(expr):
     def opt(self):
         return True;
 
+    def uniq(self, unique_var, old_var):
+        return;
+
 ########################## False ########################################################
 class false(expr):
     def __init__(self):
@@ -166,6 +169,9 @@ class false(expr):
 
     def opt(self):
         return False;
+
+    def uniq(self, unique_var, old_var):
+        return;
 
 ########################## Num ##########################################################
 # -- Inherited Class for Number Values --
@@ -388,7 +394,6 @@ class read(expr):
     def interp(self, num = 0, debug_mode = False):
         if self._debug_mode:
             return self._num
-
         if expr.opt_flag:
             self._num = expr.random_arry_of_ints[expr.opt_index]
             expr.opt_index += 1
@@ -763,6 +768,15 @@ class sub(expr):
 
             return ((left_opt) + (-1 * right_opt));
 
+    def uniq(self, unique_var, old_var):
+        # If either side is a let, then we do not want to go further since
+        # we call uniq from let for each instance of a let
+        if(type(self._lhs) is not let):
+            self._lhs.uniq(unique_var, old_var)
+        if(type(self._rhs) is not let):
+            self._rhs.uniq(unique_var, old_var)
+        return;
+
 ########################## If ###########################################################
 class rif(expr):
     # c = condition, t = true side, f = false side
@@ -776,11 +790,14 @@ class rif(expr):
                str(self._f.pretty_print()) + ")";
 
     def interp(self):
-        result = self._c.interp()
-        if(result == True):
-            return self._t.interp()
-        elif(result == False):
-            return self._f.interp()
+        c_result = self._c.interp()
+        t_result = self._t.interp()
+        f_result = self._f.interp()
+
+        if(c_result == True):
+            return t_result;
+        elif(c_result == False):
+            return f_result;
         else:
             print("Error: If statement was neither true or false.")
             exit(1);
@@ -826,8 +843,20 @@ class rif(expr):
             temp = opt_t
             opt_t = opt_f
             opt_f = temp
+            opt_c = opt_c._arg
 
         return rif(opt_c, opt_t, opt_f);
+
+    def uniq(self, unique_var, old_var):
+        # If either side is a let, then we do not want to go further since
+        # we call uniq from let for each instance of a let
+        if(type(self._c) is not let):
+            self._c.uniq(unique_var, old_var)
+        if(type(self._t) is not let):
+            self._t.uniq(unique_var, old_var)
+        if(type(self._f) is not let):
+            self._f.uniq(unique_var, old_var)
+        return;
 
 ########################## Or ###########################################################
 class ror(expr):
@@ -856,6 +885,16 @@ class ror(expr):
         else:
             return false()
 
+    def uniq(self, unique_var, old_var):
+        # If either side is a let, then we do not want to go further since
+        # we call uniq from let for each instance of a let
+        if(type(self._lhs) is not let):
+            self._lhs.uniq(unique_var, old_var)
+        if(type(self._rhs) is not let):
+            self._rhs.uniq(unique_var, old_var)
+        return;
+
+
 ########################## And ##########################################################
 class rand(expr):
     def __init__(self, lhs, rhs):
@@ -882,6 +921,15 @@ class rand(expr):
             return true()
         else:
             return false()
+
+    def uniq(self, unique_var, old_var):
+        # If either side is a let, then we do not want to go further since
+        # we call uniq from let for each instance of a let
+        if(type(self._lhs) is not let):
+            self._lhs.uniq(unique_var, old_var)
+        if(type(self._rhs) is not let):
+            self._rhs.uniq(unique_var, old_var)
+        return;
 
 ########################## Not ##########################################################
 class rnot(expr):
@@ -918,6 +966,10 @@ class rnot(expr):
             self._arg = self._arg._arg
 
         return rnot(self._arg);
+
+    def uniq(self, unique_var, old_var):
+        self._arg.uniq(unique_var, old_var)
+        return;
 
 ########################## Comparision ##################################################
 class cmp(expr):
@@ -976,6 +1028,14 @@ class cmp(expr):
                 return cmp(lhs, self._comp, rhs).interp()
         return cmp(lhs, self._comp, rhs)
 
+    def uniq(self, unique_var, old_var):
+        # If either side is a let, then we do not want to go further since
+        # we call uniq from let for each instance of a let
+        if(type(self._lhs) is not let):
+            self._lhs.uniq(unique_var, old_var)
+        if(type(self._rhs) is not let):
+            self._rhs.uniq(unique_var, old_var)
+        return;
 
 ########################## Prog #########################################################
 # -- Inherited Class for the Program "Container" --
@@ -1007,6 +1067,7 @@ class prog(expr):
         # Index is used for optomization tests so that the default test has the same
         # random read values as the optomized test
         expr.opt_index = 0
+
         # Save the result first so that we can pretty print
         result = self._e.interp()
         result = int(result)
@@ -1018,6 +1079,10 @@ class prog(expr):
     def opt(self):
         # Reinitialize Enviroment Mapping
         prog.map_env = env()
+
+        # Index is used for optomization tests so that the default test has the same
+        # random read values as the optomized test
+        expr.opt_index = 0
 
         expr.arry_of_reads.clear()
         result = self._e.opt()
